@@ -188,10 +188,8 @@ struct AccesoCorreoView: View {
                     repetida = ""
                 }
             }
-        } catch let fallo as ErrorCuenta {
-            error = fallo
         } catch {
-            self.error = .otro(error.localizedDescription)
+            self.error = error as? ErrorCuenta ?? .otro("")
         }
     }
 
@@ -207,10 +205,8 @@ struct AccesoCorreoView: View {
             try await cuenta.enviarRecuperacion(a: correo)
             error = nil
             aviso = .recuperacionEnviada(ValidadorCorreo.normalizar(correo))
-        } catch let fallo as ErrorCuenta {
-            error = fallo
         } catch {
-            self.error = .otro(error.localizedDescription)
+            self.error = error as? ErrorCuenta ?? .otro("")
         }
     }
 }

@@ -106,10 +106,8 @@ public struct AccesoView: View {
                 do {
                     try await cuenta.iniciarConApple(tokenIdentidad: token, nonce: nonceUsado)
                     error = nil
-                } catch let fallo as ErrorCuenta {
-                    error = fallo
                 } catch {
-                    self.error = .otro(error.localizedDescription)
+                    self.error = error as? ErrorCuenta ?? .otro("")
                 }
             }
         case let .failure(fallo):

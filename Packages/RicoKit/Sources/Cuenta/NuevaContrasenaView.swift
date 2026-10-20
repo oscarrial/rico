@@ -100,10 +100,8 @@ public struct NuevaContrasenaView: View {
             }
             error = nil
             hecho = true
-        } catch let fallo as ErrorCuenta {
-            error = fallo
         } catch {
-            self.error = .otro(error.localizedDescription)
+            self.error = error as? ErrorCuenta ?? .otro("")
         }
     }
 }

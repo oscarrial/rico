@@ -105,10 +105,8 @@ public struct CuentaView: View {
         do {
             try await cuenta.cerrarSesion()
             cerrar()
-        } catch let fallo as ErrorCuenta {
-            error = fallo
         } catch {
-            self.error = .otro(error.localizedDescription)
+            self.error = error as? ErrorCuenta ?? .otro("")
         }
     }
 
@@ -134,10 +132,8 @@ public struct CuentaView: View {
                 try ContenedorRico.borrarTodo(en: contexto)
             }
             cerrar()
-        } catch let fallo as ErrorCuenta {
-            error = fallo
         } catch {
-            self.error = .otro(error.localizedDescription)
+            self.error = error as? ErrorCuenta ?? .otro("")
         }
     }
 }

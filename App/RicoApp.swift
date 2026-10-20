@@ -30,7 +30,7 @@ struct RicoApp: App {
             return try ContenedorRico.crear(usuario: usuario)
         } catch {
             // Sin firma (simulador de CI) no hay App Group: base local de la app.
-            print("Rico: sin App Group (\(error)); se usa el almacenamiento de la app.")
+            Registro.datos.notice("Sin App Group (\(String(describing: error), privacy: .public)); se usa el almacenamiento de la app.")
             do {
                 return try ContenedorRico.crear(usuario: usuario, usarGrupo: false)
             } catch {

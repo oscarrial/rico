@@ -1,5 +1,6 @@
 import SwiftUI
 import DesignSystem
+import Modelos
 import RicoCore
 
 /// Registro manual: buscar el restaurante en Apple Maps y valorar.
@@ -90,6 +91,9 @@ public struct AltaManualView: View {
             fallo = false
         } catch {
             guard !Task.isCancelled else { return }
+            if !(error is CancellationError) {
+                Registro.busqueda.error("Falló la búsqueda de lugares: \(String(describing: error), privacy: .private)")
+            }
             resultados = []
             fallo = (error as? CancellationError) == nil && texto.recortado.count >= 2
         }
