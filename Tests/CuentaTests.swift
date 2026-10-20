@@ -166,6 +166,28 @@ struct CuentaTests {
         }
     }
 
+    @Test func cambiarContrasenaExigeLaActual() async throws {
+        let servicio = ServicioCuentaFalso()
+        servicio.pedirConfirmacion = false
+        let estado = EstadoCuenta(servicio: servicio)
+        _ = try await estado.registrar(correo: "ana@ejemplo.com", contrasena: "pulpo2026")
+        #expect(await esperar { estado.sesion != nil })
+        await #expect(throws: ErrorCuenta.credencialesIncorrectas) {
+            try await estado.cambiarContrasena(actual: "otra2026", nueva: "nueva2026")
+        }
+        #expect(servicio.usuarios["ana@ejemplo.com"] == "pulpo2026")
+    }
+
+    @Test func cambiarContrasenaConLaActualCorrecta() async throws {
+        let servicio = ServicioCuentaFalso()
+        servicio.pedirConfirmacion = false
+        let estado = EstadoCuenta(servicio: servicio)
+        _ = try await estado.registrar(correo: "ana@ejemplo.com", contrasena: "pulpo2026")
+        #expect(await esperar { estado.sesion != nil })
+        try await estado.cambiarContrasena(actual: "pulpo2026", nueva: "nueva2026")
+        #expect(servicio.usuarios["ana@ejemplo.com"] == "nueva2026")
+    }
+
     @Test func noSeRepiteElCorreoNiSeAceptanContrasenasDebiles() async throws {
         let estado = EstadoCuenta(servicio: ServicioCuentaFalso())
         await #expect(throws: ErrorCuenta.contrasenaDebil) {

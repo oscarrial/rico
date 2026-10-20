@@ -35,10 +35,12 @@ public struct CuentaView: View {
 
                 if cuenta.sesion != nil {
                     Section {
-                        Button {
-                            cambiandoContrasena = true
-                        } label: {
-                            Text("Cambiar contraseña", bundle: .module)
+                        if cuenta.sesion?.proveedor == "email" {
+                            Button {
+                                cambiandoContrasena = true
+                            } label: {
+                                Text("Cambiar contraseña", bundle: .module)
+                            }
                         }
                         Button {
                             Task { await cerrarSesion() }
@@ -78,7 +80,7 @@ public struct CuentaView: View {
             .disabled(trabajando)
             .overlay { if trabajando { ProgressView().controlSize(.large) } }
             .sheet(isPresented: $cambiandoContrasena) {
-                NuevaContrasenaView()
+                NuevaContrasenaView(origen: .cuenta)
             }
             .confirmationDialog(
                 Text("¿Borrar tu cuenta?", bundle: .module),
