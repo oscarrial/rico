@@ -20,11 +20,20 @@ public final class EstadoCuenta {
     /// Error al abrir un enlace del correo, para mostrarlo.
     public var errorEnlace: ErrorCuenta?
 
+    /// Clave donde queda el id de la cuenta cuyo borrado local está pendiente.
+    public static let claveBorradoLocalPendiente = "RicoBorradoLocalPendiente"
+
     public let servicio: (any ServicioCuenta)?
+    @ObservationIgnored private let preferencias: UserDefaults
     @ObservationIgnored private var escucha: Task<Void, Never>?
 
-    public init(servicio: (any ServicioCuenta)?, esperaMaxima: Duration = .seconds(3)) {
+    public init(
+        servicio: (any ServicioCuenta)?,
+        esperaMaxima: Duration = .seconds(3),
+        preferencias: UserDefaults = .standard
+    ) {
         self.servicio = servicio
+        self.preferencias = preferencias
         guard let servicio else {
             fase = .soloLocal
             return
@@ -100,8 +109,27 @@ public final class EstadoCuenta {
         try await requerido().cerrarSesion()
     }
 
-    public func borrarCuenta() async throws {
-        try await requerido().borrarCuenta()
+    /// Borra la cuenta en el servidor y después los datos locales; cierra la sesión al final.
+    /// Si el borrado local falla, queda anotado para repetirlo al volver a abrir esa cuenta.
+    public func borrarCuenta(codigoApple: String?, borrarLocal: () throws -> Void) async throws {
+        let servicio = try requerido()
+        let usuario = sesion?.id ?? servicio.sesionActual?.id
+        try await servicio.borrarCuenta(codigoApple: codigoApple)
+        if let usuario {
+            preferencias.set(usuario.uuidString, forKey: Self.claveBorradoLocalPendiente)
+        }
+        try borrarLocal()
+        preferencias.removeObject(forKey: Self.claveBorradoLocalPendiente)
+        try? await servicio.cerrarSesion()
+    }
+
+    /// Si quedó un borrado local a medias para `usuario`, lo termina con `borrarLocal`.
+    public func completarBorradoLocalPendiente(de usuario: UUID?, borrarLocal: () throws -> Void) {
+        guard let usuario,
+              preferencias.string(forKey: Self.claveBorradoLocalPendiente) == usuario.uuidString,
+              (try? borrarLocal()) != nil
+        else { return }
+        preferencias.removeObject(forKey: Self.claveBorradoLocalPendiente)
     }
 
     private func requerido() throws -> any ServicioCuenta {

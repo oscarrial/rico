@@ -1,4 +1,6 @@
+import AuthenticationServices
 import SwiftUI
+import UIKit
 import SwiftData
 import DesignSystem
 import Modelos
@@ -111,15 +113,94 @@ public struct CuentaView: View {
     private func borrarCuenta() async {
         trabajando = true
         defer { trabajando = false }
+        error = nil
+
+        // Con Apple hay que pedir una autorización nueva: su código permite revocar el acceso.
+        var codigoApple: String?
+        if cuenta.sesion?.proveedor == "apple" {
+            switch await PeticionCodigoApple().pedir() {
+            case let .codigo(codigo): codigoApple = codigo
+            case .cancelado: return
+            case .fallo: codigoApple = nil
+            }
+        }
+
         do {
-            // Primero el servidor: si falla, el usuario no pierde sus datos locales.
-            try await cuenta.borrarCuenta()
-            try ContenedorRico.borrarTodo(en: contexto)
+            // Primero el servidor; si falla, el usuario no pierde sus datos locales.
+            // Después se vacía el iPhone antes de cerrar sesión, y si eso falla queda anotado.
+            try await cuenta.borrarCuenta(codigoApple: codigoApple) {
+                try ContenedorRico.borrarTodo(en: contexto)
+            }
             cerrar()
         } catch let fallo as ErrorCuenta {
             error = fallo
         } catch {
             self.error = .otro(error.localizedDescription)
+        }
+    }
+}
+
+/// Pide a Apple una autorización nueva (sin ámbitos) y devuelve su `authorizationCode`.
+@MainActor
+private final class PeticionCodigoApple: NSObject, ASAuthorizationControllerDelegate,
+    ASAuthorizationControllerPresentationContextProviding
+{
+    enum Resultado: Sendable {
+        case codigo(String)
+        case cancelado
+        case fallo
+    }
+
+    private var continuacion: CheckedContinuation<Resultado, Never>?
+    private var controlador: ASAuthorizationController?
+
+    func pedir() async -> Resultado {
+        await withCheckedContinuation { continuacion in
+            self.continuacion = continuacion
+            let controlador = ASAuthorizationController(
+                authorizationRequests: [ASAuthorizationAppleIDProvider().createRequest()]
+            )
+            controlador.delegate = self
+            controlador.presentationContextProvider = self
+            self.controlador = controlador
+            controlador.performRequests()
+        }
+    }
+
+    private func terminar(_ resultado: Resultado) {
+        continuacion?.resume(returning: resultado)
+        continuacion = nil
+        controlador = nil
+    }
+
+    nonisolated func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithAuthorization authorization: ASAuthorization
+    ) {
+        let codigo = (authorization.credential as? ASAuthorizationAppleIDCredential)?
+            .authorizationCode
+            .flatMap { String(data: $0, encoding: .utf8) }
+        Task { @MainActor in
+            self.terminar(codigo.map(Resultado.codigo) ?? .fallo)
+        }
+    }
+
+    nonisolated func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithError error: any Error
+    ) {
+        let cancelado = (error as? ASAuthorizationError)?.code == .canceled
+        Task { @MainActor in
+            self.terminar(cancelado ? .cancelado : .fallo)
+        }
+    }
+
+    nonisolated func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        MainActor.assumeIsolated {
+            let ventanas = UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap(\.windows)
+            return ventanas.first(where: \.isKeyWindow) ?? ventanas.first ?? ASPresentationAnchor()
         }
     }
 }
