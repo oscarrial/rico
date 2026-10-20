@@ -25,7 +25,18 @@ public struct ConfiguracionSupabase: Sendable, Equatable {
 /// Cliente de Supabase compartido por las cuentas y la sincronización.
 public enum ClienteRico {
     public static func crear(_ configuracion: ConfiguracionSupabase) -> SupabaseClient {
-        SupabaseClient(supabaseURL: configuracion.url, supabaseKey: configuracion.clavePublica)
+        SupabaseClient(
+            supabaseURL: configuracion.url,
+            supabaseKey: configuracion.clavePublica,
+            options: SupabaseClientOptions(
+                auth: .init(
+                    flowType: .pkce,
+                    // Local primero: abre el diario con la sesión guardada aunque haya caducado;
+                    // la librería la renueva en segundo plano cuando hay red.
+                    emitLocalSessionAsInitialSession: true
+                )
+            )
+        )
     }
 }
 
