@@ -13,18 +13,35 @@ extension Importe {
     }
 }
 
-enum FormatoFecha {
-    /// «Hoy», «Ayer», «jueves» o «11 oct».
-    static func corta(_ fecha: Date, ahora: Date = .now, calendario: Calendar = .current) -> String {
-        if calendario.isDateInToday(fecha) { return String(localized: "Hoy", bundle: .module) }
-        if calendario.isDateInYesterday(fecha) { return String(localized: "Ayer", bundle: .module) }
-        if let dias = calendario.dateComponents([.day], from: fecha, to: ahora).day, dias < 7, dias >= 0 {
-            return fecha.formatted(.dateTime.weekday(.wide))
+public enum FormatoFecha {
+    /// «Hoy», «Ayer», «jueves» o «11 oct». Compara días de calendario, no periodos de 24 horas.
+    public static func corta(
+        _ fecha: Date,
+        ahora: Date = .now,
+        calendario: Calendar = .current,
+        locale: Locale = .current
+    ) -> String {
+        let dias = calendario.dateComponents(
+            [.day],
+            from: calendario.startOfDay(for: fecha),
+            to: calendario.startOfDay(for: ahora)
+        ).day ?? 0
+        let estilo = Date.FormatStyle(
+            date: nil,
+            time: nil,
+            locale: locale,
+            calendar: calendario,
+            timeZone: calendario.timeZone
+        )
+        if dias == 0 { return String(localized: "Hoy", bundle: .module) }
+        if dias == 1 { return String(localized: "Ayer", bundle: .module) }
+        if (2...6).contains(dias) {
+            return fecha.formatted(estilo.weekday(.wide))
         }
         if calendario.isDate(fecha, equalTo: ahora, toGranularity: .year) {
-            return fecha.formatted(.dateTime.day().month(.abbreviated))
+            return fecha.formatted(estilo.day().month(.abbreviated))
         }
-        return fecha.formatted(.dateTime.day().month(.abbreviated).year())
+        return fecha.formatted(estilo.day().month(.abbreviated).year())
     }
 
     /// «Octubre de 2026», para agrupar el diario.
