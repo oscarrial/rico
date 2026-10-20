@@ -24,7 +24,8 @@ public struct DiarioView: View {
     }
 
     public var body: some View {
-        NavigationStack {
+        let secciones = AgrupadorDiario.secciones(AgrupadorDiario.filtrar(visitas, busqueda: busqueda))
+        return NavigationStack {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 14) {
                     if busqueda.isEmpty, !visitas.isEmpty {
@@ -76,47 +77,12 @@ public struct DiarioView: View {
         }
     }
 
-    // MARK: Datos
-
-    private struct Seccion {
-        let titulo: String
-        let visitas: [Visita]
-    }
-
-    private var filtradas: [Visita] {
-        let texto = busqueda.recortado
-        guard !texto.isEmpty else { return visitas }
-        return visitas.filter { visita in
-            let campos: [String?] = [visita.restaurante?.nombre, visita.restaurante?.ciudad, visita.resena]
-                + (visita.platos ?? []).map { Optional($0.nombre) }
-            return campos.contains { $0?.localizedStandardContains(texto) == true }
-        }
-    }
-
-    /// Agrupado por mes, conservando el orden.
-    private var secciones: [Seccion] {
-        var resultado: [Seccion] = []
-        for visita in filtradas {
-            let titulo = FormatoFecha.mes(visita.fecha)
-            if let ultima = resultado.last, ultima.titulo == titulo {
-                resultado[resultado.count - 1] = Seccion(titulo: titulo, visitas: ultima.visitas + [visita])
-            } else {
-                resultado.append(Seccion(titulo: titulo, visitas: [visita]))
-            }
-        }
-        return resultado
-    }
-
-    private var delMes: [Visita] {
-        visitas.filter { Calendar.current.isDate($0.fecha, equalTo: .now, toGranularity: .month) }
-    }
-
     // MARK: Vistas
 
     private var resumenMes: some View {
-        let total = delMes.compactMap(\.importeCentimos).reduce(0, +)
-        let gasto = Importe(centimos: total).textoMoneda
-        return Text("Este mes: ^[\(delMes.count) visita](inflect: true) · \(gasto)", bundle: .module)
+        let mes = AgrupadorDiario.resumenMes(visitas)
+        let gasto = mes.gasto.textoMoneda
+        return Text("Este mes: ^[\(mes.visitas) visita](inflect: true) · \(gasto)", bundle: .module)
             .font(.rico(.subheadline, peso: .semibold))
             .foregroundStyle(Color.ricoSecundario)
     }

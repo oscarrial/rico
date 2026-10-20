@@ -16,9 +16,10 @@ public struct FichaRestauranteView: View {
     }
 
     public var body: some View {
-        ScrollView {
+        let resumen = ResumenRestaurante(restaurante: restaurante)
+        return ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                ImagenVisita(miniatura: fotoPortada, semilla: restaurante.id.semilla)
+                ImagenVisita(miniatura: resumen.fotoPortada, semilla: restaurante.id.semilla)
                     .frame(height: 210)
                     .frame(maxWidth: .infinity)
                     .clipped()
@@ -35,15 +36,15 @@ public struct FichaRestauranteView: View {
                         }
                     }
 
-                    cifras
+                    cifras(resumen)
 
-                    if !platos.isEmpty {
+                    if !resumen.platos.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
                             TituloSeccion(Text("Lo que pediste", bundle: .module))
                             VStack(spacing: 0) {
-                                ForEach(platos, id: \.nombre) { plato in
+                                ForEach(Array(resumen.platos.enumerated()), id: \.element.nombre) { posicion, plato in
                                     filaPlato(plato)
-                                    if plato.nombre != platos.last?.nombre { Divider() }
+                                    if posicion < resumen.platos.count - 1 { Divider() }
                                 }
                             }
                             .background(Color.ricoSuperficie, in: RoundedRectangle(cornerRadius: 18))
@@ -53,7 +54,7 @@ public struct FichaRestauranteView: View {
 
                     VStack(alignment: .leading, spacing: 8) {
                         TituloSeccion(Text("Tus visitas", bundle: .module))
-                        ForEach(visitas) { visita in
+                        ForEach(resumen.visitas) { visita in
                             Button {
                                 visitaEditada = visita
                             } label: {
@@ -93,68 +94,16 @@ public struct FichaRestauranteView: View {
         }
     }
 
-    // MARK: Datos
-
-    private var visitas: [Visita] {
-        (restaurante.visitas ?? [])
-            .filter { $0.estado == .valorada }
-            .sorted { $0.fecha > $1.fecha }
-    }
-
-    private var fotoPortada: Data? {
-        visitas.lazy.compactMap { $0.fotosOrdenadas.first?.miniatura }.first
-    }
-
-    private var notaMedia: Double? {
-        let notas = visitas.compactMap(\.estrellas)
-        guard !notas.isEmpty else { return nil }
-        return notas.reduce(0, +) / Double(notas.count)
-    }
-
-    private var gastoMedioPorPersona: Importe? {
-        let importes = visitas.compactMap(\.importePorPersona)
-        guard let primero = importes.first else { return nil }
-        let media = importes.map(\.centimos).reduce(0, +) / importes.count
-        return Importe(centimos: media, divisa: primero.divisa)
-    }
-
-    private struct ResumenPlato {
-        let nombre: String
-        let veces: Int
-        let ultimaValoracion: ValoracionPlato?
-    }
-
-    /// Platos agrupados por nombre, los más pedidos primero.
-    private var platos: [ResumenPlato] {
-        var grupos: [String: (nombre: String, veces: Int, ultima: ValoracionPlato?)] = [:]
-        // `visitas` va de la más reciente a la más antigua: la primera valoración que se ve es la última.
-        for visita in visitas {
-            for plato in visita.platosOrdenados {
-                let clave = plato.nombre.lowercased()
-                if var grupo = grupos[clave] {
-                    grupo.veces += 1
-                    if grupo.ultima == nil { grupo.ultima = plato.valoracion }
-                    grupos[clave] = grupo
-                } else {
-                    grupos[clave] = (plato.nombre, 1, plato.valoracion)
-                }
-            }
-        }
-        return grupos.values
-            .map { ResumenPlato(nombre: $0.nombre, veces: $0.veces, ultimaValoracion: $0.ultima) }
-            .sorted { ($0.veces, $1.nombre) > ($1.veces, $0.nombre) }
-    }
-
     // MARK: Vistas
 
-    private var cifras: some View {
+    private func cifras(_ resumen: ResumenRestaurante) -> some View {
         HStack(spacing: 8) {
             cifra(
-                valor: Text(verbatim: "\(visitas.count)"),
-                etiqueta: visitas.count == 1 ? Text("visita", bundle: .module) : Text("visitas", bundle: .module)
+                valor: Text(verbatim: "\(resumen.visitas.count)"),
+                etiqueta: resumen.visitas.count == 1 ? Text("visita", bundle: .module) : Text("visitas", bundle: .module)
             )
-            cifra(valor: Text(verbatim: notaMedia.map(NotaTexto.texto) ?? "–"), etiqueta: Text("nota media", bundle: .module))
-            cifra(valor: Text(verbatim: gastoMedioPorPersona?.textoMoneda ?? "–"), etiqueta: Text("por persona", bundle: .module))
+            cifra(valor: Text(verbatim: resumen.notaMedia.map(NotaTexto.texto) ?? "–"), etiqueta: Text("nota media", bundle: .module))
+            cifra(valor: Text(verbatim: resumen.gastoMedioPorPersona?.textoMoneda ?? "–"), etiqueta: Text("por persona", bundle: .module))
         }
     }
 
@@ -175,7 +124,7 @@ public struct FichaRestauranteView: View {
         .accessibilityElement(children: .combine)
     }
 
-    private func filaPlato(_ plato: ResumenPlato) -> some View {
+    private func filaPlato(_ plato: PlatoResumido) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 1) {
                 Text(plato.nombre)
