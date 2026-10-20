@@ -68,6 +68,14 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             2>&1 | tee build/xcodebuild.log | xcbeautify --renderer github-actions
 
+      - name: Guardar Package.resolved
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-resolved
+          path: Rico.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+          if-no-files-found: error
+
       - name: Subir resultados si falla
         if: failure()
         uses: actions/upload-artifact@v4
