@@ -33,6 +33,7 @@ public final class EstadoCuenta {
         escucha = Task { [weak self] in
             for await sesion in servicio.cambiosDeSesion() {
                 self?.fase = sesion.map(Fase.conSesion) ?? .sinSesion
+                if case .conSesion = self?.fase { self?.errorEnlace = nil }
             }
         }
         // Sin respuesta a tiempo (p. ej. sin red): usa lo guardado en el llavero.
@@ -84,7 +85,15 @@ public final class EstadoCuenta {
 
     public func cambiarContrasena(_ nueva: String) async throws {
         try await requerido().cambiarContrasena(nueva)
+    }
+
+    /// Cierra la hoja de «Nueva contraseña» (el usuario ya vio la confirmación).
+    public func terminarRecuperacion() {
         pidiendoNuevaContrasena = false
+    }
+
+    public func olvidarErrorEnlace() {
+        errorEnlace = nil
     }
 
     public func cerrarSesion() async throws {

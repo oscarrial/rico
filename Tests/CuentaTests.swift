@@ -60,6 +60,7 @@ final class ServicioCuentaFalso: ServicioCuenta {
     func gestionarEnlace(_ url: URL) async throws -> EnlaceCuenta {
         guard let tipo = EnlaceCuenta(url: url) else { throw ErrorCuenta.enlaceNoValido }
         let correo = url.query?.replacingOccurrences(of: "correo=", with: "") ?? ""
+        if correo == "caducado" { throw ErrorCuenta.enlaceNoValido }
         sinConfirmar.remove(correo)
         cambiar(a: SesionUsuario(id: UUID(), correo: correo))
         return tipo
@@ -182,8 +183,18 @@ struct CuentaTests {
         await estado.abrirEnlace(URL(string: "rico://auth/recuperar?correo=ana@ejemplo.com")!)
         #expect(estado.pidiendoNuevaContrasena)
         try await estado.cambiarContrasena("nueva2026")
+        #expect(estado.pidiendoNuevaContrasena)
+        estado.terminarRecuperacion()
         #expect(!estado.pidiendoNuevaContrasena)
         #expect(servicio.usuarios["ana@ejemplo.com"] == "nueva2026")
+    }
+
+    @Test func errorDeEnlaceSeBorraAlEntrar() async throws {
+        let estado = EstadoCuenta(servicio: ServicioCuentaFalso())
+        await estado.abrirEnlace(URL(string: "rico://auth/recuperar?correo=caducado")!)
+        #expect(estado.errorEnlace == .enlaceNoValido)
+        try await estado.iniciarConApple(tokenIdentidad: "token", nonce: "nonce")
+        #expect(await esperar { estado.errorEnlace == nil })
     }
 
     @Test func otrosEnlacesSeIgnoran() async {

@@ -66,9 +66,6 @@ struct RicoApp: App {
                 .onOpenURL { url in
                     Task { await cuenta.abrirEnlace(url) }
                 }
-                .sheet(isPresented: $cuenta.pidiendoNuevaContrasena) {
-                    NuevaContrasenaView()
-                }
                 .onChange(of: usuarioActivo, initial: true) { _, nuevo in
                     guard nuevo != usuarioDelContenedor else { return }
                     contenedor = Self.abrirContenedor(usuario: nuevo)
@@ -85,6 +82,20 @@ struct RicoApp: App {
             DiarioView(alAbrirCuenta: { mostrandoCuenta = true })
                 .sheet(isPresented: $mostrandoCuenta) {
                     CuentaView()
+                }
+                .sheet(isPresented: $cuenta.pidiendoNuevaContrasena) {
+                    NuevaContrasenaView()
+                }
+                .alert(
+                    Text("No se pudo abrir el enlace", bundle: .main),
+                    isPresented: Binding(
+                        get: { cuenta.errorEnlace != nil },
+                        set: { if !$0 { cuenta.olvidarErrorEnlace() } }
+                    )
+                ) {
+                    Button("Vale") {}
+                } message: {
+                    Text("El enlace no es válido o ha caducado. Pide otro.", bundle: .main)
                 }
         case .sinSesion:
             AccesoView()
