@@ -23,7 +23,7 @@ public final class EstadoCuenta {
     public let servicio: (any ServicioCuenta)?
     @ObservationIgnored private var escucha: Task<Void, Never>?
 
-    public init(servicio: (any ServicioCuenta)?) {
+    public init(servicio: (any ServicioCuenta)?, esperaMaxima: Duration = .seconds(3)) {
         self.servicio = servicio
         guard let servicio else {
             fase = .soloLocal
@@ -34,6 +34,12 @@ public final class EstadoCuenta {
             for await sesion in servicio.cambiosDeSesion() {
                 self?.fase = sesion.map(Fase.conSesion) ?? .sinSesion
             }
+        }
+        // Sin respuesta a tiempo (p. ej. sin red): usa lo guardado en el llavero.
+        Task { [weak self] in
+            try? await Task.sleep(for: esperaMaxima)
+            guard let self, self.fase == .cargando else { return }
+            self.fase = servicio.sesionActual.map(Fase.conSesion) ?? .sinSesion
         }
     }
 

@@ -18,12 +18,12 @@ final class ServicioCuentaFalso: ServicioCuenta {
     private let flujo: AsyncStream<SesionUsuario?>
     private let continuacion: AsyncStream<SesionUsuario?>.Continuation
 
-    init(sesionInicial: SesionUsuario? = nil) {
+    init(sesionInicial: SesionUsuario? = nil, emitir: Bool = true) {
         sesionActual = sesionInicial
         let par = AsyncStream.makeStream(of: SesionUsuario?.self)
         flujo = par.stream
         continuacion = par.continuation
-        continuacion.yield(sesionInicial)
+        if emitir { continuacion.yield(sesionInicial) }
     }
 
     func cambiosDeSesion() -> AsyncStream<SesionUsuario?> { flujo }
@@ -115,6 +115,19 @@ struct CuentaTests {
         let sesion = SesionUsuario(id: UUID(), correo: "ana@ejemplo.com")
         let estado = EstadoCuenta(servicio: ServicioCuentaFalso(sesionInicial: sesion))
         #expect(await esperar { estado.fase == .conSesion(sesion) })
+    }
+
+    @Test func sinRespuestaDelServidorUsaLaSesionGuardada() async {
+        let sesion = SesionUsuario(id: UUID(), correo: "ana@ejemplo.com")
+        let servicio = ServicioCuentaFalso(sesionInicial: sesion, emitir: false)
+        let estado = EstadoCuenta(servicio: servicio, esperaMaxima: .milliseconds(50))
+        #expect(await esperar { estado.fase == .conSesion(sesion) })
+    }
+
+    @Test func sinRespuestaNiSesionGuardadaPideAcceso() async {
+        let servicio = ServicioCuentaFalso(sesionInicial: nil, emitir: false)
+        let estado = EstadoCuenta(servicio: servicio, esperaMaxima: .milliseconds(50))
+        #expect(await esperar { estado.fase == .sinSesion })
     }
 
     @Test func crearCuentaConfirmarYEntrar() async throws {
