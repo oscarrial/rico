@@ -18,20 +18,36 @@ public enum ContenedorRico {
         Bundle.main.object(forInfoDictionaryKey: "RicoAppGroup") as? String
     }
 
-    /// Base local del iPhone. La sincronización con el servidor va aparte (Supabase).
+    /// Nombre del archivo de la base local: uno por cuenta; «Rico» para el modo sin cuenta.
+    public static func nombreAlmacen(usuario: UUID?) -> String {
+        guard let usuario else { return "Rico" }
+        return "Rico-\(usuario.uuidString.lowercased())"
+    }
+
+    /// Carpeta de las bases locales: el App Group si existe; si no, Application Support de la app.
+    public static func carpetaAlmacenes(usarGrupo: Bool = true) -> URL {
+        if usarGrupo, let grupo = identificadorGrupo,
+           let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: grupo) {
+            return url.appending(path: "Library/Application Support", directoryHint: .isDirectory)
+        }
+        return URL.applicationSupportDirectory
+    }
+
+    /// Base local del iPhone: un archivo por cuenta. La sincronización con el servidor va aparte (Supabase).
     /// - Parameters:
     ///   - enMemoria: para pruebas y previsualizaciones.
+    ///   - usuario: cuenta dueña de la base; `nil` para el modo sin cuenta.
     ///   - usarGrupo: guardar en el App Group. Sin firma (simulador de CI) no existe.
-    public static func crear(enMemoria: Bool = false, usarGrupo: Bool = true) throws -> ModelContainer {
-        let configuracion: ModelConfiguration
+    ///   - carpeta: carpeta de los archivos (para pruebas).
+    public static func crear(enMemoria: Bool = false, usuario: UUID? = nil, usarGrupo: Bool = true, carpeta: URL? = nil) throws -> ModelContainer {
         if enMemoria {
-            configuracion = ModelConfiguration(schema: esquema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
-        } else {
-            let grupo: ModelConfiguration.GroupContainer = usarGrupo
-                ? identificadorGrupo.map { .identifier($0) } ?? .none
-                : .none
-            configuracion = ModelConfiguration(schema: esquema, groupContainer: grupo, cloudKitDatabase: .none)
+            let configuracion = ModelConfiguration(schema: esquema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+            return try ModelContainer(for: esquema, configurations: configuracion)
         }
+        let base = carpeta ?? carpetaAlmacenes(usarGrupo: usarGrupo)
+        try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
+        let url = base.appending(path: "\(nombreAlmacen(usuario: usuario)).store")
+        let configuracion = ModelConfiguration(schema: esquema, url: url, cloudKitDatabase: .none)
         return try ModelContainer(for: esquema, configurations: configuracion)
     }
 

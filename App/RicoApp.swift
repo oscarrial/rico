@@ -7,23 +7,15 @@ import Visitas
 
 @main
 struct RicoApp: App {
-    let contenedor: ModelContainer
+    @State private var contenedor: ModelContainer
+    @State private var usuarioDelContenedor: UUID?
     @State private var cuenta: EstadoCuenta
     @State private var mostrarInicio = true
     @State private var mostrandoCuenta = false
 
     init() {
-        do {
-            contenedor = try ContenedorRico.crear()
-        } catch {
-            // Sin firma (simulador de CI) no hay App Group: base local de la app.
-            print("Rico: sin App Group (\(error)); se usa el almacenamiento de la app.")
-            do {
-                contenedor = try ContenedorRico.crear(usarGrupo: false)
-            } catch {
-                fatalError("No se pudo abrir la base de datos: \(error)")
-            }
-        }
+        // Contenedor provisional (sin cuenta): no se muestra hasta conocer la fase.
+        _contenedor = State(initialValue: Self.abrirContenedor(usuario: nil))
 
         // Sin Config/Secretos.xcconfig la app funciona solo en local, sin cuenta.
         let servicio = ConfiguracionSupabase.desdeInfoPlist().map {
@@ -32,9 +24,34 @@ struct RicoApp: App {
         _cuenta = State(initialValue: EstadoCuenta(servicio: servicio))
     }
 
+    /// Abre la base local de esa cuenta (o la del modo sin cuenta si `usuario` es `nil`).
+    static func abrirContenedor(usuario: UUID?) -> ModelContainer {
+        do {
+            return try ContenedorRico.crear(usuario: usuario)
+        } catch {
+            // Sin firma (simulador de CI) no hay App Group: base local de la app.
+            print("Rico: sin App Group (\(error)); se usa el almacenamiento de la app.")
+            do {
+                return try ContenedorRico.crear(usuario: usuario, usarGrupo: false)
+            } catch {
+                fatalError("No se pudo abrir la base de datos: \(error)")
+            }
+        }
+    }
+
+    /// Cuenta cuya base debe estar abierta. En `.cargando` y `.sinSesion` no cambia.
+    private var usuarioActivo: UUID? {
+        switch cuenta.fase {
+        case .conSesion(let sesion): sesion.id
+        case .soloLocal: nil
+        case .cargando, .sinSesion: usuarioDelContenedor
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             raiz
+                .id(usuarioDelContenedor)
                 .environment(cuenta)
                 .tint(.ricoTomate)
                 .overlay {
@@ -51,6 +68,11 @@ struct RicoApp: App {
                 }
                 .sheet(isPresented: $cuenta.pidiendoNuevaContrasena) {
                     NuevaContrasenaView()
+                }
+                .onChange(of: usuarioActivo, initial: true) { _, nuevo in
+                    guard nuevo != usuarioDelContenedor else { return }
+                    contenedor = Self.abrirContenedor(usuario: nuevo)
+                    usuarioDelContenedor = nuevo
                 }
         }
         .modelContainer(contenedor)
