@@ -16,7 +16,12 @@ public struct DiarioView: View {
     @State private var busqueda = ""
     @State private var mostrandoAlta = false
 
-    public init() {}
+    private let alAbrirCuenta: (() -> Void)?
+
+    /// - Parameter alAbrirCuenta: si se pasa, aparece el botón de cuenta arriba a la derecha.
+    public init(alAbrirCuenta: (() -> Void)? = nil) {
+        self.alAbrirCuenta = alAbrirCuenta
+    }
 
     public var body: some View {
         NavigationStack {
@@ -52,6 +57,16 @@ public struct DiarioView: View {
             .overlay(alignment: .bottomTrailing) { botonAnadir }
             .navigationTitle(Text("Diario", bundle: .module))
             .searchable(text: $busqueda, prompt: Text("Sitio, ciudad o plato", bundle: .module))
+            .toolbar {
+                if let alAbrirCuenta {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(action: alAbrirCuenta) {
+                            Image(systemName: "person.crop.circle")
+                        }
+                        .accessibilityLabel(Text("Tu cuenta", bundle: .module))
+                    }
+                }
+            }
             .navigationDestination(for: Restaurante.self) { restaurante in
                 FichaRestauranteView(restaurante: restaurante)
             }

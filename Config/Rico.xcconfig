@@ -1,0 +1,8 @@
+// Ajustes comunes de Rico. Los valores de Supabase van en Secretos.xcconfig,
+// que no se versiona (ver Secretos.example.xcconfig). Sin él, la app funciona solo en local.
+// En xcconfig «//» empieza un comentario: por eso se guarda el host, no la URL.
+
+RICO_SUPABASE_HOST =
+RICO_SUPABASE_CLAVE =
+
+#include? "Secretos.xcconfig"

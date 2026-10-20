@@ -16,3 +16,6 @@ Thumbs.db
 
 # Plan de producto: solo en local (el repositorio es público)
 docs/plan-producto.md
+
+# Claves de Supabase (ver Config/Secretos.example.xcconfig)
+Config/Secretos.xcconfig

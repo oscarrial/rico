@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Cuenta
 import DesignSystem
 import Modelos
 import Visitas
@@ -7,34 +8,59 @@ import Visitas
 @main
 struct RicoApp: App {
     let contenedor: ModelContainer
+    @State private var cuenta: EstadoCuenta
     @State private var mostrarInicio = true
+    @State private var mostrandoCuenta = false
 
     init() {
         do {
             contenedor = try ContenedorRico.crear()
         } catch {
-            #if DEBUG
-            // Sin firma (simulador de CI) no hay iCloud ni App Group: se usa una base local.
-            print("Rico: sin iCloud (\(error)); se usa almacenamiento local.")
-            contenedor = (try? ContenedorRico.crear(enMemoria: false, sinNube: true))
-                ?? (try! ContenedorRico.crear(enMemoria: true))
-            #else
-            fatalError("No se pudo abrir la base de datos: \(error)")
-            #endif
+            // Sin firma (simulador de CI) no hay App Group: base local de la app.
+            print("Rico: sin App Group (\(error)); se usa el almacenamiento de la app.")
+            do {
+                contenedor = try ContenedorRico.crear(usarGrupo: false)
+            } catch {
+                fatalError("No se pudo abrir la base de datos: \(error)")
+            }
         }
+
+        // Sin Config/Secretos.xcconfig la app funciona solo en local, sin cuenta.
+        let servicio = ConfiguracionSupabase.desdeInfoPlist().map {
+            ServicioCuentaSupabase(cliente: ClienteRico.crear($0))
+        }
+        _cuenta = State(initialValue: EstadoCuenta(servicio: servicio))
     }
 
     var body: some Scene {
         WindowGroup {
-            DiarioView()
+            raiz
+                .environment(cuenta)
                 .tint(.ricoTomate)
                 .overlay {
-                    if mostrarInicio {
+                    // El arranque se mantiene hasta saber si hay sesión.
+                    if mostrarInicio || cuenta.fase == .cargando {
                         PantallaInicio(visible: $mostrarInicio)
                             .transition(.opacity)
                     }
                 }
+                .animation(.easeOut(duration: 0.25), value: cuenta.fase)
         }
         .modelContainer(contenedor)
+    }
+
+    @ViewBuilder
+    private var raiz: some View {
+        switch cuenta.fase {
+        case .conSesion, .soloLocal:
+            DiarioView(alAbrirCuenta: { mostrandoCuenta = true })
+                .sheet(isPresented: $mostrandoCuenta) {
+                    CuentaView()
+                }
+        case .sinSesion:
+            AccesoView()
+        case .cargando:
+            Color("FondoInicio").ignoresSafeArea()
+        }
     }
 }

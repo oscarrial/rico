@@ -13,32 +13,38 @@ public enum ContenedorRico {
         AliasComercio.self
     ])
 
-    /// Contenedor de iCloud y App Group, leídos del Info.plist (se fijan en project.yml).
-    public static var identificadorICloud: String? {
-        Bundle.main.object(forInfoDictionaryKey: "RicoICloudContainer") as? String
-    }
-
+    /// App Group compartido con las extensiones (atajos, notificaciones), leído del Info.plist.
     public static var identificadorGrupo: String? {
         Bundle.main.object(forInfoDictionaryKey: "RicoAppGroup") as? String
     }
 
+    /// Base local del iPhone. La sincronización con el servidor va aparte (Supabase).
     /// - Parameters:
-    ///   - enMemoria: para pruebas y previsualizaciones; sin iCloud ni App Group.
-    ///   - sinNube: base local sin sincronizar, para builds sin firma.
-    public static func crear(enMemoria: Bool = false, sinNube: Bool = false) throws -> ModelContainer {
+    ///   - enMemoria: para pruebas y previsualizaciones.
+    ///   - usarGrupo: guardar en el App Group. Sin firma (simulador de CI) no existe.
+    public static func crear(enMemoria: Bool = false, usarGrupo: Bool = true) throws -> ModelContainer {
         let configuracion: ModelConfiguration
         if enMemoria {
             configuracion = ModelConfiguration(schema: esquema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
-        } else if sinNube {
-            configuracion = ModelConfiguration(schema: esquema, groupContainer: .none, cloudKitDatabase: .none)
         } else {
-            configuracion = ModelConfiguration(
-                schema: esquema,
-                groupContainer: identificadorGrupo.map { .identifier($0) } ?? .automatic,
-                cloudKitDatabase: identificadorICloud.map { .private($0) } ?? .automatic
-            )
+            let grupo: ModelConfiguration.GroupContainer = usarGrupo
+                ? identificadorGrupo.map { .identifier($0) } ?? .none
+                : .none
+            configuracion = ModelConfiguration(schema: esquema, groupContainer: grupo, cloudKitDatabase: .none)
         }
         return try ModelContainer(for: esquema, configurations: configuracion)
+    }
+
+    /// Borra todos los datos locales (al borrar la cuenta).
+    public static func borrarTodo(en contexto: ModelContext) throws {
+        try contexto.delete(model: Foto.self)
+        try contexto.delete(model: Plato.self)
+        try contexto.delete(model: AliasComercio.self)
+        try contexto.delete(model: Visita.self)
+        try contexto.delete(model: PagoCapturado.self)
+        try contexto.delete(model: Lista.self)
+        try contexto.delete(model: Restaurante.self)
+        try contexto.save()
     }
 }
 

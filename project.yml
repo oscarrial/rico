@@ -9,6 +9,10 @@ options:
   developmentLanguage: es
   createIntermediateGroups: true
 
+configFiles:
+  Debug: Config/Rico.xcconfig
+  Release: Config/Rico.xcconfig
+
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -44,18 +48,15 @@ targets:
           UIImageName: Logotipo
           UIImageRespectsSafeAreaInsets: false
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
-        UIBackgroundModes: [remote-notification]
         NSPhotoLibraryUsageDescription: "Para sugerirte las fotos que hiciste en cada restaurante y guardarlas en tu diario."
-        RicoICloudContainer: iCloud.$(PRODUCT_BUNDLE_IDENTIFIER)
         RicoAppGroup: group.$(PRODUCT_BUNDLE_IDENTIFIER)
+        RicoSupabaseHost: $(RICO_SUPABASE_HOST)
+        RicoSupabaseClave: $(RICO_SUPABASE_CLAVE)
     entitlements:
       path: App/Rico.entitlements
       properties:
-        aps-environment: development
-        com.apple.developer.icloud-container-identifiers:
-          - iCloud.$(PRODUCT_BUNDLE_IDENTIFIER)
-        com.apple.developer.icloud-services:
-          - CloudKit
+        com.apple.developer.applesignin:
+          - Default
         com.apple.security.application-groups:
           - group.$(PRODUCT_BUNDLE_IDENTIFIER)
     settings:

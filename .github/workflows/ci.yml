@@ -39,6 +39,18 @@ jobs:
       - name: Pruebas de RicoCore (macOS)
         run: swift test --package-path Packages/RicoCore
 
+      - name: Claves de Supabase (si están configuradas)
+        env:
+          RICO_SUPABASE_HOST: ${{ secrets.RICO_SUPABASE_HOST }}
+          RICO_SUPABASE_CLAVE: ${{ secrets.RICO_SUPABASE_CLAVE }}
+        run: |
+          if [ -n "$RICO_SUPABASE_HOST" ] && [ -n "$RICO_SUPABASE_CLAVE" ]; then
+            printf 'RICO_SUPABASE_HOST = %s\nRICO_SUPABASE_CLAVE = %s\n' "$RICO_SUPABASE_HOST" "$RICO_SUPABASE_CLAVE" > Config/Secretos.xcconfig
+            echo "Supabase configurado"
+          else
+            echo "Sin claves de Supabase: la app se compila en modo solo local"
+          fi
+
       - name: Generar Rico.xcodeproj
         run: xcodegen generate
 

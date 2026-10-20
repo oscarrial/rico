@@ -172,6 +172,12 @@ La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (n
 - **Raíz:** `NavigationStack` con título grande, fondo `ricoFondo` y búsqueda nativa (`.searchable`).
 - **Listas de visitas:** tarjetas con foto arriba, nombre y nota en una fila, metadatos debajo y agrupadas por mes.
 - **Formularios rápidos:** hoja con «Cancelar» arriba a la izquierda y la acción principal fija abajo. Los cambios se guardan solo al pulsar Guardar; cancelar no deja nada a medias.
+- **Acceso** (sin sesión):
+  - Logotipo centrado y la promesa «Cada restaurante que pruebas, guardado solo.».
+  - Abajo, «Continuar con Apple» (botón oficial: negro en claro, blanco en oscuro, en cápsula de 54 pt) y «Continuar con correo» (secundario).
+  - Debajo, los enlaces a términos y privacidad.
+  - Sin contraseñas: el correo recibe un código de 6 cifras que se rellena solo desde el teclado (`.oneTimeCode`) y se comprueba al completarse.
+- **Tu cuenta:** se abre desde el icono de persona del diario. Tiene el correo, «Cerrar sesión» y «Borrar mi cuenta» (destructivo, con confirmación y explicando que se borra todo).
 - **Paywall:** nunca al abrir la app ni antes de la primera visita valorada. Siempre muestra precio, renovación automática, «Restaurar compras», términos y privacidad.
 - **Notificaciones:** firmadas con el símbolo. Título con el nombre del sitio y acción directa (estrellas o «Valorar»).
 

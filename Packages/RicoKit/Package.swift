@@ -7,14 +7,25 @@ let package = Package(
     defaultLocalization: "es",
     platforms: [.iOS(.v17)],
     products: [
-        .library(name: "RicoKit", targets: ["Modelos", "DesignSystem", "Visitas"])
+        .library(name: "RicoKit", targets: ["Modelos", "DesignSystem", "Visitas", "Cuenta"])
     ],
     dependencies: [
-        .package(path: "../RicoCore")
+        .package(path: "../RicoCore"),
+        .package(url: "https://github.com/supabase/supabase-swift.git", from: "2.20.0")
     ],
     targets: [
         .target(name: "Modelos", dependencies: ["RicoCore"]),
         .target(name: "DesignSystem", dependencies: ["RicoCore"], resources: [.process("Resources")]),
-        .target(name: "Visitas", dependencies: ["RicoCore", "Modelos", "DesignSystem"], resources: [.process("Resources")])
+        .target(name: "Visitas", dependencies: ["RicoCore", "Modelos", "DesignSystem"], resources: [.process("Resources")]),
+        .target(
+            name: "Cuenta",
+            dependencies: [
+                "RicoCore",
+                "Modelos",
+                "DesignSystem",
+                .product(name: "Supabase", package: "supabase-swift")
+            ],
+            resources: [.process("Resources")]
+        )
     ]
 )
