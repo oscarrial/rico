@@ -35,6 +35,7 @@ El plan proponía guardar los datos solo en el iPhone y sincronizarlos con el iC
   - nadie puede crear filas a nombre de otro ni enlazarlas con filas ajenas;
   - las notas solo admiten medias estrellas y `actualizado_en` lo fija siempre el servidor;
   - `borrar_mi_cuenta()` borra el usuario y sus datos en cascada sin tocar a otros.
+- **21 de octubre de 2026:** migración `20261021090000_actualizado_en_al_crear`: `actualizado_en` lo fija el servidor también al crear filas, y `creado_en` no se puede cambiar al editar.
 - **Conexión desde redes sin IPv6:** la conexión directa (`db.<ref>.supabase.co`) solo funciona por IPv6. Hay que usar el *session pooler*: `aws-1-eu-central-1.pooler.supabase.com:5432`, usuario `postgres.<ref>`.
 
 ## Cómo aplicarlo
