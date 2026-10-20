@@ -340,7 +340,7 @@ public struct FichaRapidaView: View {
         .disabled(!modelo.puedeGuardar)
         .padding(.horizontal, Medidas.margen)
         .padding(.vertical, 12)
-        .background(.bar)
+        .fondoBarraInferior()
     }
 
     private func miniatura(_ datos: Data) -> some View {

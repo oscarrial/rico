@@ -78,7 +78,7 @@ public struct FichaRestauranteView: View {
             .buttonStyle(.ricoPrincipal)
             .padding(.horizontal, Medidas.margen)
             .padding(.vertical, 12)
-            .background(.bar)
+            .fondoBarraInferior()
         }
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $visitaEditada) { visita in

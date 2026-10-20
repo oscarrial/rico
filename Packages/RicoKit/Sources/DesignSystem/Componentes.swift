@@ -7,14 +7,24 @@ public struct BotonPrincipalStyle: ButtonStyle {
 
     public init() {}
 
+    @ViewBuilder
     public func makeBody(configuration: Configuration) -> some View {
-        configuration.label
+        let etiqueta = configuration.label
             .font(.rico(.headline, peso: .heavy))
             .foregroundStyle(Color.ricoSobreTomate)
             .frame(maxWidth: .infinity, minHeight: Medidas.alturaBoton)
-            .background(Color.ricoTomate.opacity(activo ? 1 : 0.4), in: Capsule())
-            .scaleEffect(configuration.isPressed ? 0.98 : 1)
-            .animation(.snappy(duration: 0.15), value: configuration.isPressed)
+            .contentShape(Capsule())
+
+        if #available(iOS 26.0, *) {
+            // Cristal teñido de tomate: el cristal interactivo ya reacciona al toque.
+            etiqueta
+                .glassEffect(.regular.tint(.ricoTomate.opacity(activo ? 1 : 0.4)).interactive(activo), in: Capsule())
+        } else {
+            etiqueta
+                .background(Color.ricoTomate.opacity(activo ? 1 : 0.4), in: Capsule())
+                .scaleEffect(configuration.isPressed ? 0.98 : 1)
+                .animation(.snappy(duration: 0.15), value: configuration.isPressed)
+        }
     }
 }
 

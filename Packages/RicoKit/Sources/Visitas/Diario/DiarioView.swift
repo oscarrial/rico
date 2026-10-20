@@ -119,19 +119,11 @@ public struct DiarioView: View {
     }
 
     private var botonAnadir: some View {
-        Button {
+        BotonFlotante(simbolo: "plus", etiqueta: Text("Añadir visita", bundle: .module)) {
             mostrandoAlta = true
-        } label: {
-            Image(systemName: "plus")
-                .font(.system(size: 24, weight: .bold))
-                .foregroundStyle(Color.ricoSobreTomate)
-                .frame(width: 60, height: 60)
-                .background(Color.ricoTomate, in: Circle())
-                .shadow(color: Color.ricoTomate.opacity(0.35), radius: 10, y: 6)
         }
         .padding(.trailing, Medidas.margen)
         .padding(.bottom, 16)
-        .accessibilityLabel(Text("Añadir visita", bundle: .module))
     }
 }
 

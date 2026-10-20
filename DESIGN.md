@@ -104,14 +104,27 @@ Constantes en `Medidas` (`Tipografia.swift`).
 - **Margen lateral:** 20 pt. **Separación entre bloques:** 14–22 pt. **Dentro de una tarjeta:** 16 pt.
 - **Radios:** tarjetas 20 pt, controles 12–14 pt, botones en cápsula y pantallas 40 pt en el lienzo.
 - **Toque mínimo:** 44 × 44 pt, también en iconos sueltos (cerrar, quitar foto, estrellas).
-- **Botón principal:** cápsula de 54 pt de alto a todo el ancho, fija abajo en `safeAreaInset` sobre `.bar`.
-- **Elevación:** las tarjetas usan borde de 1 px `ricoLinea`, no sombra. Solo llevan sombra lo que flota: el botón + y la tarjeta del mapa.
+- **Botón principal:** cápsula de 54 pt de alto a todo el ancho, fija abajo en `safeAreaInset` con `fondoBarraInferior()`. En iOS 26 flota en cristal; antes, sobre `.bar`.
+- **Elevación:** las tarjetas usan borde de 1 px `ricoLinea`, no sombra. Lo que flota usa cristal en iOS 26 (ver Liquid Glass) y sombra suave en versiones anteriores.
+
+### Liquid Glass (iOS 26)
+
+La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (nunca se pone `UIDesignRequiresCompatibility`). Las barras de navegación, la búsqueda, las toolbars, las hojas y las pestañas nativas ya son de cristal; no se les pone fondo propio.
+
+- **Cristal solo en la capa de navegación:** lo que flota sobre el contenido. Es decir, el botón + (`BotonFlotante`), la acción principal fija abajo (`BotonPrincipalStyle`), los controles sobre el mapa y las barras.
+- **Nunca en el contenido:** tarjetas de visita, listas, fichas, fotos, pastillas y estrellas siguen sólidas. Cristal sobre cristal no se lee.
+- **Tinte tomate solo en la acción principal** (`.regular.tint(.ricoTomate).interactive()`). Los demás elementos de cristal van sin tinte.
+- **Sin fondo detrás del cristal:** encima del contenido no se pone `.background(.bar)` ni rellenos opacos; iOS 26 ya aplica el efecto de borde al hacer scroll.
+- **Varios botones de cristal juntos** (por ejemplo, sobre el mapa) van dentro de un `GlassEffectContainer` para que se fundan entre sí.
+- **Alternativa en iOS 17–25:** el mismo componente con relleno sólido y sombra (`if #available(iOS 26.0, *)` dentro del componente, nunca en cada pantalla).
+- **Accesibilidad:** con «Reducir transparencia», iOS vuelve el cristal opaco solo. No hay que hacer nada, pero el texto sobre cristal tiene que cumplir contraste con el tinte.
 
 ## 6. Componentes
 
 | Componente | Dónde | Reglas |
 | --- | --- | --- |
-| `BotonPrincipalStyle` (`.ricoPrincipal`) | Guardar, continuar | Uno por vista. Desactivado al 40 %. Reduce su escala a 0,98 al pulsar. |
+| `BotonPrincipalStyle` (`.ricoPrincipal`) | Guardar, continuar | Uno por vista. Desactivado al 40 %. En iOS 26, cristal tomate interactivo; antes, cápsula sólida que reduce su escala a 0,98 al pulsar. |
+| `BotonFlotante` | El + del diario | 60 pt, redondo. Cristal tomate en iOS 26; sólido con sombra antes. |
 | `BotonSecundarioStyle` | Alternativas | Cápsula blanca con borde. |
 | `Pastillas` | ¿Volverías?, nota de plato | Opciones excluyentes. Tocar la activa la deselecciona. 44 pt (36 en platos). Vibración de selección. |
 | `SelectorEstrellas` | Ficha rápida | Tocar una estrella pone esa nota; repetir en la misma resta media. VoiceOver: ajustable en pasos de 0,5. |
