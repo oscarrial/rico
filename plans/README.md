@@ -21,7 +21,7 @@ Todo se compila y prueba en GitHub Actions (no hay Xcode local). Cada plan expli
 | [011](011-reautenticar-al-cambiar-contrasena.md) | Cambiar la contraseña desde «Tu cuenta» pide la actual | P2 | S | 010 | DONE (fusionado en `main`) |
 | [012](012-fotos-del-selector-sin-duplicados.md) | Las fotos del selector no se duplican y conservan su fecha | P3 | S | — | DONE (fusionado en `main`) |
 | [013](013-fotos-fuera-del-hilo-principal.md) | Las fotos se decodifican y reducen sin bloquear ni disparar la memoria | P3 | M | 007, 012 | DONE (fusionado en `main`; probar memoria y scroll en TestFlight) |
-| [014](014-errores-y-registros.md) | Errores registrados con `Logger` y tratados en un solo sitio | P3 | S | 009, 010, 011 | IN PROGRESS |
+| [014](014-errores-y-registros.md) | Errores registrados con `Logger` y tratados en un solo sitio | P3 | S | 009, 010, 011 | DONE (fusionado en `main`) |
 | [015](015-documentacion-al-dia.md) | Los comentarios y las guías ya no hablan de CloudKit | P3 | S | 001, 013 | DONE (fusionado en `main`) |
 | [016](016-localizacion-sin-xcode-local.md) | Saber si los textos se extraen sin Xcode local; no anunciar inglés | P3 | S | 001 | DONE (fusionado en `main`; conclusión B) |
 
