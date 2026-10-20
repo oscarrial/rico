@@ -10,6 +10,10 @@ on:
         description: "Resolver dependencias de nuevo (ignora Config/Package.resolved)"
         type: boolean
         default: false
+      extraer_textos:
+        description: "Exportar los textos de la app (.xliff y catálogos) como artefacto «localizacion»"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -92,30 +96,6 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             2>&1 | tee build/xcodebuild.log | xcbeautify --renderer github-actions
 
-      - name: Investigación de localización
-        if: always()
-        run: |
-          mkdir -p build
-          git status --porcelain -- '*.xcstrings' > build/xcstrings-cambiados.txt || true
-          xcodebuild -exportLocalizations -project Rico.xcodeproj -localizationPath build/localizacion -exportLanguage es 2>&1 | tee build/export-localizaciones.log || true
-          find build/localizacion -name '*.xliff' -exec grep -c "<trans-unit" {} \; > build/unidades.txt || true
-          mkdir -p build/catalogos
-          find Packages -name '*.xcstrings' | while read -r f; do mkdir -p "build/catalogos/$(dirname "$f")"; cp "$f" "build/catalogos/$f"; done || true
-          ls -R build/localizacion > build/localizacion-listado.txt || true
-
-      - name: Subir investigación de localización
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: localizacion
-          path: |
-            build/xcstrings-cambiados.txt
-            build/unidades.txt
-            build/export-localizaciones.log
-            build/localizacion-listado.txt
-            build/localizacion
-            build/catalogos
-
       - name: Guardar Package.resolved
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -132,3 +112,54 @@ jobs:
           path: |
             build/Resultados.xcresult
             build/xcodebuild.log
+
+  # Manual: exporta los textos de la app sin necesitar Xcode en local.
+  # Uso: gh workflow run ci.yml --ref <rama> -f extraer_textos=true
+  textos:
+    name: Extraer textos (manual)
+    if: ${{ inputs.extraer_textos }}
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Elegir Xcode 26.3
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+        with:
+          xcode-version: "26.3"
+
+      - name: Instalar XcodeGen 2.46.0
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/xcodegen.zip" https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/xcodegen/bin" >> "$GITHUB_PATH"
+
+      - name: Generar Rico.xcodeproj y fijar dependencias
+        run: |
+          xcodegen generate
+          mkdir -p Rico.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
+          cp Config/Package.resolved Rico.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+
+      - name: Exportar textos
+        run: |
+          set -o pipefail
+          mkdir -p build
+          xcodebuild -exportLocalizations \
+            -project Rico.xcodeproj \
+            -localizationPath build/localizacion \
+            -exportLanguage es \
+            -clonedSourcePackagesDirPath build/SourcePackages \
+            -onlyUsePackageVersionsFromResolvedFile \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee build/exportar-textos.log | tail -n 40
+          mkdir -p build/catalogos
+          find Packages App -name '*.xcstrings' | while read -r f; do mkdir -p "build/catalogos/$(dirname "$f")"; cp "$f" "build/catalogos/$f"; done
+
+      - name: Subir textos
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: localizacion
+          path: |
+            build/localizacion
+            build/catalogos
+            build/exportar-textos.log
+          if-no-files-found: error
