@@ -108,7 +108,11 @@ public struct DiarioView: View {
 
     private var vacio: some View {
         ContentUnavailableView {
-            Label { Text("Tu diario está vacío", bundle: .module) } icon: { Image(systemName: "fork.knife") }
+            VStack(spacing: 12) {
+                SimboloRico()
+                    .frame(width: 72, height: 72)
+                Text("Tu diario está vacío", bundle: .module)
+            }
         } description: {
             Text("Pulsa + para guardar el primer sitio donde has comido.", bundle: .module)
         }

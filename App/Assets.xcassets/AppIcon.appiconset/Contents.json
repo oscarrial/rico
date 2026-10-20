@@ -1,6 +1,21 @@
 {
   "images" : [
     {
+      "filename" : "icono-claro.png",
+      "idiom" : "universal",
+      "platform" : "ios",
+      "size" : "1024x1024"
+    },
+    {
+      "appearances" : [ { "appearance" : "luminosity", "value" : "dark" } ],
+      "filename" : "icono-oscuro.png",
+      "idiom" : "universal",
+      "platform" : "ios",
+      "size" : "1024x1024"
+    },
+    {
+      "appearances" : [ { "appearance" : "luminosity", "value" : "tinted" } ],
+      "filename" : "icono-tintado.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

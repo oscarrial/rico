@@ -21,6 +21,9 @@ public extension Color {
     static let ricoEstrella = Color(claro: 0xF0A202, oscuro: 0xF5B331)
     static let ricoEstrellaVacia = Color(claro: 0xDCCFC2, oscuro: 0x4A4038)
 
+    /// Verde del cáliz del símbolo. Solo para la marca.
+    static let ricoAlbahaca = Color(claro: 0x3F5A30, oscuro: 0x7FA866)
+
     static let ricoVerde = Color(claro: 0x1F5A37, oscuro: 0x7FD3A0)
     static let ricoVerdeSuave = Color(claro: 0xDDEFE3, oscuro: 0x1D3A28)
 
