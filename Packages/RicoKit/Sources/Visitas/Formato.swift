@@ -9,7 +9,7 @@ extension Importe {
 
     /// «48,00» para rellenar el campo de importe.
     var textoEditable: String {
-        decimal.formatted(.number.precision(.fractionLength(2)))
+        decimal.formatted(.number.precision(.fractionLength(2)).grouping(.never))
     }
 }
 

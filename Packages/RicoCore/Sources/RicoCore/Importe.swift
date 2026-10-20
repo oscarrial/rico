@@ -12,11 +12,11 @@ public struct Importe: Hashable, Sendable, Codable, Comparable {
 
     /// Lee lo que escribe el usuario: «48», «48,5», «48,50», «48.50», «1.234,56», «12 €».
     public init?(texto: String, divisa: String = "EUR") {
-        var limpio = texto
-            .replacingOccurrences(of: "€", with: "")
-            .replacingOccurrences(of: " ", with: "")
-            .replacingOccurrences(of: "\u{00A0}", with: "")
+        var limpio = texto.filter { caracter in
+            !caracter.isWhitespace && !"'’€$£".contains(caracter)
+        }
         guard !limpio.isEmpty else { return nil }
+        guard limpio.allSatisfy({ $0.isASCII && ($0.isNumber || $0 == "," || $0 == ".") }) else { return nil }
 
         // El último separador con 1 o 2 cifras detrás es el decimal; el resto son miles.
         if let ultimo = limpio.lastIndex(where: { $0 == "," || $0 == "." }) {
