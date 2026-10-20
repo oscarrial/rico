@@ -96,6 +96,13 @@ public final class EstadoCuenta {
         try await requerido().cambiarContrasena(nueva)
     }
 
+    /// Cambio desde «Tu cuenta»: comprueba la contraseña actual volviendo a iniciar sesión.
+    public func cambiarContrasena(actual: String, nueva: String) async throws {
+        guard let correo = sesion?.correo else { throw ErrorCuenta.credencialesIncorrectas }
+        try await requerido().iniciarSesion(correo: correo, contrasena: actual)
+        try await requerido().cambiarContrasena(nueva)
+    }
+
     /// Cierra la hoja de «Nueva contraseña» (el usuario ya vio la confirmación).
     public func terminarRecuperacion() {
         pidiendoNuevaContrasena = false

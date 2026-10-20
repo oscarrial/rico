@@ -6,13 +6,23 @@ public struct NuevaContrasenaView: View {
     @Environment(EstadoCuenta.self) private var cuenta
     @Environment(\.dismiss) private var cerrar
 
+    public enum Origen: Sendable {
+        case recuperacion
+        case cuenta
+    }
+
+    private let origen: Origen
+
+    @State private var actual = ""
     @State private var contrasena = ""
     @State private var repetida = ""
     @State private var trabajando = false
     @State private var error: ErrorCuenta?
     @State private var hecho = false
 
-    public init() {}
+    public init(origen: Origen = .recuperacion) {
+        self.origen = origen
+    }
 
     public var body: some View {
         NavigationStack {
@@ -25,6 +35,13 @@ public struct NuevaContrasenaView: View {
                             .font(.rico(.subheadline, peso: .semibold))
                             .foregroundStyle(Color.ricoSecundario)
 
+                        if origen == .cuenta {
+                            Text("Contraseña actual", bundle: .module)
+                                .font(.rico(.footnote, peso: .bold))
+                                .foregroundStyle(Color.ricoSecundario)
+                            CampoContrasena(texto: $actual, tipo: .password, envio: .next)
+                        }
+
                         CampoContrasena(texto: $contrasena, tipo: .newPassword, envio: .next)
                         ListaReglas(contrasena: contrasena)
                         CampoContrasena(texto: $repetida, tipo: .newPassword, envio: .go)
@@ -34,7 +51,11 @@ public struct NuevaContrasenaView: View {
                                 .foregroundStyle(Color.ricoTomateTexto)
                         }
 
-                        if let error {
+                        if origen == .cuenta, error == .credencialesIncorrectas {
+                            Text("La contraseña actual no es correcta.", bundle: .module)
+                                .font(.rico(.footnote, peso: .bold))
+                                .foregroundStyle(Color.ricoTomateTexto)
+                        } else if let error {
                             MensajeError(error: error)
                         }
 
@@ -44,7 +65,7 @@ public struct NuevaContrasenaView: View {
                             if trabajando { ProgressView().tint(.ricoSobreTomate) } else { Text("Guardar contraseña", bundle: .module) }
                         }
                         .buttonStyle(.ricoPrincipal)
-                        .disabled(trabajando || !ReglasContrasena.esValida(contrasena) || repetida != contrasena)
+                        .disabled(trabajando || !ReglasContrasena.esValida(contrasena) || repetida != contrasena || (origen == .cuenta && actual.isEmpty))
                     }
                 }
                 .padding(.horizontal, Medidas.margen)
@@ -71,7 +92,12 @@ public struct NuevaContrasenaView: View {
         trabajando = true
         defer { trabajando = false }
         do {
-            try await cuenta.cambiarContrasena(contrasena)
+            switch origen {
+            case .recuperacion:
+                try await cuenta.cambiarContrasena(contrasena)
+            case .cuenta:
+                try await cuenta.cambiarContrasena(actual: actual, nueva: contrasena)
+            }
             error = nil
             hecho = true
         } catch let fallo as ErrorCuenta {
