@@ -13,13 +13,17 @@ struct ImporteTests {
         ("1,234.56", 123456),
         ("1.234", 123400),
         ("12 €", 1200),
-        ("0,99", 99)
+        ("0,99", 99),
+        ("1\u{202F}234,50", 123450),
+        ("1’234.50", 123450),
+        ("1 234,50 €", 123450),
+        ("$12.00", 1200)
     ])
     func leeLoQueEscribeElUsuario(texto: String, centimos: Int) {
         #expect(Importe(texto: texto)?.centimos == centimos)
     }
 
-    @Test(arguments: ["", "abc", "-5"])
+    @Test(arguments: ["", "abc", "-5", "12abc", "1,2,x"])
     func rechazaTextoNoValido(texto: String) {
         #expect(Importe(texto: texto) == nil)
     }

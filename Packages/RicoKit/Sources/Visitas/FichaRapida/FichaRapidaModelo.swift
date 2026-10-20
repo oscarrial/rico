@@ -64,6 +64,7 @@ public final class FichaRapidaModelo {
     public var platos: [BorradorPlato] = []
     public var fotos: [BorradorFoto] = []
     private var fotosQuitadas: Set<UUID> = []
+    private let divisa: String
     public var notas: String = ""
 
     /// Visita nueva en un sitio encontrado en el buscador.
@@ -73,6 +74,7 @@ public final class FichaRapidaModelo {
         lugarTexto = [lugar.direccion, lugar.ciudad].compactMap { $0 }.joined(separator: ", ").nilSiVacio
         latitud = lugar.latitud
         longitud = lugar.longitud
+        divisa = "EUR"
         self.fecha = fecha
     }
 
@@ -83,6 +85,7 @@ public final class FichaRapidaModelo {
         lugarTexto = [restaurante.direccion, restaurante.ciudad].compactMap { $0 }.joined(separator: ", ").nilSiVacio
         latitud = restaurante.latitud
         longitud = restaurante.longitud
+        divisa = "EUR"
         self.fecha = fecha
     }
 
@@ -94,6 +97,7 @@ public final class FichaRapidaModelo {
         lugarTexto = [restaurante?.direccion, restaurante?.ciudad].compactMap { $0 }.joined(separator: ", ").nilSiVacio
         latitud = restaurante?.latitud
         longitud = restaurante?.longitud
+        divisa = visita.divisa
         fecha = visita.fecha
         estrellas = visita.estrellas ?? 0
         importeTexto = visita.importe?.textoEditable ?? ""
@@ -115,7 +119,7 @@ public final class FichaRapidaModelo {
     }
 
     public var puedeGuardar: Bool { estrellas > 0 }
-    public var importe: Importe? { Importe(texto: importeTexto) }
+    public var importe: Importe? { Importe(texto: importeTexto, divisa: divisa) }
     public var importePorPersona: Importe? { importe?.porPersona(comensales: comensales, pagueTodo: pagueTodo) }
     public var textoPorPersona: String? { importePorPersona?.textoMoneda }
 

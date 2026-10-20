@@ -76,6 +76,22 @@ struct FichaRapidaTests {
         #expect(try contexto.fetchCount(FetchDescriptor<Plato>()) == 2)
     }
 
+    @Test func editarConservaLaMoneda() throws {
+        let modelo = FichaRapidaModelo(lugar: grelo)
+        modelo.estrellas = 4
+        let visita = try modelo.guardar(en: contexto)
+        visita.divisa = "USD"
+        visita.importeCentimos = 2500
+        try contexto.save()
+
+        let edicion = FichaRapidaModelo(visita: visita)
+        edicion.estrellas = 3
+        try edicion.guardar(en: contexto)
+
+        #expect(visita.divisa == "USD")
+        #expect(visita.importeCentimos == 2500)
+    }
+
     @Test func editarConservaLosMismosPlatos() throws {
         let modelo = FichaRapidaModelo(lugar: grelo)
         modelo.estrellas = 4
