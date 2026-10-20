@@ -68,8 +68,13 @@ struct RicoApp: App {
                 }
                 .onChange(of: usuarioActivo, initial: true) { _, nuevo in
                     guard nuevo != usuarioDelContenedor else { return }
-                    contenedor = Self.abrirContenedor(usuario: nuevo)
+                    let abierto = Self.abrirContenedor(usuario: nuevo)
+                    contenedor = abierto
                     usuarioDelContenedor = nuevo
+                    // Si el borrado local de esta cuenta quedó a medias, se termina ahora.
+                    cuenta.completarBorradoLocalPendiente(de: nuevo) {
+                        try ContenedorRico.borrarTodo(en: abierto.mainContext)
+                    }
                 }
         }
         .modelContainer(contenedor)

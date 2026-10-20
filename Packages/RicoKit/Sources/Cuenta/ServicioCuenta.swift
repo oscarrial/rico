@@ -4,10 +4,13 @@ import Foundation
 public struct SesionUsuario: Sendable, Equatable {
     public let id: UUID
     public let correo: String?
+    /// Cómo entró: `"email"`, `"apple"`… (`nil` si no se sabe).
+    public let proveedor: String?
 
-    public init(id: UUID, correo: String?) {
+    public init(id: UUID, correo: String?, proveedor: String? = nil) {
         self.id = id
         self.correo = correo
+        self.proveedor = proveedor
     }
 }
 
@@ -65,8 +68,9 @@ public protocol ServicioCuenta: AnyObject, Sendable {
     func gestionarEnlace(_ url: URL) async throws -> EnlaceCuenta
     func cambiarContrasena(_ nueva: String) async throws
     func cerrarSesion() async throws
-    /// Borra las fotos, la cuenta y todos sus datos en el servidor.
-    func borrarCuenta() async throws
+    /// Borra las fotos, la cuenta y todos sus datos en el servidor, y revoca el acceso de Apple
+    /// si se pasa un código nuevo de «Iniciar sesión con Apple». No cierra la sesión.
+    func borrarCuenta(codigoApple: String?) async throws
 }
 
 public enum ValidadorCorreo {

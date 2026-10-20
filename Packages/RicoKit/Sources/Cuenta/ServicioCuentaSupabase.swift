@@ -43,7 +43,6 @@ public enum ClienteRico {
 @MainActor
 public final class ServicioCuentaSupabase: ServicioCuenta {
     public let cliente: SupabaseClient
-    static let bucketFotos = "fotos"
 
     public init(cliente: SupabaseClient) {
         self.cliente = cliente
@@ -130,26 +129,27 @@ public final class ServicioCuentaSupabase: ServicioCuenta {
         }
     }
 
-    public func borrarCuenta() async throws {
-        guard let usuario = sesionActual else { return }
-        // Las fotos no se borran en cascada desde SQL: se quitan antes con la API de Storage.
-        let carpeta = usuario.id.uuidString.lowercased()
-        let fotos = cliente.storage.from(Self.bucketFotos)
+    public func borrarCuenta(codigoApple: String?) async throws {
+        guard sesionActual != nil else { throw ErrorCuenta.otro("Sin sesión") }
+        var cuerpo: [String: String] = [:]
+        if let codigoApple { cuerpo["apple_codigo"] = codigoApple }
+        // El servidor borra fotos, usuario y filas en una sola llamada (y revoca Apple).
         try await traducirErrores {
-            while true {
-                let archivos = try await fotos.list(path: carpeta, options: SearchOptions(limit: 1000))
-                guard !archivos.isEmpty else { break }
-                _ = try await fotos.remove(paths: archivos.map { "\(carpeta)/\($0.name)" })
-            }
-            try await cliente.rpc("borrar_mi_cuenta").execute()
+            try await cliente.functions.invoke(
+                "borrar-cuenta",
+                options: FunctionInvokeOptions(body: cuerpo)
+            )
         }
-        try? await cliente.auth.signOut()
     }
 
     // MARK: Ayudas
 
     nonisolated static func sesion(_ sesion: Session) -> SesionUsuario {
-        SesionUsuario(id: sesion.user.id, correo: sesion.user.email)
+        SesionUsuario(
+            id: sesion.user.id,
+            correo: sesion.user.email,
+            proveedor: sesion.user.appMetadata["provider"]?.stringValue
+        )
     }
 
     nonisolated static func correoValido(_ correo: String) throws -> String {

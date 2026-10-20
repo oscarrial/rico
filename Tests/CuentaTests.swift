@@ -15,6 +15,7 @@ final class ServicioCuentaFalso: ServicioCuenta {
     var pedirConfirmacion = true
     var recuperacionesEnviadas: [String] = []
     var borrada = false
+    var codigoAppleRecibido: String?
     private let flujo: AsyncStream<SesionUsuario?>
     private let continuacion: AsyncStream<SesionUsuario?>.Continuation
 
@@ -75,7 +76,9 @@ final class ServicioCuentaFalso: ServicioCuenta {
         cambiar(a: nil)
     }
 
-    func borrarCuenta() async throws {
+    func borrarCuenta(codigoApple: String?) async throws {
+        guard sesionActual != nil else { throw ErrorCuenta.otro("Sin sesión") }
+        codigoAppleRecibido = codigoApple
         borrada = true
         cambiar(a: nil)
     }
@@ -243,6 +246,65 @@ struct CuentaTests {
         #expect(nonce.count == 32)
         #expect(nonce != Nonce.aleatorio())
         #expect(Nonce.sha256("abc") == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+    }
+
+    /// Preferencias aisladas para no tocar las reales.
+    private func preferenciasDePrueba() -> (UserDefaults, String) {
+        let nombre = "RicoPruebas-\(UUID().uuidString)"
+        return (UserDefaults(suiteName: nombre)!, nombre)
+    }
+
+    @Test func borrarCuentaBorraLoLocalAntesDeCerrarSesion() async throws {
+        let (preferencias, nombre) = preferenciasDePrueba()
+        defer { preferencias.removePersistentDomain(forName: nombre) }
+        let sesion = SesionUsuario(id: UUID(), correo: "ana@ejemplo.com", proveedor: "apple")
+        let servicio = ServicioCuentaFalso(sesionInicial: sesion)
+        let estado = EstadoCuenta(servicio: servicio, preferencias: preferencias)
+        #expect(await esperar { estado.sesion == sesion })
+
+        var sesionAlBorrarLocal: SesionUsuario?
+        var llamadas = 0
+        try await estado.borrarCuenta(codigoApple: "codigo-apple") {
+            llamadas += 1
+            sesionAlBorrarLocal = estado.sesion
+        }
+
+        #expect(servicio.borrada)
+        #expect(servicio.codigoAppleRecibido == "codigo-apple")
+        #expect(llamadas == 1)
+        #expect(sesionAlBorrarLocal == sesion)
+        #expect(await esperar { estado.sesion == nil })
+        #expect(preferencias.string(forKey: EstadoCuenta.claveBorradoLocalPendiente) == nil)
+    }
+
+    @Test func siFallaElBorradoLocalQuedaPendiente() async throws {
+        struct FalloLocal: Error {}
+        let (preferencias, nombre) = preferenciasDePrueba()
+        defer { preferencias.removePersistentDomain(forName: nombre) }
+        let sesion = SesionUsuario(id: UUID(), correo: "ana@ejemplo.com")
+        let estado = EstadoCuenta(servicio: ServicioCuentaFalso(sesionInicial: sesion), preferencias: preferencias)
+        #expect(await esperar { estado.sesion == sesion })
+
+        await #expect(throws: FalloLocal.self) {
+            try await estado.borrarCuenta(codigoApple: nil) { throw FalloLocal() }
+        }
+        #expect(preferencias.string(forKey: EstadoCuenta.claveBorradoLocalPendiente) == sesion.id.uuidString)
+
+        // Al abrir la base de esa cuenta se termina el borrado y se quita la anotación.
+        var repetido = false
+        estado.completarBorradoLocalPendiente(de: UUID()) { repetido = true }
+        #expect(!repetido)
+        estado.completarBorradoLocalPendiente(de: sesion.id) { repetido = true }
+        #expect(repetido)
+        #expect(preferencias.string(forKey: EstadoCuenta.claveBorradoLocalPendiente) == nil)
+    }
+
+    @Test func sinSesionBorrarCuentaFalla() async {
+        let servicio = ServicioCuentaFalso()
+        await #expect(throws: ErrorCuenta.otro("Sin sesión")) {
+            try await servicio.borrarCuenta(codigoApple: nil)
+        }
+        #expect(!servicio.borrada)
     }
 
     @Test func borrarTodoVaciaLaBaseLocal() throws {
