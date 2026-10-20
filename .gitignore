@@ -20,3 +20,6 @@ docs/plan-producto.md
 
 # Claves de Supabase (ver Config/Secretos.example.xcconfig)
 Config/Secretos.xcconfig
+
+# Copias de trabajo de los agentes de Claude Code
+.claude/
