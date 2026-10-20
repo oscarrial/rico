@@ -2,8 +2,9 @@ import Foundation
 import SwiftData
 import RicoCore
 
-// Reglas de CloudKit: todas las propiedades opcionales o con valor por defecto,
-// relaciones opcionales y sin restricciones `unique`. Los enums se guardan como texto.
+// Reglas de los modelos: propiedades opcionales o con valor por defecto, relaciones
+// opcionales y enums guardados como texto. Así se pueden sincronizar con Supabase
+// y migrar sin romper datos.
 
 @Model
 public final class Restaurante {
@@ -137,7 +138,7 @@ public final class Plato {
 @Model
 public final class Foto {
     public var id: UUID = UUID()
-    /// Imagen completa. Con almacenamiento externo, CloudKit la sube como `CKAsset`.
+    /// Imagen completa, en almacenamiento externo de SwiftData. Con la sincronización se sube al bucket privado `fotos` de Supabase.
     @Attribute(.externalStorage) public var datos: Data?
     @Attribute(.externalStorage) public var miniatura: Data?
     public var fecha: Date = Date()

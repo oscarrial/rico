@@ -5,9 +5,9 @@ Diario gastronómico para iPhone. El plan de producto completo está en `docs/pl
 ## Estructura
 
 - `Packages/RicoCore`: lógica pura sin frameworks de Apple (emparejado de comercios, importes, estrellas, filtro de pagos). Se prueba también en Linux: `swift test --package-path Packages/RicoCore`.
-- `Packages/RicoKit`: módulos de la app (`Modelos` con SwiftData, `DesignSystem`, `Visitas`, `Cuenta` con Supabase Auth).
+- `Packages/RicoKit`: módulos de la app (`Modelos` con SwiftData, `DesignSystem`, `Visitas`, `Cuenta` con Supabase Auth). Los módulos nuevos del plan (`Captura`, `Mapa`, `Listas`, `Estadisticas`, `Premium`, `IA`) se añaden aquí cuando toque su bloque.
 - `supabase/migrations`: esquema de PostgreSQL con seguridad por fila. Decisión y pasos para aplicarlo en `docs/decisiones/0001-servidor-propio-supabase.md`.
-- `Config/`: `Rico.xcconfig` versionado; `Secretos.xcconfig` (host y clave de Supabase) no se versiona. Sin él, la app funciona solo en local. Los módulos nuevos del plan (`Captura`, `Mapa`, `Listas`, `Estadisticas`, `Premium`, `IA`) se añaden aquí cuando toque su bloque.
+- `Config/`: `Rico.xcconfig` versionado; `Secretos.xcconfig` (host y clave de Supabase) no se versiona. Sin él, la app funciona solo en local.
 - `App/`: punto de entrada. `Tests/`: pruebas de los módulos en el simulador.
 - `project.yml`: proyecto de XcodeGen. `Rico.xcodeproj` no se versiona: `xcodegen generate`.
 

@@ -126,7 +126,7 @@ public final class SugeridorFotosCarrete: SugeridorFotos {
     }
 }
 
-/// Reduce las fotos antes de guardarlas: ocupan el iCloud del usuario.
+/// Reduce las fotos antes de guardarlas: ocupan espacio en el iPhone y en el servidor.
 public enum ProcesadorFotos {
     public struct Resultado: Sendable {
         public let datos: Data
