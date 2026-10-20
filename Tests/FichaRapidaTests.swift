@@ -76,6 +76,60 @@ struct FichaRapidaTests {
         #expect(try contexto.fetchCount(FetchDescriptor<Plato>()) == 2)
     }
 
+    @Test func editarConservaLosMismosPlatos() throws {
+        let modelo = FichaRapidaModelo(lugar: grelo)
+        modelo.estrellas = 4
+        modelo.platos = [
+            BorradorPlato(nombre: "Zamburiñas", valoracion: .bien),
+            BorradorPlato(nombre: "Tortilla", valoracion: .encanto)
+        ]
+        let visita = try modelo.guardar(en: contexto)
+        let ids = visita.platosOrdenados.map(\.persistentModelID)
+
+        let edicion = FichaRapidaModelo(visita: visita)
+        edicion.platos[0].valoracion = .noRepetiria
+        try edicion.guardar(en: contexto)
+
+        #expect(visita.platosOrdenados.map(\.persistentModelID) == ids)
+        #expect(visita.platosOrdenados.first?.valoracion == .noRepetiria)
+    }
+
+    @Test func quitarUnPlatoSoloBorraEse() throws {
+        let modelo = FichaRapidaModelo(lugar: grelo)
+        modelo.estrellas = 4
+        modelo.platos = [
+            BorradorPlato(nombre: "Zamburiñas", valoracion: .bien),
+            BorradorPlato(nombre: "Tortilla", valoracion: .encanto)
+        ]
+        let visita = try modelo.guardar(en: contexto)
+
+        let edicion = FichaRapidaModelo(visita: visita)
+        edicion.quitarPlato(edicion.platos[1].id)
+        try edicion.guardar(en: contexto)
+
+        #expect(visita.platosOrdenados.map(\.nombre) == ["Zamburiñas"])
+        #expect(try contexto.fetchCount(FetchDescriptor<Plato>()) == 1)
+    }
+
+    @Test func editarNoBorraFotosSinMiniatura() throws {
+        let modelo = FichaRapidaModelo(lugar: grelo)
+        modelo.estrellas = 4
+        let visita = try modelo.guardar(en: contexto)
+
+        let foto = Foto(datos: Data([1]), miniatura: nil)
+        contexto.insert(foto)
+        foto.visita = visita
+        try contexto.save()
+        let antes = visita.fotos?.count
+
+        let edicion = FichaRapidaModelo(visita: visita)
+        edicion.estrellas = 5
+        try edicion.guardar(en: contexto)
+
+        #expect(antes == 1)
+        #expect(visita.fotos?.count == antes)
+    }
+
     @Test func limiteDeTresFotosEnElPlanGratis() {
         let modelo = FichaRapidaModelo(lugar: grelo)
         for _ in 0..<4 {

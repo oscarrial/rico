@@ -63,6 +63,7 @@ public final class FichaRapidaModelo {
     public var volveria: Volveria?
     public var platos: [BorradorPlato] = []
     public var fotos: [BorradorFoto] = []
+    private var fotosQuitadas: Set<UUID> = []
     public var notas: String = ""
 
     /// Visita nueva en un sitio encontrado en el buscador.
@@ -141,6 +142,7 @@ public final class FichaRapidaModelo {
 
     public func quitarFoto(_ id: UUID) {
         fotos.removeAll { $0.id == id }
+        fotosQuitadas.insert(id)
     }
 
     public func contiene(fotoDelCarrete id: String) -> Bool {
@@ -151,57 +153,68 @@ public final class FichaRapidaModelo {
     public func guardar(en contexto: ModelContext) throws -> Visita {
         guard puedeGuardar else { throw ErrorFicha.sinNota }
 
-        let visita: Visita
-        switch destino {
-        case let .nueva(lugar):
-            let restaurante = try contexto.restaurante(para: lugar)
-            visita = Visita(fecha: fecha, origen: .manual)
-            contexto.insert(visita)
-            visita.restaurante = restaurante
-        case let .restaurante(restaurante):
-            visita = Visita(fecha: fecha, origen: .manual)
-            contexto.insert(visita)
-            visita.restaurante = restaurante
-        case let .existente(existente):
-            visita = existente
-            if esManual { visita.fecha = fecha }
+        do {
+            let visita: Visita
+            switch destino {
+            case let .nueva(lugar):
+                let restaurante = try contexto.restaurante(para: lugar)
+                visita = Visita(fecha: fecha, origen: .manual)
+                contexto.insert(visita)
+                visita.restaurante = restaurante
+            case let .restaurante(restaurante):
+                visita = Visita(fecha: fecha, origen: .manual)
+                contexto.insert(visita)
+                visita.restaurante = restaurante
+            case let .existente(existente):
+                visita = existente
+                if esManual { visita.fecha = fecha }
+            }
+
+            visita.estrellas = Estrellas.normalizar(estrellas)
+            visita.importe = importe
+            visita.comensales = max(1, comensales)
+            visita.pagueTodo = pagueTodo
+            visita.volveria = volveria
+            visita.resena = notas.nilSiVacio
+
+            guardarPlatos(en: visita, contexto: contexto)
+            guardarFotos(en: visita, contexto: contexto)
+
+            visita.estado = .valorada
+            try contexto.save()
+            return visita
+        } catch {
+            contexto.rollback()
+            throw error
         }
-
-        visita.estrellas = Estrellas.normalizar(estrellas)
-        visita.importe = importe
-        visita.comensales = max(1, comensales)
-        visita.pagueTodo = pagueTodo
-        visita.volveria = volveria
-        visita.resena = notas.nilSiVacio
-
-        guardarPlatos(en: visita, contexto: contexto)
-        guardarFotos(en: visita, contexto: contexto)
-
-        visita.estado = .valorada
-        try contexto.save()
-        return visita
     }
 
     private func guardarPlatos(en visita: Visita, contexto: ModelContext) {
         let anteriores = visita.platos ?? []
-        var nuevos: [Plato] = []
+        let existentes = Dictionary(anteriores.map { ($0.id, $0) }, uniquingKeysWith: { primero, _ in primero })
+        var conservados: Set<UUID> = []
         for (orden, borrador) in platos.enumerated() {
             guard let nombre = borrador.nombre.nilSiVacio else { continue }
-            let plato = Plato(nombre: nombre, valoracion: borrador.valoracion, orden: orden)
-            plato.id = borrador.id
-            contexto.insert(plato)
-            nuevos.append(plato)
+            if let plato = existentes[borrador.id] {
+                plato.nombre = nombre
+                plato.valoracion = borrador.valoracion
+                plato.orden = orden
+            } else {
+                let plato = Plato(nombre: nombre, valoracion: borrador.valoracion, orden: orden)
+                plato.id = borrador.id
+                contexto.insert(plato)
+                plato.visita = visita
+            }
+            conservados.insert(borrador.id)
         }
-        visita.platos = nuevos
-        for plato in anteriores {
+        for plato in anteriores where !conservados.contains(plato.id) {
             contexto.delete(plato)
         }
     }
 
     private func guardarFotos(en visita: Visita, contexto: ModelContext) {
         let existentes = visita.fotos ?? []
-        let idsBorrador = Set(fotos.map(\.id))
-        for foto in existentes where !idsBorrador.contains(foto.id) {
+        for foto in existentes where fotosQuitadas.contains(foto.id) {
             contexto.delete(foto)
         }
         for (orden, borrador) in fotos.enumerated() {
