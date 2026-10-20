@@ -20,9 +20,9 @@ Todo se compila y prueba en GitHub Actions (no hay Xcode local). Cada plan expli
 | [010](010-borrar-cuenta-robusto.md) | Borrar la cuenta lo borra todo en el servidor, limpia el iPhone y revoca Apple | P2 | L | 003, 009 | IN PROGRESS (fusionado en `main`; pendiente: `deno check` y desplegar la función `borrar-cuenta`, y secretos de Apple) |
 | [011](011-reautenticar-al-cambiar-contrasena.md) | Cambiar la contraseña desde «Tu cuenta» pide la actual | P2 | S | 010 | IN PROGRESS |
 | [012](012-fotos-del-selector-sin-duplicados.md) | Las fotos del selector no se duplican y conservan su fecha | P3 | S | — | DONE (fusionado en `main`) |
-| [013](013-fotos-fuera-del-hilo-principal.md) | Las fotos se decodifican y reducen sin bloquear ni disparar la memoria | P3 | M | 007, 012 | IN PROGRESS |
+| [013](013-fotos-fuera-del-hilo-principal.md) | Las fotos se decodifican y reducen sin bloquear ni disparar la memoria | P3 | M | 007, 012 | DONE (fusionado en `main`; probar memoria y scroll en TestFlight) |
 | [014](014-errores-y-registros.md) | Errores registrados con `Logger` y tratados en un solo sitio | P3 | S | 009, 010, 011 | TODO |
-| [015](015-documentacion-al-dia.md) | Los comentarios y las guías ya no hablan de CloudKit | P3 | S | 001, 013 | TODO |
+| [015](015-documentacion-al-dia.md) | Los comentarios y las guías ya no hablan de CloudKit | P3 | S | 001, 013 | IN PROGRESS |
 | [016](016-localizacion-sin-xcode-local.md) | Saber si los textos se extraen sin Xcode local; no anunciar inglés | P3 | S | 001 | DONE (fusionado en `main`; conclusión B) |
 
 Estados: TODO | IN PROGRESS | DONE | BLOCKED (con el motivo en una línea) | REJECTED (con el motivo en una línea).
