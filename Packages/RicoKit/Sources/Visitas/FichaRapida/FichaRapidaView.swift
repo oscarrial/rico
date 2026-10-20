@@ -250,7 +250,7 @@ public struct FichaRapidaView: View {
                         }
                 }
                 if modelo.fotosRestantes > 0 {
-                    PhotosPicker(selection: $seleccionFotos, maxSelectionCount: modelo.fotosRestantes, matching: .images) {
+                    PhotosPicker(selection: $seleccionFotos, maxSelectionCount: modelo.fotosRestantes, matching: .images, photoLibrary: .shared()) {
                         RoundedRectangle(cornerRadius: Medidas.radioControl)
                             .strokeBorder(Color.ricoLinea, style: StrokeStyle(lineWidth: 1.5, dash: [5]))
                             .frame(height: 100)
@@ -394,7 +394,7 @@ public struct FichaRapidaView: View {
             modelo.anadirFoto(BorradorFoto(
                 miniatura: procesada.miniatura,
                 datos: procesada.datos,
-                fecha: .now,
+                fecha: elemento.itemIdentifier.flatMap(SugeridorFotosCarrete.fechaDeCreacion) ?? .now,
                 identificadorCarrete: elemento.itemIdentifier
             ))
         }

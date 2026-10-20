@@ -72,6 +72,11 @@ public final class SugeridorFotosCarrete: SugeridorFotos {
         await Self.datos(id: id)
     }
 
+    /// Fecha de creación real de una foto del carrete; nil sin permiso o si no existe.
+    public nonisolated static func fechaDeCreacion(id: String) -> Date? {
+        PHAsset.fetchAssets(withLocalIdentifiers: [id], options: nil).firstObject?.creationDate
+    }
+
     // Fuera del actor principal: Photos puede llamar a los bloques desde otro hilo.
 
     nonisolated private static func datos(id: String) async -> Data? {
