@@ -85,7 +85,7 @@ public enum AgrupadorDiario {
     }
 
     /// «Octubre de 2026»; es el título por defecto de las secciones.
-    public static func tituloMes(_ fecha: Date) -> String {
+    nonisolated public static func tituloMes(_ fecha: Date) -> String {
         FormatoFecha.mes(fecha)
     }
 
