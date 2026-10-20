@@ -15,7 +15,7 @@ Todo se compila y prueba en GitHub Actions (no hay Xcode local). Cada plan expli
 | [005](005-tiempos-del-servidor.md) | El servidor fija `actualizado_en` también al crear filas | P2 | S | — | IN PROGRESS (fusionado en `main` y aplicado en Supabase el 20/10/2026) |
 | [006](006-importes-y-moneda.md) | Editar un importe no lo corrompe ni cambia su moneda | P2 | S | 004 | DONE (fusionado en `main`) |
 | [007](007-logica-del-diario-y-restaurante.md) | La lógica del diario y del restaurante está fuera de las vistas, probada y sin recálculos | P2 | M | 006 | DONE (fusionado en `main`) |
-| [008](008-fechas-relativas.md) | Las fechas «Hoy / Ayer / día de la semana» son correctas y se pueden probar | P3 | S | 006, 007 | IN PROGRESS |
+| [008](008-fechas-relativas.md) | Las fechas «Hoy / Ayer / día de la semana» son correctas y se pueden probar | P3 | S | 006, 007 | DONE (fusionado en `main`) |
 | [009](009-recuperar-contrasena.md) | Recuperar la contraseña muestra la hoja, confirma el cambio y no deja errores pegados | P2 | S | 003 | DONE (fusionado en `main`) |
 | [010](010-borrar-cuenta-robusto.md) | Borrar la cuenta lo borra todo en el servidor, limpia el iPhone y revoca Apple | P2 | L | 003, 009 | IN PROGRESS (fusionado en `main`; pendiente: `deno check` y desplegar la función `borrar-cuenta`, y secretos de Apple) |
 | [011](011-reautenticar-al-cambiar-contrasena.md) | Cambiar la contraseña desde «Tu cuenta» pide la actual | P2 | S | 010 | IN PROGRESS |
