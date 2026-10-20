@@ -27,6 +27,16 @@ El plan proponía guardar los datos solo en el iPhone y sincronizarlos con el iC
 - Coste: plan gratuito al principio; las fotos son lo que más crecerá (Storage).
 - Si Supabase no está configurado (`Config/Secretos.xcconfig` vacío), la app funciona solo en local, sin cuenta. Así compila la CI y se puede desarrollar sin servidor.
 
+## Estado
+
+- **20 de octubre de 2026:** proyecto creado en Fráncfort (PostgreSQL 17) y migración `20261020130000_esquema_inicial` aplicada y registrada en `supabase_migrations.schema_migrations`.
+- **Seguridad comprobada con dos usuarios simulados** (en una transacción deshecha al terminar):
+  - cada usuario solo ve y edita lo suyo, y sin sesión no se ve nada;
+  - nadie puede crear filas a nombre de otro ni enlazarlas con filas ajenas;
+  - las notas solo admiten medias estrellas y `actualizado_en` lo fija siempre el servidor;
+  - `borrar_mi_cuenta()` borra el usuario y sus datos en cascada sin tocar a otros.
+- **Conexión desde redes sin IPv6:** la conexión directa (`db.<ref>.supabase.co`) solo funciona por IPv6. Hay que usar el *session pooler*: `aws-1-eu-central-1.pooler.supabase.com:5432`, usuario `postgres.<ref>`.
+
 ## Cómo aplicarlo
 
 1. Crear un proyecto en [supabase.com](https://supabase.com) en la región **Central EU (Frankfurt)**.
