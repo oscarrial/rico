@@ -10,6 +10,7 @@ public struct CuentaView: View {
     @Environment(\.dismiss) private var cerrar
 
     @State private var confirmandoBorrado = false
+    @State private var cambiandoContrasena = false
     @State private var trabajando = false
     @State private var error: ErrorCuenta?
 
@@ -32,6 +33,11 @@ public struct CuentaView: View {
 
                 if cuenta.sesion != nil {
                     Section {
+                        Button {
+                            cambiandoContrasena = true
+                        } label: {
+                            Text("Cambiar contraseña", bundle: .module)
+                        }
                         Button {
                             Task { await cerrarSesion() }
                         } label: {
@@ -69,6 +75,9 @@ public struct CuentaView: View {
             }
             .disabled(trabajando)
             .overlay { if trabajando { ProgressView().controlSize(.large) } }
+            .sheet(isPresented: $cambiandoContrasena) {
+                NuevaContrasenaView()
+            }
             .confirmationDialog(
                 Text("¿Borrar tu cuenta?", bundle: .module),
                 isPresented: $confirmandoBorrado,

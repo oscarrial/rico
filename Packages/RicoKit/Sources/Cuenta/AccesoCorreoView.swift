@@ -1,38 +1,90 @@
 import SwiftUI
 import DesignSystem
 
-/// Entrar con correo: se envía un código de 6 dígitos y se escribe aquí. Sin contraseñas.
+/// Entrar o crear cuenta con correo y contraseña.
 struct AccesoCorreoView: View {
+    enum Modo: Hashable {
+        case entrar
+        case crear
+    }
+
     @Environment(EstadoCuenta.self) private var cuenta
     @Environment(\.dismiss) private var cerrar
 
+    @State private var modo: Modo = .entrar
     @State private var correo = ""
-    @State private var codigo = ""
-    @State private var codigoEnviado = false
+    @State private var contrasena = ""
+    @State private var repetida = ""
     @State private var trabajando = false
     @State private var error: ErrorCuenta?
+    @State private var aviso: Aviso?
     @FocusState private var foco: Campo?
 
-    enum Campo { case correo, codigo }
+    enum Campo { case correo, contrasena, repetida }
 
-    static let longitudCodigo = 6
+    /// Mensajes que no son errores: «revisa tu correo».
+    enum Aviso: Equatable {
+        case confirmaTuCorreo(String)
+        case recuperacionEnviada(String)
+    }
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 18) {
-                if codigoEnviado {
-                    pasoCodigo
-                } else {
-                    pasoCorreo
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Picker(selection: $modo) {
+                        Text("Entrar", bundle: .module).tag(Modo.entrar)
+                        Text("Crear cuenta", bundle: .module).tag(Modo.crear)
+                    } label: {
+                        Text("Modo", bundle: .module)
+                    }
+                    .pickerStyle(.segmented)
+                    .onChange(of: modo) { _, _ in
+                        error = nil
+                    }
+
+                    if let aviso {
+                        TarjetaAviso(aviso: aviso)
+                    }
+
+                    campos
+
+                    if let error {
+                        MensajeError(error: error)
+                    }
+
+                    Button {
+                        Task { await continuar() }
+                    } label: {
+                        if trabajando {
+                            ProgressView().tint(.ricoSobreTomate)
+                        } else if modo == .entrar {
+                            Text("Entrar", bundle: .module)
+                        } else {
+                            Text("Crear cuenta", bundle: .module)
+                        }
+                    }
+                    .buttonStyle(.ricoPrincipal)
+                    .disabled(trabajando || !puedeContinuar)
+
+                    if modo == .entrar {
+                        Button {
+                            Task { await recuperar() }
+                        } label: {
+                            Text("¿Has olvidado tu contraseña?", bundle: .module)
+                                .font(.rico(.subheadline, peso: .heavy))
+                                .frame(maxWidth: .infinity, minHeight: Medidas.toqueMinimo)
+                        }
+                        .disabled(trabajando)
+                    }
                 }
-                if let error {
-                    MensajeError(error: error)
-                }
-                Spacer()
+                .padding(.horizontal, Medidas.margen)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
-            .padding(.horizontal, Medidas.margen)
-            .padding(.top, 12)
+            .scrollDismissesKeyboard(.interactively)
             .background(Color.ricoFondo)
+            .navigationTitle(modo == .entrar ? Text("Entrar con correo", bundle: .module) : Text("Crear cuenta", bundle: .module))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -42,116 +94,218 @@ struct AccesoCorreoView: View {
             .onAppear { foco = .correo }
         }
         .tint(.ricoTomate)
-        .presentationDetents([.medium, .large])
     }
 
-    private var pasoCorreo: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("¿Cuál es tu correo?", bundle: .module)
-                .font(.rico(.title2, peso: .black))
-            Text("Te enviamos un código para entrar. No hace falta contraseña.", bundle: .module)
-                .font(.rico(.subheadline, peso: .semibold))
+    // MARK: Campos
+
+    @ViewBuilder
+    private var campos: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Correo", bundle: .module)
+                .font(.rico(.footnote, peso: .heavy))
                 .foregroundStyle(Color.ricoSecundario)
             TextField(text: $correo, prompt: Text("tu@correo.com", bundle: .module)) {
                 Text("Correo", bundle: .module)
             }
             .keyboardType(.emailAddress)
-            .textContentType(.emailAddress)
+            .textContentType(.username)
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
-            .submitLabel(.send)
-            .onSubmit { Task { await enviar() } }
+            .submitLabel(.next)
+            .onSubmit { foco = .contrasena }
             .focused($foco, equals: .correo)
             .modifier(CampoRico())
+        }
+
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Contraseña", bundle: .module)
+                .font(.rico(.footnote, peso: .heavy))
+                .foregroundStyle(Color.ricoSecundario)
+            CampoContrasena(
+                texto: $contrasena,
+                tipo: modo == .crear ? .newPassword : .password,
+                envio: modo == .crear ? .next : .go
+            )
+            .focused($foco, equals: .contrasena)
+            .onSubmit {
+                if modo == .crear { foco = .repetida } else { Task { await continuar() } }
+            }
+        }
+
+        if modo == .crear {
+            ListaReglas(contrasena: contrasena)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Repite la contraseña", bundle: .module)
+                    .font(.rico(.footnote, peso: .heavy))
+                    .foregroundStyle(Color.ricoSecundario)
+                CampoContrasena(texto: $repetida, tipo: .newPassword, envio: .go)
+                    .focused($foco, equals: .repetida)
+                    .onSubmit { Task { await continuar() } }
+                if !repetida.isEmpty, repetida != contrasena {
+                    Text("Las contraseñas no coinciden.", bundle: .module)
+                        .font(.rico(.footnote, peso: .bold))
+                        .foregroundStyle(Color.ricoTomateTexto)
+                }
+            }
+        }
+    }
+
+    private var correoValido: Bool {
+        ValidadorCorreo.esValido(ValidadorCorreo.normalizar(correo))
+    }
+
+    private var puedeContinuar: Bool {
+        switch modo {
+        case .entrar:
+            correoValido && !contrasena.isEmpty
+        case .crear:
+            correoValido && ReglasContrasena.esValida(contrasena) && repetida == contrasena
+        }
+    }
+
+    // MARK: Acciones
+
+    private func continuar() async {
+        guard puedeContinuar, !trabajando else { return }
+        trabajando = true
+        defer { trabajando = false }
+        error = nil
+        aviso = nil
+        do {
+            switch modo {
+            case .entrar:
+                try await cuenta.iniciarSesion(correo: correo, contrasena: contrasena)
+                cerrar()
+            case .crear:
+                switch try await cuenta.registrar(correo: correo, contrasena: contrasena) {
+                case .sesionIniciada:
+                    cerrar()
+                case .confirmaTuCorreo:
+                    // Tras confirmar, entrará con lo que ya ha escrito.
+                    modo = .entrar
+                    aviso = .confirmaTuCorreo(ValidadorCorreo.normalizar(correo))
+                    repetida = ""
+                }
+            }
+        } catch let fallo as ErrorCuenta {
+            error = fallo
+        } catch {
+            self.error = .otro(error.localizedDescription)
+        }
+    }
+
+    private func recuperar() async {
+        guard correoValido else {
+            error = .correoNoValido
+            foco = .correo
+            return
+        }
+        trabajando = true
+        defer { trabajando = false }
+        do {
+            try await cuenta.enviarRecuperacion(a: correo)
+            error = nil
+            aviso = .recuperacionEnviada(ValidadorCorreo.normalizar(correo))
+        } catch let fallo as ErrorCuenta {
+            error = fallo
+        } catch {
+            self.error = .otro(error.localizedDescription)
+        }
+    }
+}
+
+/// Campo de contraseña con botón para mostrarla. Respeta el autorrelleno del llavero.
+struct CampoContrasena: View {
+    @Binding var texto: String
+    let tipo: UITextContentType
+    let envio: SubmitLabel
+
+    @State private var visible = false
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Group {
+                if visible {
+                    TextField(text: $texto) { Text("Contraseña", bundle: .module) }
+                } else {
+                    SecureField(text: $texto) { Text("Contraseña", bundle: .module) }
+                }
+            }
+            .textContentType(tipo)
+            .textInputAutocapitalization(.never)
+            .autocorrectionDisabled()
+            .submitLabel(envio)
 
             Button {
-                Task { await enviar() }
+                visible.toggle()
             } label: {
-                if trabajando { ProgressView().tint(.ricoSobreTomate) } else { Text("Enviar código", bundle: .module) }
+                Image(systemName: visible ? "eye.slash" : "eye")
+                    .foregroundStyle(Color.ricoSecundario)
+                    .frame(minWidth: Medidas.toqueMinimo, minHeight: Medidas.toqueMinimo)
             }
-            .buttonStyle(.ricoPrincipal)
-            .disabled(trabajando || !ValidadorCorreo.esValido(correo.trimmingCharacters(in: .whitespaces)))
+            .buttonStyle(.plain)
+            .accessibilityLabel(visible ? Text("Ocultar contraseña", bundle: .module) : Text("Mostrar contraseña", bundle: .module))
         }
+        .modifier(CampoRico())
     }
+}
 
-    private var pasoCodigo: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Mira tu correo", bundle: .module)
-                .font(.rico(.title2, peso: .black))
-            Text("Escribe el código de 6 cifras que hemos enviado a \(correo).", bundle: .module)
-                .font(.rico(.subheadline, peso: .semibold))
-                .foregroundStyle(Color.ricoSecundario)
-            TextField(text: $codigo, prompt: Text(verbatim: "000000")) {
-                Text("Código", bundle: .module)
-            }
-            .keyboardType(.numberPad)
-            .textContentType(.oneTimeCode)
-            .font(.system(.title, design: .rounded, weight: .black).monospacedDigit())
-            .tracking(6)
-            .focused($foco, equals: .codigo)
-            .modifier(CampoRico())
-            .onChange(of: codigo) { _, nuevo in
-                let soloCifras = String(nuevo.filter(\.isNumber).prefix(Self.longitudCodigo))
-                if soloCifras != nuevo { codigo = soloCifras }
-                if soloCifras.count == Self.longitudCodigo { Task { await verificar() } }
-            }
+/// Reglas de la contraseña, marcadas según se cumplen.
+struct ListaReglas: View {
+    let contrasena: String
 
-            HStack {
-                Button {
-                    codigoEnviado = false
-                    codigo = ""
-                    error = nil
-                    foco = .correo
-                } label: {
-                    Text("Cambiar correo", bundle: .module)
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(ReglasContrasena.Regla.allCases, id: \.self) { regla in
+                let cumple = ReglasContrasena.cumple(regla, contrasena)
+                HStack(spacing: 6) {
+                    Image(systemName: cumple ? "checkmark.circle.fill" : "circle")
+                        .foregroundStyle(cumple ? Color.ricoVerde : Color.ricoSecundario)
+                    texto(regla)
+                        .foregroundStyle(cumple ? Color.ricoTinta : Color.ricoSecundario)
                 }
-                Spacer()
-                Button {
-                    Task { await enviar() }
-                } label: {
-                    Text("Reenviar código", bundle: .module)
-                }
-                .disabled(trabajando)
-            }
-            .font(.rico(.subheadline, peso: .heavy))
-            .frame(minHeight: Medidas.toqueMinimo)
-
-            if trabajando {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
+                .font(.rico(.footnote, peso: .bold))
+                .accessibilityElement(children: .combine)
+                .accessibilityValue(cumple ? Text("cumplida", bundle: .module) : Text("pendiente", bundle: .module))
             }
         }
+        .animation(.snappy(duration: 0.2), value: contrasena)
     }
 
-    private func enviar() async {
-        guard !trabajando else { return }
-        trabajando = true
-        defer { trabajando = false }
-        do {
-            try await cuenta.enviarCodigo(a: correo)
-            error = nil
-            codigoEnviado = true
-            foco = .codigo
-        } catch let fallo as ErrorCuenta {
-            error = fallo
-        } catch {
-            self.error = .otro(error.localizedDescription)
+    private func texto(_ regla: ReglasContrasena.Regla) -> Text {
+        switch regla {
+        case .longitud: Text("Al menos \(ReglasContrasena.longitudMinima) caracteres", bundle: .module)
+        case .letra: Text("Una letra", bundle: .module)
+        case .numero: Text("Un número", bundle: .module)
         }
     }
+}
 
-    private func verificar() async {
-        guard !trabajando else { return }
-        trabajando = true
-        defer { trabajando = false }
-        do {
-            try await cuenta.verificarCodigo(codigo, correo: correo)
-            error = nil
-            cerrar()
-        } catch let fallo as ErrorCuenta {
-            error = fallo
-            codigo = ""
-        } catch {
-            self.error = .otro(error.localizedDescription)
+/// Aviso de «mira tu correo».
+struct TarjetaAviso: View {
+    let aviso: AccesoCorreoView.Aviso
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "envelope.badge")
+                .font(.title3)
+                .foregroundStyle(Color.ricoVerde)
+            texto
+                .font(.rico(.subheadline, peso: .bold))
+                .foregroundStyle(Color.ricoTinta)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.ricoVerdeSuave, in: RoundedRectangle(cornerRadius: Medidas.radioControl))
+    }
+
+    private var texto: Text {
+        switch aviso {
+        case let .confirmaTuCorreo(correo):
+            Text("Te hemos enviado un enlace a \(correo). Ábrelo en este iPhone para activar la cuenta.", bundle: .module)
+        case let .recuperacionEnviada(correo):
+            Text("Si hay una cuenta con \(correo), te llegará un enlace para elegir una contraseña nueva.", bundle: .module)
         }
     }
 }

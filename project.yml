@@ -48,6 +48,10 @@ targets:
           UIImageName: Logotipo
           UIImageRespectsSafeAreaInsets: false
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        # Enlaces de los correos de cuenta: rico://auth/confirmar y rico://auth/recuperar
+        CFBundleURLTypes:
+          - CFBundleURLName: es.siweb.rico.auth
+            CFBundleURLSchemes: [rico]
         NSPhotoLibraryUsageDescription: "Para sugerirte las fotos que hiciste en cada restaurante y guardarlas en tu diario."
         RicoAppGroup: group.$(PRODUCT_BUNDLE_IDENTIFIER)
         RicoSupabaseHost: $(RICO_SUPABASE_HOST)

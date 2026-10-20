@@ -13,10 +13,42 @@ public struct SesionUsuario: Sendable, Equatable {
 
 public enum ErrorCuenta: Error, Equatable {
     case correoNoValido
-    case codigoIncorrecto
+    case credencialesIncorrectas
+    case correoSinConfirmar
+    case correoYaRegistrado
+    case contrasenaDebil
+    case enlaceNoValido
     case sinConexion
     case appleSinToken
     case otro(String)
+}
+
+/// Qué pasa tras crear la cuenta.
+public enum ResultadoRegistro: Sendable, Equatable {
+    /// La cuenta queda lista y con sesión.
+    case sesionIniciada
+    /// Hay que abrir el enlace que ha llegado al correo.
+    case confirmaTuCorreo
+}
+
+/// Enlaces de los correos que vuelven a la app (`rico://auth/...`).
+public enum EnlaceCuenta: Sendable, Equatable {
+    case confirmacion
+    case recuperacion
+
+    public static let esquema = "rico"
+    public static let urlConfirmacion = URL(string: "rico://auth/confirmar")!
+    public static let urlRecuperacion = URL(string: "rico://auth/recuperar")!
+
+    /// Reconoce un enlace de cuenta por su ruta.
+    public init?(url: URL) {
+        guard url.scheme == Self.esquema, url.host == "auth" else { return nil }
+        switch url.path {
+        case "/confirmar": self = .confirmacion
+        case "/recuperar": self = .recuperacion
+        default: return nil
+        }
+    }
 }
 
 /// Cuentas de usuario. Protocolo para poder probar sin servidor.
@@ -26,8 +58,12 @@ public protocol ServicioCuenta: AnyObject, Sendable {
     /// Emite la sesión al empezar y cada vez que cambia (`nil` = sin sesión).
     func cambiosDeSesion() -> AsyncStream<SesionUsuario?>
     func iniciarConApple(tokenIdentidad: String, nonce: String) async throws
-    func enviarCodigo(a correo: String) async throws
-    func verificarCodigo(_ codigo: String, correo: String) async throws
+    func registrar(correo: String, contrasena: String) async throws -> ResultadoRegistro
+    func iniciarSesion(correo: String, contrasena: String) async throws
+    func enviarRecuperacion(a correo: String) async throws
+    /// Abre la sesión que trae un enlace de confirmación o de recuperación.
+    func gestionarEnlace(_ url: URL) async throws -> EnlaceCuenta
+    func cambiarContrasena(_ nueva: String) async throws
     func cerrarSesion() async throws
     /// Borra las fotos, la cuenta y todos sus datos en el servidor.
     func borrarCuenta() async throws
@@ -41,5 +77,33 @@ public enum ValidadorCorreo {
         let dominio = partes[1]
         guard let punto = dominio.lastIndex(of: "."), punto != dominio.startIndex else { return false }
         return dominio.distance(from: punto, to: dominio.endIndex) > 2
+    }
+
+    public static func normalizar(_ correo: String) -> String {
+        correo.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+}
+
+/// Reglas de contraseña. Las mismas se configuran en Supabase (Auth → Policies),
+/// que es quien las hace cumplir; aquí solo se enseñan mientras se escribe.
+public enum ReglasContrasena {
+    public enum Regla: CaseIterable, Sendable {
+        case longitud
+        case letra
+        case numero
+    }
+
+    public static let longitudMinima = 8
+
+    public static func cumple(_ regla: Regla, _ contrasena: String) -> Bool {
+        switch regla {
+        case .longitud: contrasena.count >= longitudMinima
+        case .letra: contrasena.contains(where: \.isLetter)
+        case .numero: contrasena.contains(where: \.isNumber)
+        }
+    }
+
+    public static func esValida(_ contrasena: String) -> Bool {
+        Regla.allCases.allSatisfy { cumple($0, contrasena) }
     }
 }

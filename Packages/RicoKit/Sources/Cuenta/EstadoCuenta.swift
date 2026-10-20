@@ -15,6 +15,10 @@ public final class EstadoCuenta {
     }
 
     public private(set) var fase: Fase
+    /// Se ha abierto un enlace de «¿Has olvidado tu contraseña?»: hay que pedir la nueva.
+    public var pidiendoNuevaContrasena = false
+    /// Error al abrir un enlace del correo, para mostrarlo.
+    public var errorEnlace: ErrorCuenta?
 
     public let servicio: (any ServicioCuenta)?
     @ObservationIgnored private var escucha: Task<Void, Never>?
@@ -46,12 +50,35 @@ public final class EstadoCuenta {
         try await requerido().iniciarConApple(tokenIdentidad: tokenIdentidad, nonce: nonce)
     }
 
-    public func enviarCodigo(a correo: String) async throws {
-        try await requerido().enviarCodigo(a: correo)
+    public func registrar(correo: String, contrasena: String) async throws -> ResultadoRegistro {
+        try await requerido().registrar(correo: correo, contrasena: contrasena)
     }
 
-    public func verificarCodigo(_ codigo: String, correo: String) async throws {
-        try await requerido().verificarCodigo(codigo, correo: correo)
+    public func iniciarSesion(correo: String, contrasena: String) async throws {
+        try await requerido().iniciarSesion(correo: correo, contrasena: contrasena)
+    }
+
+    public func enviarRecuperacion(a correo: String) async throws {
+        try await requerido().enviarRecuperacion(a: correo)
+    }
+
+    /// Para `.onOpenURL`: ignora enlaces que no son de cuenta.
+    public func abrirEnlace(_ url: URL) async {
+        guard EnlaceCuenta(url: url) != nil, let servicio else { return }
+        do {
+            let tipo = try await servicio.gestionarEnlace(url)
+            errorEnlace = nil
+            pidiendoNuevaContrasena = tipo == .recuperacion
+        } catch let error as ErrorCuenta {
+            errorEnlace = error
+        } catch {
+            errorEnlace = .enlaceNoValido
+        }
+    }
+
+    public func cambiarContrasena(_ nueva: String) async throws {
+        try await requerido().cambiarContrasena(nueva)
+        pidiendoNuevaContrasena = false
     }
 
     public func cerrarSesion() async throws {

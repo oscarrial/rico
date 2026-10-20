@@ -6,11 +6,14 @@ import Modelos
 import Visitas
 import RicoCore
 
-/// Servicio de cuentas falso: guarda la sesión en memoria y emite los cambios.
+/// Servicio de cuentas falso: usuarios en memoria y cambios de sesión por un flujo.
 @MainActor
 final class ServicioCuentaFalso: ServicioCuenta {
     var sesionActual: SesionUsuario?
-    var codigoValido = "123456"
+    var usuarios: [String: String] = [:]
+    var sinConfirmar: Set<String> = []
+    var pedirConfirmacion = true
+    var recuperacionesEnviadas: [String] = []
     var borrada = false
     private let flujo: AsyncStream<SesionUsuario?>
     private let continuacion: AsyncStream<SesionUsuario?>.Continuation
@@ -29,13 +32,42 @@ final class ServicioCuentaFalso: ServicioCuenta {
         cambiar(a: SesionUsuario(id: UUID(), correo: nil))
     }
 
-    func enviarCodigo(a correo: String) async throws {
+    func registrar(correo: String, contrasena: String) async throws -> ResultadoRegistro {
+        let correo = ValidadorCorreo.normalizar(correo)
         guard ValidadorCorreo.esValido(correo) else { throw ErrorCuenta.correoNoValido }
+        guard ReglasContrasena.esValida(contrasena) else { throw ErrorCuenta.contrasenaDebil }
+        guard usuarios[correo] == nil else { throw ErrorCuenta.correoYaRegistrado }
+        usuarios[correo] = contrasena
+        if pedirConfirmacion {
+            sinConfirmar.insert(correo)
+            return .confirmaTuCorreo
+        }
+        cambiar(a: SesionUsuario(id: UUID(), correo: correo))
+        return .sesionIniciada
     }
 
-    func verificarCodigo(_ codigo: String, correo: String) async throws {
-        guard codigo == codigoValido else { throw ErrorCuenta.codigoIncorrecto }
+    func iniciarSesion(correo: String, contrasena: String) async throws {
+        let correo = ValidadorCorreo.normalizar(correo)
+        guard usuarios[correo] == contrasena else { throw ErrorCuenta.credencialesIncorrectas }
+        guard !sinConfirmar.contains(correo) else { throw ErrorCuenta.correoSinConfirmar }
         cambiar(a: SesionUsuario(id: UUID(), correo: correo))
+    }
+
+    func enviarRecuperacion(a correo: String) async throws {
+        recuperacionesEnviadas.append(ValidadorCorreo.normalizar(correo))
+    }
+
+    func gestionarEnlace(_ url: URL) async throws -> EnlaceCuenta {
+        guard let tipo = EnlaceCuenta(url: url) else { throw ErrorCuenta.enlaceNoValido }
+        let correo = url.query?.replacingOccurrences(of: "correo=", with: "") ?? ""
+        sinConfirmar.remove(correo)
+        cambiar(a: SesionUsuario(id: UUID(), correo: correo))
+        return tipo
+    }
+
+    func cambiarContrasena(_ nueva: String) async throws {
+        guard ReglasContrasena.esValida(nueva) else { throw ErrorCuenta.contrasenaDebil }
+        if let correo = sesionActual?.correo { usuarios[correo] = nueva }
     }
 
     func cerrarSesion() async throws {
@@ -85,14 +117,83 @@ struct CuentaTests {
         #expect(await esperar { estado.fase == .conSesion(sesion) })
     }
 
-    @Test func entrarConCodigoDeCorreo() async throws {
-        let estado = EstadoCuenta(servicio: ServicioCuentaFalso())
-        try await estado.enviarCodigo(a: "ana@ejemplo.com")
-        await #expect(throws: ErrorCuenta.codigoIncorrecto) {
-            try await estado.verificarCodigo("000000", correo: "ana@ejemplo.com")
+    @Test func crearCuentaConfirmarYEntrar() async throws {
+        let servicio = ServicioCuentaFalso()
+        let estado = EstadoCuenta(servicio: servicio)
+        #expect(try await estado.registrar(correo: " Ana@Ejemplo.com ", contrasena: "pulpo2026") == .confirmaTuCorreo)
+
+        // Sin abrir el enlace no se puede entrar.
+        await #expect(throws: ErrorCuenta.correoSinConfirmar) {
+            try await estado.iniciarSesion(correo: "ana@ejemplo.com", contrasena: "pulpo2026")
         }
-        try await estado.verificarCodigo("123456", correo: "ana@ejemplo.com")
+
+        // El enlace del correo abre la sesión.
+        await estado.abrirEnlace(URL(string: "rico://auth/confirmar?correo=ana@ejemplo.com")!)
         #expect(await esperar { estado.sesion?.correo == "ana@ejemplo.com" })
+        #expect(!estado.pidiendoNuevaContrasena)
+
+        try await estado.cerrarSesion()
+        #expect(await esperar { estado.necesitaAcceso })
+        try await estado.iniciarSesion(correo: "ana@ejemplo.com", contrasena: "pulpo2026")
+        #expect(await esperar { estado.sesion != nil })
+    }
+
+    @Test func contrasenaIncorrecta() async throws {
+        let servicio = ServicioCuentaFalso()
+        servicio.pedirConfirmacion = false
+        let estado = EstadoCuenta(servicio: servicio)
+        _ = try await estado.registrar(correo: "ana@ejemplo.com", contrasena: "pulpo2026")
+        try await estado.cerrarSesion()
+        await #expect(throws: ErrorCuenta.credencialesIncorrectas) {
+            try await estado.iniciarSesion(correo: "ana@ejemplo.com", contrasena: "otra2026")
+        }
+    }
+
+    @Test func noSeRepiteElCorreoNiSeAceptanContrasenasDebiles() async throws {
+        let estado = EstadoCuenta(servicio: ServicioCuentaFalso())
+        await #expect(throws: ErrorCuenta.contrasenaDebil) {
+            _ = try await estado.registrar(correo: "ana@ejemplo.com", contrasena: "corta1")
+        }
+        _ = try await estado.registrar(correo: "ana@ejemplo.com", contrasena: "pulpo2026")
+        await #expect(throws: ErrorCuenta.correoYaRegistrado) {
+            _ = try await estado.registrar(correo: "ana@ejemplo.com", contrasena: "pulpo2026")
+        }
+    }
+
+    @Test func enlaceDeRecuperacionPideContrasenaNueva() async throws {
+        let servicio = ServicioCuentaFalso()
+        let estado = EstadoCuenta(servicio: servicio)
+        try await estado.enviarRecuperacion(a: "ana@ejemplo.com")
+        #expect(servicio.recuperacionesEnviadas == ["ana@ejemplo.com"])
+
+        await estado.abrirEnlace(URL(string: "rico://auth/recuperar?correo=ana@ejemplo.com")!)
+        #expect(estado.pidiendoNuevaContrasena)
+        try await estado.cambiarContrasena("nueva2026")
+        #expect(!estado.pidiendoNuevaContrasena)
+        #expect(servicio.usuarios["ana@ejemplo.com"] == "nueva2026")
+    }
+
+    @Test func otrosEnlacesSeIgnoran() async {
+        let estado = EstadoCuenta(servicio: ServicioCuentaFalso())
+        await estado.abrirEnlace(URL(string: "https://rico.app/l/123")!)
+        await estado.abrirEnlace(URL(string: "rico://otra/cosa")!)
+        #expect(estado.errorEnlace == nil)
+        #expect(!estado.pidiendoNuevaContrasena)
+    }
+
+    @Test func reglasDeContrasena() {
+        #expect(!ReglasContrasena.esValida("pulpo"))
+        #expect(!ReglasContrasena.esValida("pulpoalafeira"))
+        #expect(!ReglasContrasena.esValida("12345678"))
+        #expect(ReglasContrasena.esValida("pulpo2026"))
+        #expect(ReglasContrasena.cumple(.longitud, "12345678"))
+        #expect(!ReglasContrasena.cumple(.letra, "12345678"))
+    }
+
+    @Test func enlacesDeCuenta() {
+        #expect(EnlaceCuenta(url: EnlaceCuenta.urlConfirmacion) == .confirmacion)
+        #expect(EnlaceCuenta(url: EnlaceCuenta.urlRecuperacion) == .recuperacion)
+        #expect(EnlaceCuenta(url: URL(string: "rico://auth/otra")!) == nil)
     }
 
     @Test func cerrarSesionVuelveAlAcceso() async throws {

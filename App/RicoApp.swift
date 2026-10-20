@@ -45,6 +45,13 @@ struct RicoApp: App {
                     }
                 }
                 .animation(.easeOut(duration: 0.25), value: cuenta.fase)
+                // Enlaces de los correos: confirmar la cuenta o recuperar la contraseña.
+                .onOpenURL { url in
+                    Task { await cuenta.abrirEnlace(url) }
+                }
+                .sheet(isPresented: $cuenta.pidiendoNuevaContrasena) {
+                    NuevaContrasenaView()
+                }
         }
         .modelContainer(contenedor)
     }

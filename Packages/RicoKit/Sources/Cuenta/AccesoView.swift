@@ -62,7 +62,7 @@ public struct AccesoView: View {
                 .buttonStyle(.ricoSecundario)
                 .disabled(entrando)
 
-                if let error {
+                if let error = error ?? cuenta.errorEnlace {
                     MensajeError(error: error)
                 }
 
@@ -136,7 +136,11 @@ struct MensajeError: View {
     private var texto: Text {
         switch error {
         case .correoNoValido: Text("Ese correo no parece válido. Revísalo.", bundle: .module)
-        case .codigoIncorrecto: Text("El código no es correcto o ha caducado.", bundle: .module)
+        case .credencialesIncorrectas: Text("El correo o la contraseña no son correctos.", bundle: .module)
+        case .correoSinConfirmar: Text("Antes de entrar, abre el enlace que te enviamos al correo.", bundle: .module)
+        case .correoYaRegistrado: Text("Ya hay una cuenta con ese correo. Prueba a entrar.", bundle: .module)
+        case .contrasenaDebil: Text("La contraseña necesita al menos 8 caracteres, una letra y un número.", bundle: .module)
+        case .enlaceNoValido: Text("El enlace no es válido o ha caducado. Pide otro.", bundle: .module)
         case .sinConexion: Text("No hay conexión. Prueba en un momento.", bundle: .module)
         case .appleSinToken: Text("Apple no ha devuelto tus datos. Vuelve a intentarlo.", bundle: .module)
         case .otro: Text("Algo ha fallado. Vuelve a intentarlo.", bundle: .module)

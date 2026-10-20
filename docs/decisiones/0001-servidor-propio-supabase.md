@@ -14,7 +14,7 @@ El plan proponía guardar los datos solo en el iPhone y sincronizarlos con el iC
 ## Decisión
 
 1. **Supabase** (PostgreSQL, Auth y Storage) en una **región de la UE** (Fráncfort).
-2. **Cuentas:** «Iniciar sesión con Apple» y **correo con código de 6 dígitos** (sin contraseñas ni enlaces mágicos). Apple obliga a ofrecer su inicio de sesión si hay otros de terceros, y a permitir **borrar la cuenta** desde la app.
+2. **Cuentas:** «Iniciar sesión con Apple» y **correo con contraseña** (mínimo 8 caracteres, con al menos una letra y un número). Al crear la cuenta se confirma el correo con un enlace, y «¿Has olvidado tu contraseña?» envía otro enlace. Ambos vuelven a la app por `rico://auth/confirmar` y `rico://auth/recuperar`. Apple obliga a ofrecer su inicio de sesión si hay otros de terceros, y a permitir **borrar la cuenta** desde la app.
 3. **La app sigue siendo local primero:** SwiftData guarda todo en el iPhone y una capa de sincronización sube y baja cambios. La captura al pagar funciona sin conexión.
 4. **Seguridad por fila (RLS):** cada tabla tiene `usuario_id` y una política «solo el dueño». Las claves externas incluyen `usuario_id` para que nadie pueda enlazar filas de otro usuario.
 5. **Fotos** en un bucket privado `fotos`, en la carpeta `{usuario_id}/`.
@@ -41,7 +41,10 @@ El plan proponía guardar los datos solo en el iPhone y sincronizarlos con el iC
 
 1. Crear un proyecto en [supabase.com](https://supabase.com) en la región **Central EU (Frankfurt)**.
 2. Ejecutar `supabase/migrations/*.sql` en orden (SQL Editor o `supabase db push`).
-3. **Auth → Providers:**
-   - **Email:** activado. En la plantilla «Magic Link», el correo debe incluir `{{ .Token }}` para enviar el código de 6 dígitos.
-   - **Apple:** activado, con el Bundle ID de la app (`es.siweb.rico`) en «Client IDs».
+3. **Authentication** en el panel de Supabase:
+   - **Sign In / Providers → Email:** activado, con «Confirm email» activado.
+   - **Policies / Passwords:** longitud mínima 8 y «Letters and digits». Es el servidor quien hace cumplir las reglas; la app solo las enseña.
+   - **URL Configuration → Redirect URLs:** añadir `rico://auth/**`.
+   - **Emails:** traducir al castellano las plantillas «Confirm signup» y «Reset password». Para producción, configurar un SMTP propio, porque el envío de Supabase tiene un límite muy bajo de correos por hora.
+   - **Apple:** activado, con el Bundle ID de la app (`es.siweb.rico`) en «Client IDs». Requiere la cuenta de Apple Developer.
 4. Copiar `Config/Secretos.example.xcconfig` a `Config/Secretos.xcconfig` con el host del proyecto y la clave pública (`anon`). Para la CI, guardar los mismos valores como secretos `RICO_SUPABASE_HOST` y `RICO_SUPABASE_CLAVE` del repositorio.

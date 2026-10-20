@@ -63,22 +63,53 @@ public final class ServicioCuentaSupabase: ServicioCuenta {
         }
     }
 
-    public func enviarCodigo(a correo: String) async throws {
-        let correo = correo.trimmingCharacters(in: .whitespaces).lowercased()
-        guard ValidadorCorreo.esValido(correo) else { throw ErrorCuenta.correoNoValido }
+    public func registrar(correo: String, contrasena: String) async throws -> ResultadoRegistro {
+        let correo = try Self.correoValido(correo)
+        guard ReglasContrasena.esValida(contrasena) else { throw ErrorCuenta.contrasenaDebil }
+        var resultado = ResultadoRegistro.confirmaTuCorreo
         try await traducirErrores {
-            try await cliente.auth.signInWithOTP(email: correo, shouldCreateUser: true)
+            let respuesta = try await cliente.auth.signUp(
+                email: correo,
+                password: contrasena,
+                redirectTo: EnlaceCuenta.urlConfirmacion
+            )
+            if case .session = respuesta {
+                resultado = .sesionIniciada
+            }
+        }
+        return resultado
+    }
+
+    public func iniciarSesion(correo: String, contrasena: String) async throws {
+        let correo = try Self.correoValido(correo)
+        try await traducirErrores {
+            _ = try await cliente.auth.signIn(email: correo, password: contrasena)
         }
     }
 
-    public func verificarCodigo(_ codigo: String, correo: String) async throws {
-        let correo = correo.trimmingCharacters(in: .whitespaces).lowercased()
+    public func enviarRecuperacion(a correo: String) async throws {
+        let correo = try Self.correoValido(correo)
+        try await traducirErrores {
+            try await cliente.auth.resetPasswordForEmail(correo, redirectTo: EnlaceCuenta.urlRecuperacion)
+        }
+    }
+
+    public func gestionarEnlace(_ url: URL) async throws -> EnlaceCuenta {
+        guard let tipo = EnlaceCuenta(url: url) else { throw ErrorCuenta.enlaceNoValido }
         do {
-            _ = try await cliente.auth.verifyOTP(email: correo, token: codigo, type: .email)
+            _ = try await cliente.auth.session(from: url)
         } catch let error as URLError {
             throw Self.traducir(error)
         } catch {
-            throw ErrorCuenta.codigoIncorrecto
+            throw ErrorCuenta.enlaceNoValido
+        }
+        return tipo
+    }
+
+    public func cambiarContrasena(_ nueva: String) async throws {
+        guard ReglasContrasena.esValida(nueva) else { throw ErrorCuenta.contrasenaDebil }
+        try await traducirErrores {
+            _ = try await cliente.auth.update(user: UserAttributes(password: nueva))
         }
     }
 
@@ -110,6 +141,12 @@ public final class ServicioCuentaSupabase: ServicioCuenta {
         SesionUsuario(id: sesion.user.id, correo: sesion.user.email)
     }
 
+    nonisolated static func correoValido(_ correo: String) throws -> String {
+        let normalizado = ValidadorCorreo.normalizar(correo)
+        guard ValidadorCorreo.esValido(normalizado) else { throw ErrorCuenta.correoNoValido }
+        return normalizado
+    }
+
     private func traducirErrores(_ operacion: () async throws -> Void) async throws {
         do {
             try await operacion()
@@ -117,8 +154,20 @@ public final class ServicioCuentaSupabase: ServicioCuenta {
             throw error
         } catch let error as URLError {
             throw Self.traducir(error)
+        } catch let error as AuthError {
+            throw Self.traducir(error)
         } catch {
             throw ErrorCuenta.otro(error.localizedDescription)
+        }
+    }
+
+    nonisolated static func traducir(_ error: AuthError) -> ErrorCuenta {
+        switch error.errorCode {
+        case .invalidCredentials: .credencialesIncorrectas
+        case .emailNotConfirmed: .correoSinConfirmar
+        case .userAlreadyExists, .emailExists: .correoYaRegistrado
+        case .weakPassword: .contrasenaDebil
+        default: .otro(error.localizedDescription)
         }
     }
 

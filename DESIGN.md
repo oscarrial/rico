@@ -176,8 +176,15 @@ La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (n
   - Logotipo centrado y la promesa «Cada restaurante que pruebas, guardado solo.».
   - Abajo, «Continuar con Apple» (botón oficial: negro en claro, blanco en oscuro, en cápsula de 54 pt) y «Continuar con correo» (secundario).
   - Debajo, los enlaces a términos y privacidad.
-  - Sin contraseñas: el correo recibe un código de 6 cifras que se rellena solo desde el teclado (`.oneTimeCode`) y se comprueba al completarse.
-- **Tu cuenta:** se abre desde el icono de persona del diario. Tiene el correo, «Cerrar sesión» y «Borrar mi cuenta» (destructivo, con confirmación y explicando que se borra todo).
+- **Correo y contraseña** (hoja): selector «Entrar / Crear cuenta».
+  - Etiquetas encima de los campos, nunca solo el texto de ejemplo.
+  - Campos con `textContentType` (`.username`, `.password`, `.newPassword`) para que funcionen el autorrelleno y las contraseñas seguras del llavero.
+  - Contraseña con botón de ojo para mostrarla.
+  - Al crear cuenta: reglas marcadas mientras se escribe (8 caracteres, una letra, un número) y «Repite la contraseña».
+  - El botón principal se activa solo cuando todo es válido.
+  - Los errores dicen qué hacer («Ya hay una cuenta con ese correo. Prueba a entrar.») y nunca muestran el error técnico.
+  - Los avisos de «mira tu correo» van en verde suave con el sobre; no son errores.
+- **Tu cuenta:** se abre desde el icono de persona del diario. Tiene el correo, «Cambiar contraseña», «Cerrar sesión» y «Borrar mi cuenta» (destructivo, con confirmación y explicando que se borra todo).
 - **Paywall:** nunca al abrir la app ni antes de la primera visita valorada. Siempre muestra precio, renovación automática, «Restaurar compras», términos y privacidad.
 - **Notificaciones:** firmadas con el símbolo. Título con el nombre del sitio y acción directa (estrellas o «Valorar»).
 
