@@ -347,9 +347,7 @@ public struct FichaRapidaView: View {
         Color.ricoSuperficieHundida
             .frame(height: 100)
             .overlay {
-                if let imagen = UIImage(data: datos) {
-                    Image(uiImage: imagen).resizable().scaledToFill()
-                }
+                ImagenVisita(miniatura: datos, semilla: 0)
             }
             .clipShape(RoundedRectangle(cornerRadius: Medidas.radioControl))
             .accessibilityHidden(true)

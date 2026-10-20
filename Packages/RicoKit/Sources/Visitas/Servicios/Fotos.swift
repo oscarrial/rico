@@ -1,4 +1,5 @@
 import Foundation
+import ImageIO
 import Photos
 import UIKit
 import RicoCore
@@ -59,13 +60,27 @@ public final class SugeridorFotosCarrete: SugeridorFotos {
         }
 
         let elegidas = cercanas.prefix(12).map { (id: $0.localIdentifier, fecha: $0.creationDate ?? desde) }
-        var salida: [FotoCarrete] = []
-        for foto in elegidas {
-            if let miniatura = await Self.miniatura(id: foto.id) {
-                salida.append(FotoCarrete(id: foto.id, miniatura: miniatura, fecha: foto.fecha))
+        // Hasta 4 peticiones a la vez; se conserva el orden original por índice.
+        var salida: [(Int, FotoCarrete)] = []
+        await withTaskGroup(of: (Int, FotoCarrete)?.self) { grupo in
+            var siguiente = 0
+            func lanzar() {
+                guard siguiente < elegidas.count else { return }
+                let indice = siguiente
+                let foto = elegidas[indice]
+                siguiente += 1
+                grupo.addTask {
+                    guard let miniatura = await Self.miniatura(id: foto.id) else { return nil }
+                    return (indice, FotoCarrete(id: foto.id, miniatura: miniatura, fecha: foto.fecha))
+                }
+            }
+            for _ in 0..<4 { lanzar() }
+            while let resultado = await grupo.next() {
+                if let resultado { salida.append(resultado) }
+                lanzar()
             }
         }
-        return salida
+        return salida.sorted { $0.0 < $1.0 }.map(\.1)
     }
 
     public func datosCompletos(id: String) async -> Data? {
@@ -119,10 +134,11 @@ public enum ProcesadorFotos {
     }
 
     /// Imagen completa a 2048 px como mucho y miniatura a 600 px, en JPEG.
+    /// Reduce con ImageIO sin decodificar la foto original entera.
     public static func procesar(_ datos: Data) -> Resultado? {
-        guard let imagen = UIImage(data: datos),
-              let grande = redimensionar(imagen, ladoMaximo: 2048).jpegData(compressionQuality: 0.8),
-              let pequena = redimensionar(imagen, ladoMaximo: 600).jpegData(compressionQuality: 0.7)
+        guard let origen = CGImageSourceCreateWithData(datos as CFData, nil),
+              let grande = reducida(origen, ladoMaximo: 2048, calidad: 0.8),
+              let pequena = reducida(origen, ladoMaximo: 600, calidad: 0.7)
         else { return nil }
         return Resultado(datos: grande, miniatura: pequena)
     }
@@ -132,15 +148,20 @@ public enum ProcesadorFotos {
         await Task.detached(priority: .userInitiated) { procesar(datos) }.value
     }
 
-    static func redimensionar(_ imagen: UIImage, ladoMaximo: CGFloat) -> UIImage {
-        let lado = max(imagen.size.width, imagen.size.height)
-        guard lado > ladoMaximo else { return imagen }
-        let escala = ladoMaximo / lado
-        let tamano = CGSize(width: (imagen.size.width * escala).rounded(), height: (imagen.size.height * escala).rounded())
-        let formato = UIGraphicsImageRendererFormat()
-        formato.scale = 1
-        return UIGraphicsImageRenderer(size: tamano, format: formato).image { _ in
-            imagen.draw(in: CGRect(origin: .zero, size: tamano))
+    private static func reducida(_ origen: CGImageSource, ladoMaximo: Int, calidad: CGFloat) -> Data? {
+        // Sin ampliar: si la foto ya es menor, se conserva su tamaño.
+        var lado = ladoMaximo
+        if let propiedades = CGImageSourceCopyPropertiesAtIndex(origen, 0, nil) as? [CFString: Any],
+           let ancho = propiedades[kCGImagePropertyPixelWidth] as? Int,
+           let alto = propiedades[kCGImagePropertyPixelHeight] as? Int {
+            lado = min(ladoMaximo, max(ancho, alto))
         }
+        let opciones: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: lado
+        ]
+        guard let imagen = CGImageSourceCreateThumbnailAtIndex(origen, 0, opciones as CFDictionary) else { return nil }
+        return UIImage(cgImage: imagen).jpegData(compressionQuality: calidad)
     }
 }

@@ -133,21 +133,55 @@ public struct ImagenVisita: View {
         self.semilla = semilla
     }
 
+    @State private var imagen: UIImage?
+
     public var body: some View {
-        if let miniatura, let imagen = UIImage(data: miniatura) {
-            Image(uiImage: imagen)
-                .resizable()
-                .scaledToFill()
-                .accessibilityHidden(true)
-        } else {
-            let colores = Color.ricoPlaceholders
-            colores[abs(semilla) % colores.count]
-                .overlay {
-                    Image(systemName: "fork.knife")
-                        .font(.system(size: 28, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.55))
-                }
-                .accessibilityHidden(true)
+        Group {
+            if let imagen {
+                Image(uiImage: imagen)
+                    .resizable()
+                    .scaledToFill()
+                    .accessibilityHidden(true)
+            } else {
+                let colores = Color.ricoPlaceholders
+                colores[abs(semilla) % colores.count]
+                    .overlay {
+                        Image(systemName: "fork.knife")
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.55))
+                    }
+                    .accessibilityHidden(true)
+            }
+        }
+        .task(id: miniatura) {
+            guard let miniatura else {
+                imagen = nil
+                return
+            }
+            if let guardada = CacheImagenVisita.cache.object(forKey: miniatura as NSData) {
+                imagen = guardada
+                return
+            }
+            let decodificada = await Self.decodificar(miniatura)
+            if let decodificada {
+                CacheImagenVisita.cache.setObject(decodificada, forKey: miniatura as NSData)
+            }
+            imagen = decodificada
         }
     }
+
+    /// Decodifica y prepara la imagen fuera del hilo principal.
+    nonisolated static func decodificar(_ datos: Data?) async -> UIImage? {
+        guard let datos, let imagen = UIImage(data: datos) else { return nil }
+        return await imagen.byPreparingForDisplay()
+    }
+}
+
+@MainActor
+private enum CacheImagenVisita {
+    static let cache: NSCache<NSData, UIImage> = {
+        let cache = NSCache<NSData, UIImage>()
+        cache.countLimit = 100
+        return cache
+    }()
 }
