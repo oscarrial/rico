@@ -56,7 +56,7 @@ public struct NuevaContrasenaView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button {
-                        cuenta.pidiendoNuevaContrasena = false
+                        cuenta.terminarRecuperacion()
                         cerrar()
                     } label: {
                         hecho ? Text("Listo", bundle: .module) : Text("Cancelar", bundle: .module)
