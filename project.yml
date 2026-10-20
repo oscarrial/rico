@@ -42,7 +42,7 @@ targets:
       properties:
         CFBundleDisplayName: Rico
         CFBundleDevelopmentRegion: es
-        CFBundleLocalizations: [es, en]
+        CFBundleLocalizations: [es]
         UILaunchScreen:
           UIColorName: FondoInicio
           UIImageName: Logotipo

@@ -92,6 +92,30 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             2>&1 | tee build/xcodebuild.log | xcbeautify --renderer github-actions
 
+      - name: Investigación de localización
+        if: always()
+        run: |
+          mkdir -p build
+          git status --porcelain -- '*.xcstrings' > build/xcstrings-cambiados.txt || true
+          xcodebuild -exportLocalizations -project Rico.xcodeproj -localizationPath build/localizacion -exportLanguage es 2>&1 | tee build/export-localizaciones.log || true
+          find build/localizacion -name '*.xliff' -exec grep -c "<trans-unit" {} \; > build/unidades.txt || true
+          mkdir -p build/catalogos
+          find Packages -name '*.xcstrings' | while read -r f; do mkdir -p "build/catalogos/$(dirname "$f")"; cp "$f" "build/catalogos/$f"; done || true
+          ls -R build/localizacion > build/localizacion-listado.txt || true
+
+      - name: Subir investigación de localización
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: localizacion
+          path: |
+            build/xcstrings-cambiados.txt
+            build/unidades.txt
+            build/export-localizaciones.log
+            build/localizacion-listado.txt
+            build/localizacion
+            build/catalogos
+
       - name: Guardar Package.resolved
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
