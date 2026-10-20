@@ -17,7 +17,7 @@ Todos los textos visibles usan `Text("…", bundle: .module)` o `String(localize
 - `xcodebuild test` **no modifica** los catálogos: `git status --porcelain -- '*.xcstrings'` salió vacío. Por eso no es la conclusión A.
 - `xcodebuild -exportLocalizations` **funciona sin firma ni dispositivo** (ni la investigación ni el trabajo manual necesitaron un dispositivo). Compila el proyecto, extrae las cadenas y genera `es.xcloc` con un `es.xliff` de **114 unidades**: 3 de `App/InfoPlist.xcstrings`, 3 de DesignSystem, 62 de Visitas y 46 de Cuenta.
 - Efecto secundario: esa misma orden **rellena con las claves** los `Localizable.xcstrings` del árbol de trabajo (las copias subidas pesan unos 2,4 KB y 2,6 KB frente a los 73 bytes versionados), pero con los valores vacíos (`"clave" : { }`, sin `extractionState`). Los catálogos versionados siguen vacíos a propósito: sin traducciones no aportan nada, y las claves se vuelven a generar cuando haga falta.
-- Ya existe `App/InfoPlist.xcstrings` con `CFBundleDisplayName`, `CFBundleName` y `NSPhotoLibraryUsageDescription` (solo en castellano).
+- `App/InfoPlist.xcstrings` no existe en el repositorio: Xcode lo genera durante la exportación (con `CFBundleDisplayName`, `CFBundleName` y `NSPhotoLibraryUsageDescription`, solo en castellano) y solo aparece dentro de `es.xcloc`.
 
 ## Cómo extraer los textos a partir de ahora
 
@@ -34,4 +34,4 @@ El artefacto `localizacion` contiene `localizacion/es.xcloc` (con `Localized Con
 
 1. Descargar el artefacto y traducir el `.xliff` (o copiar los `.xcstrings` con claves y rellenar las traducciones).
 2. Versionar los catálogos traducidos; si se prefiere el `.xliff`, importarlo en la CI con `xcodebuild -importLocalizations -localizationPath <xcloc>` antes de compilar.
-3. Volver a poner `en` en `CFBundleLocalizations` y traducir también el texto de permiso de fotos en `App/InfoPlist.xcstrings`.
+3. Volver a poner `en` en `CFBundleLocalizations` y traducir también el texto de permiso de fotos (hará falta crear `App/InfoPlist.xcstrings` en el repositorio a partir del que sale en `es.xcloc`).
