@@ -11,6 +11,8 @@ Diario gastronómico para iPhone. El plan de producto completo está en `docs/pl
 
 ## Reglas
 
+- **Diseño:** todo lo visual sigue [DESIGN.md](DESIGN.md) (marca, color, tipografía, componentes, textos y accesibilidad). Si algo nuevo no encaja, se actualiza DESIGN.md primero.
+
 - Solo lo marcado como MVP en el plan, en el orden del backlog.
 - Swift 6 (concurrencia estricta), SwiftUI, SwiftData + CloudKit, MapKit. Nada de Google Places, Firebase ni almacenamiento propio de datos de usuario.
 - SwiftData con CloudKit: propiedades opcionales o con valor por defecto, relaciones opcionales, sin `unique`. Enums guardados como texto (`estadoRaw`) con propiedad calculada.

@@ -40,7 +40,9 @@ targets:
         CFBundleDevelopmentRegion: es
         CFBundleLocalizations: [es, en]
         UILaunchScreen:
-          UIColorName: AccentColor
+          UIColorName: FondoInicio
+          UIImageName: Logotipo
+          UIImageRespectsSafeAreaInsets: false
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIBackgroundModes: [remote-notification]
         NSPhotoLibraryUsageDescription: "Para sugerirte las fotos que hiciste en cada restaurante y guardarlas en tu diario."

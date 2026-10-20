@@ -7,6 +7,7 @@ import Visitas
 @main
 struct RicoApp: App {
     let contenedor: ModelContainer
+    @State private var mostrarInicio = true
 
     init() {
         do {
@@ -27,6 +28,12 @@ struct RicoApp: App {
         WindowGroup {
             DiarioView()
                 .tint(.ricoTomate)
+                .overlay {
+                    if mostrarInicio {
+                        PantallaInicio(visible: $mostrarInicio)
+                            .transition(.opacity)
+                    }
+                }
         }
         .modelContainer(contenedor)
     }

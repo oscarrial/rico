@@ -360,6 +360,7 @@ public struct FichaRapidaView: View {
     private func guardar() {
         do {
             let visita = try modelo.guardar(en: contexto)
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
             alGuardar(visita)
             cerrar()
         } catch {
