@@ -5,6 +5,14 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      actualizar_dependencias:
+        description: "Resolver dependencias de nuevo (ignora Config/Package.resolved)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -17,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     container: swift:6.1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Pruebas de RicoCore
         run: swift test --package-path Packages/RicoCore
 
@@ -26,18 +34,18 @@ jobs:
     name: App iOS (simulador)
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - name: Elegir la última versión estable de Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+      - name: Elegir Xcode 26.3
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
         with:
-          xcode-version: latest-stable
+          xcode-version: "26.3"
 
-      - name: Instalar XcodeGen
-        run: brew install xcodegen
-
-      - name: Pruebas de RicoCore (macOS)
-        run: swift test --package-path Packages/RicoCore
+      - name: Instalar XcodeGen 2.46.0
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/xcodegen.zip" https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/xcodegen/bin" >> "$GITHUB_PATH"
 
       - name: Claves de Supabase (si están configuradas)
         env:
@@ -54,10 +62,24 @@ jobs:
       - name: Generar Rico.xcodeproj
         run: xcodegen generate
 
+      - name: Fijar versiones de dependencias
+        if: ${{ !inputs.actualizar_dependencias }}
+        run: |
+          mkdir -p Rico.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
+          cp Config/Package.resolved Rico.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+
+      - name: Caché de paquetes Swift
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: build/SourcePackages
+          key: spm-${{ hashFiles('Config/Package.resolved') }}
+
       - name: Compilar y probar en el simulador
         run: |
           set -o pipefail
           mkdir -p build
+          FIJAR=""
+          if [ "${{ inputs.actualizar_dependencias }}" != "true" ]; then FIJAR="-onlyUsePackageVersionsFromResolvedFile"; fi
           SIMULADOR=$(xcrun simctl list devices available | grep -m1 -E '^\s+iPhone' | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
           echo "Simulador: $SIMULADOR"
           xcodebuild test \
@@ -65,12 +87,22 @@ jobs:
             -scheme Rico \
             -destination "id=$SIMULADOR" \
             -resultBundlePath build/Resultados.xcresult \
+            -clonedSourcePackagesDirPath build/SourcePackages \
+            $FIJAR \
             CODE_SIGNING_ALLOWED=NO \
             2>&1 | tee build/xcodebuild.log | xcbeautify --renderer github-actions
 
+      - name: Guardar Package.resolved
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: package-resolved
+          path: Rico.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+          if-no-files-found: error
+
       - name: Subir resultados si falla
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: resultados-ios
           path: |

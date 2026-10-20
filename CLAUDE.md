@@ -24,3 +24,4 @@ Diario gastronómico para iPhone. El plan de producto completo está en `docs/pl
 - Servicios detrás de un protocolo (`BuscadorLugares`, `SugeridorFotos`) para poder probar con datos falsos.
 - Accesibilidad: estilos de texto (Dynamic Type), objetivos de 44 pt, VoiceOver en la ficha de valoración, contraste AA en claro y oscuro.
 - El desarrollo se hace en Windows: no hay Xcode local. Todo se compila y prueba en GitHub Actions (`.github/workflows/ci.yml`).
+- Dependencias: las versiones quedan fijadas en `Config/Package.resolved`. Para actualizarlas, lanza la CI con `actualizar_dependencias: true` (`gh workflow run ci.yml --ref <rama> -f actualizar_dependencias=true`), descarga el artefacto `package-resolved` y versiónalo.
