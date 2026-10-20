@@ -1,5 +1,6 @@
 import Foundation
 import Supabase
+import Modelos
 
 /// Datos del proyecto de Supabase, leídos del Info.plist (vienen de Config/Secretos.xcconfig).
 public struct ConfiguracionSupabase: Sendable, Equatable {
@@ -168,6 +169,7 @@ public final class ServicioCuentaSupabase: ServicioCuenta {
         } catch let error as AuthError {
             throw Self.traducir(error)
         } catch {
+            Registro.cuenta.error("Error de cuenta sin traducir: \(String(describing: error), privacy: .private)")
             throw ErrorCuenta.otro(error.localizedDescription)
         }
     }

@@ -362,6 +362,7 @@ public struct FichaRapidaView: View {
             alGuardar(visita)
             cerrar()
         } catch {
+            Registro.datos.error("No se pudo guardar la visita: \(String(describing: error), privacy: .private)")
             mostrarErrorGuardar = true
         }
     }
@@ -375,7 +376,10 @@ public struct FichaRapidaView: View {
 
     private func anadirSugerida(_ foto: FotoCarrete) async {
         guard let datos = await sugeridor.datosCompletos(id: foto.id),
-              let procesada = await ProcesadorFotos.procesarEnSegundoPlano(datos) else { return }
+              let procesada = await ProcesadorFotos.procesarEnSegundoPlano(datos) else {
+            Registro.fotos.notice("No se pudo cargar o procesar la foto sugerida \(foto.id, privacy: .private)")
+            return
+        }
         modelo.anadirFoto(BorradorFoto(
             miniatura: procesada.miniatura,
             datos: procesada.datos,
@@ -388,7 +392,10 @@ public struct FichaRapidaView: View {
         guard !elementos.isEmpty else { return }
         for elemento in elementos {
             guard let datos = try? await elemento.loadTransferable(type: Data.self),
-                  let procesada = await ProcesadorFotos.procesarEnSegundoPlano(datos) else { continue }
+                  let procesada = await ProcesadorFotos.procesarEnSegundoPlano(datos) else {
+                Registro.fotos.notice("No se pudo cargar o procesar una foto del selector \(elemento.itemIdentifier ?? "sin id", privacy: .private)")
+                continue
+            }
             modelo.anadirFoto(BorradorFoto(
                 miniatura: procesada.miniatura,
                 datos: procesada.datos,
