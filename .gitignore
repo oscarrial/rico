@@ -1,0 +1,18 @@
+# Xcode
+*.xcodeproj
+xcuserdata/
+DerivedData/
+build/
+*.xcresult
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Plan de producto: solo en local (el repositorio es público)
+docs/plan-producto.md

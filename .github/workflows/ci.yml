@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Lógica pura (emparejado, importes, estrellas): rápido y barato en Linux.
+  nucleo:
+    name: RicoCore (Linux)
+    runs-on: ubuntu-latest
+    container: swift:6.1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pruebas de RicoCore
+        run: swift test --package-path Packages/RicoCore
+
+  # App iOS: genera el proyecto, compila y pasa las pruebas en el simulador.
+  ios:
+    name: App iOS (simulador)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Elegir la última versión estable de Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Instalar XcodeGen
+        run: brew install xcodegen
+
+      - name: Pruebas de RicoCore (macOS)
+        run: swift test --package-path Packages/RicoCore
+
+      - name: Generar Rico.xcodeproj
+        run: xcodegen generate
+
+      - name: Compilar y probar en el simulador
+        run: |
+          set -o pipefail
+          mkdir -p build
+          SIMULADOR=$(xcrun simctl list devices available | grep -m1 -E '^\s+iPhone' | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
+          echo "Simulador: $SIMULADOR"
+          xcodebuild test \
+            -project Rico.xcodeproj \
+            -scheme Rico \
+            -destination "id=$SIMULADOR" \
+            -resultBundlePath build/Resultados.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee build/xcodebuild.log | xcbeautify --renderer github-actions
+
+      - name: Subir resultados si falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-ios
+          path: |
+            build/Resultados.xcresult
+            build/xcodebuild.log
