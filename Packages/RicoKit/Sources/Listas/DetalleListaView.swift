@@ -16,9 +16,9 @@ struct DetalleListaView: View {
     }
 
     var body: some View {
-        let restaurantes = restaurantes
+        let ordenados = restaurantes
         List {
-            ForEach(restaurantes) { restaurante in
+            ForEach(ordenados) { restaurante in
                 NavigationLink(value: restaurante) {
                     FilaRestauranteLista(restaurante: restaurante)
                 }
@@ -36,7 +36,7 @@ struct DetalleListaView: View {
         .scrollContentBackground(.hidden)
         .background(Color.ricoFondo)
         .overlay {
-            if restaurantes.isEmpty { vacio }
+            if ordenados.isEmpty { vacio }
         }
         .navigationTitle(titulo)
         .navigationBarTitleDisplayMode(.large)
