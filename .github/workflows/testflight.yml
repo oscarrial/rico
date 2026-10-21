@@ -104,12 +104,9 @@ jobs:
             -archivePath build/Rico.xcarchive \
             -clonedSourcePackagesDirPath build/SourcePackages \
             -onlyUsePackageVersionsFromResolvedFile \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$ASC_KEY_PATH" \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
             2>&1 | tee build/archivar.log | xcbeautify --renderer github-actions
 
@@ -139,7 +136,6 @@ jobs:
             -archivePath build/Rico.xcarchive \
             -exportOptionsPlist build/ExportOptions.plist \
             -exportPath build/exportado \
-            -allowProvisioningUpdates \
             -authenticationKeyPath "$ASC_KEY_PATH" \
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
