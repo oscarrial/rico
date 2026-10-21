@@ -48,13 +48,16 @@ targets:
           UIImageName: Logotipo
           UIImageRespectsSafeAreaInsets: false
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
-        # Enlaces de los correos de cuenta: rico://auth/confirmar y rico://auth/recuperar
+        # Enlaces de los correos de cuenta: rico://auth/confirmar y rico://auth/recuperar.
+        # Avisos para valorar: rico://visita/<uuid>.
         CFBundleURLTypes:
           - CFBundleURLName: es.rico.app.auth
             CFBundleURLSchemes: [rico]
         # Solo HTTPS del sistema: no hay que declarar cifrado en cada subida.
         ITSAppUsesNonExemptEncryption: false
         NSPhotoLibraryUsageDescription: "Para sugerirte las fotos que hiciste en cada restaurante y guardarlas en tu diario."
+        # Captura de pagos: al pagar con Apple Pay, la ubicación ayuda a reconocer el restaurante.
+        NSLocationWhenInUseUsageDescription: "Para reconocer en qué restaurante has pagado y apuntarlo en tu diario."
         RicoAppGroup: group.$(PRODUCT_BUNDLE_IDENTIFIER)
         RicoSupabaseHost: $(RICO_SUPABASE_HOST)
         RicoSupabaseClave: $(RICO_SUPABASE_CLAVE)

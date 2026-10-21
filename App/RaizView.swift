@@ -48,5 +48,7 @@ struct RaizView: View {
         .fullScreenCover(isPresented: Binding(get: { !bienvenidaVista }, set: { bienvenidaVista = !$0 })) {
             BienvenidaView { bienvenidaVista = true }
         }
+        // Al tocar un aviso «¿Qué tal en…?» o un enlace rico://visita/<uuid>.
+        .abrirVisitaDesdeAviso()
     }
 }

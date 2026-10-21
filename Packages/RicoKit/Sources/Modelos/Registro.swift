@@ -7,4 +7,5 @@ public enum Registro {
     public static let datos = Logger(subsystem: subsistema, category: "datos")
     public static let fotos = Logger(subsystem: subsistema, category: "fotos")
     public static let busqueda = Logger(subsystem: subsistema, category: "busqueda")
+    public static let captura = Logger(subsystem: subsistema, category: "captura")
 }

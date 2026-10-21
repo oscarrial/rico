@@ -133,6 +133,7 @@ La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (n
 | `TituloSeccion` | Cabeceras de lista | Versalitas en gris; marcado como cabecera para VoiceOver. |
 | `ImagenVisita` | Portadas | Foto o relleno estable. Siempre recortada al marco, nunca deformada. |
 | `SimboloRico` / `LogotipoRico` | Arranque, estados vacíos, cabeceras | Ver la sección Marca. |
+| `BotonFila` (Captura) | Acciones dentro de una tarjeta de la bandeja | Cápsula de 44 pt. La acción de la fila en `ricoTomateSuave` con texto `ricoTomateTexto`; la alternativa en `ricoSuperficieHundida`. Nunca tomate sólido: no compite con la acción de la pantalla. |
 
 ## 7. Iconos
 
@@ -187,6 +188,11 @@ La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (n
 - **Tu cuenta:** se abre desde el icono de persona del diario. Tiene el correo, «Cambiar contraseña», «Cerrar sesión» y «Borrar mi cuenta» (destructivo, con confirmación y explicando que se borra todo).
 - **Paywall:** nunca al abrir la app ni antes de la primera visita valorada. Siempre muestra precio, renovación automática, «Restaurar compras», términos y privacidad.
 - **Notificaciones:** firmadas con el símbolo. Título con el nombre del sitio y acción directa (estrellas o «Valorar»).
+- **Por valorar** (pagos con Apple Pay):
+  - En lo alto del diario, una tarjeta en `ricoTomateSuave` («Tienes 2 visitas por valorar») que abre la bandeja. Sin pendientes no ocupa nada.
+  - Bandeja: una tarjeta por visita con el sitio (o el nombre del pago si aún no se sabe), fecha e importe. Acciones: «Valorar», «Elegir sitio» u «Otro sitio» y «No era un restaurante». Deslizar descarta.
+  - Si el sitio es una suposición, el título lo pregunta: «¿Fue en Casa Pepe?».
+  - Guía del atajo: pasos numerados con SF Symbols, permisos (avisos y ubicación) en tarjetas y «Abrir Atajos» como acción principal abajo.
 
 ## 12. Piezas para compartir
 
