@@ -17,12 +17,7 @@ public struct PlatoResumido: Equatable, Sendable {
 /// Moneda en la que se suman los importes: la más frecuente entre las visitas con importe.
 /// Empate: «EUR» si está entre las empatadas; si no, orden alfabético.
 func monedaPrincipal(_ divisas: [String]) -> String? {
-    var cuentas: [String: Int] = [:]
-    for divisa in divisas { cuentas[divisa, default: 0] += 1 }
-    guard let maximo = cuentas.values.max() else { return nil }
-    let empatadas = cuentas.filter { $0.value == maximo }.map(\.key)
-    if empatadas.contains("EUR") { return "EUR" }
-    return empatadas.sorted().first
+    Importe.monedaPrincipal(divisas)
 }
 
 /// Cifras de un restaurante, calculadas una vez por pintado.
