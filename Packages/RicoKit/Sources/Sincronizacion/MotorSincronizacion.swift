@@ -133,8 +133,12 @@ public final class MotorSincronizacion {
     /// Baja por páginas lo cambiado desde la marca de la tabla y lo aplica según «gana la última
     /// escritura». `aplicar` devuelve la huella de la fila local resultante (`nil` si no queda).
     private func bajar<F: FilaRemota>(_ tipo: F.Type, aplicar: (F) throws -> String?) async throws {
-        let marcaTabla = try marca(de: F.tabla)
-        let desde = marcaTabla.fecha.map { $0.addingTimeInterval(-Self.margenBajada) }
+        let (marcaTabla, primeraVez) = try marca(de: F.tabla)
+        // La primera vez solo interesan las filas vivas. Después, todo lo cambiado (también
+        // los borrados), aunque la tabla estuviera vacía y aún no haya fecha.
+        let desde: Date? = primeraVez
+            ? nil
+            : marcaTabla.fecha.map { $0.addingTimeInterval(-Self.margenBajada) } ?? Date(timeIntervalSince1970: 0)
         var masReciente = marcaTabla.fecha
         var posicion = 0
 
@@ -571,13 +575,14 @@ public final class MotorSincronizacion {
         return resultado
     }
 
-    private func marca(de tabla: TablaRemota) throws -> MarcaBajada {
+    /// Marca de la tabla; `primeraVez` si nunca se había bajado (se crea ahora).
+    private func marca(de tabla: TablaRemota) throws -> (marca: MarcaBajada, primeraVez: Bool) {
         let nombre = tabla.rawValue
         let existentes = try contexto.fetch(FetchDescriptor<MarcaBajada>(predicate: #Predicate { $0.tabla == nombre }))
-        if let marca = existentes.first { return marca }
+        if let marca = existentes.first { return (marca, false) }
         let nueva = MarcaBajada(tabla: nombre)
         contexto.insert(nueva)
-        return nueva
+        return (nueva, true)
     }
 
     func guardar() throws {

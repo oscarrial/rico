@@ -33,7 +33,7 @@ Por eso la sincronización compara el estado local con lo último que sabe del s
 ### 3. Vuelta de sincronización
 
 1. **Detectar** cambios locales (punto 1).
-2. **Bajar** por tabla, en el orden de las claves externas, las filas con `actualizado_en` posterior a la **marca de la última bajada** de esa tabla (`MarcaBajada`, guardada en la base de la cuenta, así que es por usuario y se borra con ella). Se pide desde la marca **menos 2 minutos** para no perder filas de transacciones que confirmaron tarde; lo repetido se reconoce y se salta. Páginas de 500 ordenadas por `actualizado_en`.
+2. **Bajar** por tabla, en el orden de las claves externas, las filas con `actualizado_en` posterior a la **marca de la última bajada** de esa tabla (`MarcaBajada`, guardada en la base de la cuenta, así que es por usuario y se borra con ella). Se pide desde la marca **menos 2 minutos** para no perder filas de transacciones que confirmaron tarde; lo repetido se reconoce y se salta. Páginas de 500 ordenadas por `actualizado_en`. Solo la primera bajada de cada tabla (sin `MarcaBajada`) pide únicamente las filas vivas; las siguientes piden también las borradas aunque la tabla estuviera vacía la primera vez.
 3. **Detectar** otra vez (recoge las cascadas de lo bajado).
 4. **Subir** primero los borrados y después los cambios (upsert por lotes de 200). Los borrados van antes para liberar los valores únicos: al corregir un alias, la app borra el viejo y crea otro con el mismo `comercio_limpio`.
 
