@@ -74,6 +74,8 @@ public struct ListasView: View {
                 }
             }
             .scrollContentBackground(.hidden)
+            .listSectionSpacing(14)
+            .contentMargins(.top, 2, for: .scrollContent)
             .background(Color.ricoFondo)
             .environment(\.editMode, .constant(reordenando ? EditMode.active : .inactive))
             .cabeceraRaiz(

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import MapKit
 import DesignSystem
 import Modelos
 import RicoCore
@@ -38,6 +39,10 @@ public struct FichaRestauranteView: View {
                     }
 
                     cifras(resumen)
+
+                    if let latitud = restaurante.latitud, let longitud = restaurante.longitud {
+                        mapaCabecera(latitud: latitud, longitud: longitud)
+                    }
 
                     if !resumen.platos.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
@@ -109,6 +114,37 @@ public struct FichaRestauranteView: View {
     }
 
     // MARK: Vistas
+
+    /// Mapa del sitio con el pin y un botón para abrir la ruta en Apple Maps.
+    private func mapaCabecera(latitud: Double, longitud: Double) -> some View {
+        let coordenada = CLLocationCoordinate2D(latitude: latitud, longitude: longitud)
+        return Button {
+            let item = MKMapItem(placemark: MKPlacemark(coordinate: coordenada))
+            item.name = restaurante.nombre
+            _ = item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeWalking])
+        } label: {
+            Map(initialPosition: .region(MKCoordinateRegion(center: coordenada, latitudinalMeters: 450, longitudinalMeters: 450))) {
+                Marker(restaurante.nombre, coordinate: coordenada)
+                    .tint(.ricoTomate)
+            }
+            .mapStyle(.standard(pointsOfInterest: .excluding([.restaurant, .cafe, .bakery, .brewery, .winery, .foodMarket])))
+            .allowsHitTesting(false)
+            .overlay(alignment: .bottomTrailing) {
+                Label { Text("Cómo llegar", bundle: .module) } icon: { Image(systemName: "arrow.triangle.turn.up.right.diamond.fill") }
+                    .font(.rico(.footnote, peso: .heavy))
+                    .foregroundStyle(Color.ricoSuperficie)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.ricoTomate, in: Capsule())
+                    .padding(12)
+            }
+            .frame(height: 170)
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(Color.ricoLinea))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("Cómo llegar a \(restaurante.nombre) en Apple Maps", bundle: .module))
+    }
 
     private func cifras(_ resumen: ResumenRestaurante) -> some View {
         HStack(spacing: 8) {
