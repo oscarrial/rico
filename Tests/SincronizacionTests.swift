@@ -137,20 +137,24 @@ struct SincronizacionTests {
     let contenedor: ModelContainer
     let contexto: ModelContext
     let motor: MotorSincronizacion
+    /// Base de otro iPhone de la misma cuenta. Se guarda aquí porque un `ModelContext`
+    /// no mantiene vivo su contenedor.
+    let otroContenedor: ModelContainer
 
     init() throws {
         contenedor = try ContenedorRico.crear(enMemoria: true)
         contexto = contenedor.mainContext
+        otroContenedor = try ContenedorRico.crear(enMemoria: true)
         let reloj = reloj
         motor = MotorSincronizacion(contexto: contexto, servicio: servidor, usuario: usuario, reloj: { reloj.ahora })
     }
 
     /// Otro iPhone de la misma cuenta, con su propia base.
     private func otroDispositivo() throws -> (ModelContext, MotorSincronizacion) {
-        let otro = try ContenedorRico.crear(enMemoria: true)
         let reloj = reloj
-        let motor = MotorSincronizacion(contexto: otro.mainContext, servicio: servidor, usuario: usuario, reloj: { reloj.ahora })
-        return (otro.mainContext, motor)
+        let otroContexto = otroContenedor.mainContext
+        let motor = MotorSincronizacion(contexto: otroContexto, servicio: servidor, usuario: usuario, reloj: { reloj.ahora })
+        return (otroContexto, motor)
     }
 
     @discardableResult
