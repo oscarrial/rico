@@ -212,7 +212,3 @@ struct SelectorUbicacionView: View {
         }
     }
 }
-
-private extension String {
-    var nilSiVacio: String? { isEmpty ? nil : self }
-}
