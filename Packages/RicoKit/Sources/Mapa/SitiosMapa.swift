@@ -145,32 +145,16 @@ public struct ZonaMapa: Equatable, Sendable {
 }
 
 public extension ModelContext {
-    /// La lista «Quiero probar» (la más antigua si hubiera varias). Si no existe, la crea.
-    func listaQuieroProbar() throws -> Lista {
-        let tipo = TipoLista.quieroProbar.rawValue
-        var descriptor = FetchDescriptor<Lista>(
-            predicate: #Predicate { $0.tipoRaw == tipo },
-            sortBy: [SortDescriptor(\.fechaCreacion)]
-        )
-        descriptor.fetchLimit = 1
-        if let lista = try fetch(descriptor).first { return lista }
-        let lista = Lista(nombre: String(localized: "Quiero probar", bundle: .module), tipo: .quieroProbar)
-        insert(lista)
-        return lista
-    }
-
     /// Guarda el lugar en «Quiero probar» sin duplicarlo y reutilizando el restaurante si ya existe.
     /// - Returns: el restaurante y si se ha añadido ahora (`false` si ya estaba).
     @discardableResult
     func anadirAQuieroProbar(_ lugar: LugarEncontrado) throws -> (restaurante: Restaurante, anadido: Bool) {
         let sitio = try self.restaurante(para: lugar)
         let lista = try listaQuieroProbar()
-        let actuales = lista.restaurantes ?? []
-        if actuales.contains(where: { $0.id == sitio.id }) {
+        if lista.contiene(sitio) {
             return (sitio, false)
         }
-        lista.restaurantes = actuales + [sitio]
-        try save()
+        try anadir(sitio, a: lista)
         return (sitio, true)
     }
 }
