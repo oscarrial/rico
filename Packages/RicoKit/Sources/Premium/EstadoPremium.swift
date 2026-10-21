@@ -28,6 +28,12 @@ public final class EstadoPremium {
 
     static let claveCache = "premium.cacheArranque"
 
+    /// Copia de la suscripción para el código que corre fuera de la interfaz (el atajo de
+    /// Apple Pay, que se ejecuta en segundo plano sin acceso al estado de la app).
+    public static var premiumEnCache: Bool {
+        UserDefaults.standard.bool(forKey: claveCache)
+    }
+
     public init(
         tienda: any TiendaPremium = TiendaStoreKit(),
         cache: UserDefaults? = .standard,
