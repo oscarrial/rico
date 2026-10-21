@@ -10,6 +10,8 @@ public struct CuentaView: View {
     @Environment(EstadoCuenta.self) private var cuenta
     @Environment(\.modelContext) private var contexto
     @Environment(\.dismiss) private var cerrar
+    @Environment(\.esPremium) private var esPremium
+    @Environment(\.pedirPremium) private var pedirPremium
 
     @State private var confirmandoBorrado = false
     @State private var cambiandoContrasena = false
@@ -31,6 +33,20 @@ public struct CuentaView: View {
                         Text("Sin cuenta: tus datos solo están en este iPhone.", bundle: .module)
                             .foregroundStyle(Color.ricoSecundario)
                     }
+                }
+
+                Section {
+                    Button {
+                        pedirPremium()
+                    } label: {
+                        LabeledContent {
+                            esPremium ? Text("Activo", bundle: .module) : Text("Ver planes", bundle: .module)
+                        } label: {
+                            Label { Text("Rico Premium", bundle: .module) } icon: { Image(systemName: "star") }
+                        }
+                        .frame(minHeight: Medidas.toqueMinimo)
+                    }
+                    .foregroundStyle(Color.ricoTinta)
                 }
 
                 if cuenta.sesion != nil {
@@ -97,6 +113,7 @@ public struct CuentaView: View {
             }
         }
         .tint(.ricoTomate)
+        .permitePedirPremium()
     }
 
     private func cerrarSesion() async {

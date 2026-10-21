@@ -1,0 +1,97 @@
+{
+  "identifier" : "5E1C0A0D",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "es_ES",
+    "_storefront" : "ESP",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21581000",
+      "localizations" : [
+        {
+          "description" : "",
+          "displayName" : "Rico Premium",
+          "locale" : "es_ES"
+        }
+      ],
+      "name" : "Rico Premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "19.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6758100001",
+          "introductoryOffer" : {
+            "internalID" : "6758100003",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Fotos sin límite, todas tus listas, las estadísticas de tu año y exportar tu diario.",
+              "displayName" : "Rico Premium anual",
+              "locale" : "es_ES"
+            }
+          ],
+          "productID" : "es.rico.app.premium.anual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Rico Premium anual",
+          "subscriptionGroupID" : "21581000",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "2.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6758100002",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Fotos sin límite, todas tus listas, las estadísticas de tu año y exportar tu diario.",
+              "displayName" : "Rico Premium mensual",
+              "locale" : "es_ES"
+            }
+          ],
+          "productID" : "es.rico.app.premium.mensual",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Rico Premium mensual",
+          "subscriptionGroupID" : "21581000",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

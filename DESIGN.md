@@ -186,6 +186,9 @@ La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (n
   - Los avisos de «mira tu correo» van en verde suave con el sobre; no son errores.
 - **Tu cuenta:** se abre desde el icono de persona del diario. Tiene el correo, «Cambiar contraseña», «Cerrar sesión» y «Borrar mi cuenta» (destructivo, con confirmación y explicando que se borra todo).
 - **Paywall:** nunca al abrir la app ni antes de la primera visita valorada. Siempre muestra precio, renovación automática, «Restaurar compras», términos y privacidad.
+  - Hoja con el símbolo, «Rico Premium», las ventajas en una tarjeta y los planes (anual primero, con su ahorro en verde suave) como filas seleccionables.
+  - Acción principal fija abajo: «Probar Premium». Si ya lo tiene: «Ya tienes Rico Premium» y «Gestionar suscripción».
+  - Se abre solo cuando el usuario toca un límite («Con Rico Premium, fotos sin límite en cada visita.») o la fila «Rico Premium» de «Tu cuenta». Sin precios disponibles, lo dice con calma y ofrece reintentar.
 - **Notificaciones:** firmadas con el símbolo. Título con el nombre del sitio y acción directa (estrellas o «Valorar»).
 
 ## 12. Piezas para compartir
