@@ -24,6 +24,7 @@ struct RicoApp: App {
             _contenedor = State(initialValue: ModoCaptura.contenedorDemo())
             _cuenta = State(initialValue: EstadoCuenta(servicio: nil))
             _mostrarInicio = State(initialValue: false)
+            servicioSincronizacion = nil
             return
         }
         #endif
