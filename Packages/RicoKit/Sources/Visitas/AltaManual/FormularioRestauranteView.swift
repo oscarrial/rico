@@ -97,7 +97,7 @@ struct FormularioRestauranteView: View {
                             Text("Marcada en el mapa", bundle: .module)
                                 .font(.rico(.body, peso: .heavy))
                                 .foregroundStyle(Color.ricoTinta)
-                            Text(ubicacion.direccion ?? ubicacion.ciudad ?? "Toca para cambiarla", bundle: .module)
+                            Text(ubicacion.direccion ?? ubicacion.ciudad ?? String(localized: "Toca para cambiarla", bundle: .module))
                                 .font(.rico(.footnote, peso: .semibold))
                                 .foregroundStyle(Color.ricoSecundario)
                                 .lineLimit(1)

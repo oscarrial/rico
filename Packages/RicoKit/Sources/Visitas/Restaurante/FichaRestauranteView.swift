@@ -125,7 +125,7 @@ public struct FichaRestauranteView: View {
         } label: {
             Map(initialPosition: .region(MKCoordinateRegion(center: coordenada, latitudinalMeters: 450, longitudinalMeters: 450))) {
                 Marker(restaurante.nombre, coordinate: coordenada)
-                    .tint(.ricoTomate)
+                    .tint(Color.ricoTomate)
             }
             .mapStyle(.standard(pointsOfInterest: .excluding([.restaurant, .cafe, .bakery, .brewery, .winery, .foodMarket])))
             .allowsHitTesting(false)
