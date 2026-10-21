@@ -95,6 +95,9 @@ jobs:
       - name: Archivar
         run: |
           set -o pipefail
+          # Número de compilación único por subida: se escribe en el Info.plist generado,
+          # porque el ajuste por línea de comandos no llegaba al paquete final.
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ github.run_number }}" App/Info.plist
           mkdir -p build
           xcodebuild archive \
             -project Rico.xcodeproj \
