@@ -1,0 +1,98 @@
+name: Capturas
+
+# Abre la app en el simulador con datos de ejemplo (`-captura <pantalla>`, solo en Debug)
+# y saca una captura de cada pantalla, en claro y en oscuro. Sirve para revisar el diseño
+# sin Xcode: gh workflow run capturas.yml --ref <rama> y descarga el artefacto «capturas».
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: capturas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  capturas:
+    name: Capturas (simulador)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Elegir Xcode 26.3
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+        with:
+          xcode-version: "26.3"
+
+      - name: Instalar XcodeGen 2.46.0
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/xcodegen.zip" https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/xcodegen/bin" >> "$GITHUB_PATH"
+
+      - name: Generar Rico.xcodeproj
+        run: |
+          xcodegen generate
+          mkdir -p Rico.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
+          cp Config/Package.resolved Rico.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+
+      - name: Caché de paquetes Swift
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: build/SourcePackages
+          key: spm-${{ hashFiles('Config/Package.resolved') }}
+
+      - name: Arrancar el simulador
+        run: |
+          SIMULADOR=$(xcrun simctl list devices available | grep -E '^\s+iPhone 1[67] Pro \(' | head -1 | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
+          if [ -z "$SIMULADOR" ]; then
+            SIMULADOR=$(xcrun simctl list devices available | grep -m1 -E '^\s+iPhone' | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
+          fi
+          xcrun simctl list devices available | grep "$SIMULADOR"
+          echo "SIMULADOR=$SIMULADOR" >> "$GITHUB_ENV"
+          xcrun simctl boot "$SIMULADOR"
+          xcrun simctl bootstatus "$SIMULADOR" -b
+
+      - name: Compilar la app (Debug, simulador)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Rico.xcodeproj \
+            -scheme Rico \
+            -configuration Debug \
+            -destination "id=$SIMULADOR" \
+            -derivedDataPath build/DerivedData \
+            -clonedSourcePackagesDirPath build/SourcePackages \
+            -onlyUsePackageVersionsFromResolvedFile \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee build/compilar.log | xcbeautify --renderer github-actions
+
+      - name: Sacar capturas
+        run: |
+          APP=$(find build/DerivedData/Build/Products -maxdepth 2 -name 'Rico.app' -type d | head -1)
+          xcrun simctl install "$SIMULADOR" "$APP"
+          xcrun simctl status_bar "$SIMULADOR" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
+          xcrun simctl location "$SIMULADOR" set 42.2395,-8.7205 || true
+          xcrun simctl privacy "$SIMULADOR" grant location es.rico.app || true
+          mkdir -p capturas
+          for modo in light dark; do
+            xcrun simctl ui "$SIMULADOR" appearance "$modo"
+            for pantalla in bienvenida acceso diario mapa listas resumen cuenta premium ficha valorar bandeja alta; do
+              xcrun simctl terminate "$SIMULADOR" es.rico.app 2>/dev/null || true
+              xcrun simctl launch "$SIMULADOR" es.rico.app -captura "$pantalla" -AppleLanguages "(es)" -AppleLocale es_ES
+              if [ "$pantalla" = "mapa" ]; then sleep 9; else sleep 4; fi
+              xcrun simctl io "$SIMULADOR" screenshot "capturas/${pantalla}-${modo}.png"
+            done
+          done
+          ls -la capturas
+
+      - name: Subir capturas
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: capturas
+          path: |
+            capturas
+            build/compilar.log
+          if-no-files-found: warn
