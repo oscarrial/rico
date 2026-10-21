@@ -73,12 +73,17 @@ Tokens en `Colores.swift`. Cada uno tiene su valor en oscuro y cumple contraste 
 | `ricoEstrellaVacia` | `#DCCFC2` | `#4A4038` | Estrellas vacías. |
 | `ricoAlbahaca` | `#3F5A30` | `#7FA866` | **Solo** el cáliz del símbolo. |
 | `ricoVerde` / `ricoVerdeSuave` | `#1F5A37` / `#DDEFE3` | `#7FD3A0` / `#1D3A28` | «Volvería», «me encantó» y confirmaciones. |
+| `ricoPinTop` | `#B02A17` | igual | **Solo** pines del mapa con nota media de 4,5 o más. Texto blanco. |
+| `ricoPinBien` | `#EE8A3C` | igual | **Solo** pines con nota de 3,5 a 4,4. Texto `ricoSobrePin`. |
+| `ricoPinNormal` | `#8E8379` | igual | **Solo** pines con nota por debajo de 3,5. Texto `ricoSobrePin`. |
+| `ricoPinQuieroProbar` | `#2F6FA8` | igual | Borde e icono del pin «Quiero probar» (relleno blanco). |
+| `ricoSobrePin` | `#1F1A16` | igual | Texto sobre los pines naranja y gris (el blanco no llega a AA). |
 
 Reglas:
 - **Una acción tomate por vista.** Si hay dos botones principales, uno pasa a secundario.
 - **El miel es de las estrellas.** No se usa para destacar otra cosa.
 - **El dinero no va en rojo.** Los importes se escriben en tinta; el tomate se reserva para actuar.
-- **Pines del mapa por nota:** 4,5 o más `#B02A17`, de 3,5 a 4 `#EE8A3C`, menos `#8E8379`, «quiero probar» blanco con borde `#2F6FA8`. Los colores se distinguen también por luminosidad, no solo por tono.
+- **Pines del mapa por nota:** 4,5 o más `ricoPinTop`, de 3,5 a 4,4 `ricoPinBien`, menos `ricoPinNormal`, «quiero probar» blanco con borde `ricoPinQuieroProbar` y un marcador. La nota media se redondea a una cifra decimal antes de elegir color, para que coincida con la que se lee. Los pines llevan siempre la nota escrita y se distinguen también por luminosidad, no solo por tono. Los sitios de «Explorar zona» van en pin neutro (`ricoSuperficie`, borde `ricoLinea`, cubiertos en `ricoSecundario`). Los colores de los pines no cambian en oscuro: van sobre el mapa con borde blanco.
 - **Huecos sin foto:** se rellenan con un color de `ricoPlaceholders` elegido de forma estable por el id y un `fork.knife` blanco al 55 %. Nunca se dejan en gris vacío.
 
 ## 4. Tipografía
@@ -185,6 +190,7 @@ La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (n
   - Los errores dicen qué hacer («Ya hay una cuenta con ese correo. Prueba a entrar.») y nunca muestran el error técnico.
   - Los avisos de «mira tu correo» van en verde suave con el sobre; no son errores.
 - **Tu cuenta:** se abre desde el icono de persona del diario. Tiene el correo, «Cambiar contraseña», «Cerrar sesión» y «Borrar mi cuenta» (destructivo, con confirmación y explicando que se borra todo).
+- **Mapa:** mapa a pantalla completa sin barra de navegación. Arriba flotan en cristal (un `GlassEffectContainer`) el selector «Mis sitios / Explorar zona» y el botón de centrar en tu posición; debajo, en «Explorar zona», «Buscar en esta zona» cuando mueves el mapa. Al tocar un pin sale abajo una `Tarjeta` sólida con nombre, nota, ciudad, visitas y gasto medio y una sola acción principal («Ver ficha» o «Guardar visita»; «Quiero probarlo» va como secundario). El permiso de ubicación solo se pide al pulsar el botón de centrar; sin permiso, el mapa encuadra tus sitios. Sin sitios, aviso ligero sobre el mapa: «Aún no hay sitios en tu mapa. Guarda una visita y aparecerá aquí.».
 - **Paywall:** nunca al abrir la app ni antes de la primera visita valorada. Siempre muestra precio, renovación automática, «Restaurar compras», términos y privacidad.
   - Hoja con el símbolo, «Rico Premium», las ventajas en una tarjeta y los planes (anual primero, con su ahorro en verde suave) como filas seleccionables.
   - Acción principal fija abajo: «Probar Premium». Si ya lo tiene: «Ya tienes Rico Premium» y «Gestionar suscripción».

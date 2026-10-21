@@ -27,6 +27,19 @@ public extension Color {
     static let ricoVerde = Color(claro: 0x1F5A37, oscuro: 0x7FD3A0)
     static let ricoVerdeSuave = Color(claro: 0xDDEFE3, oscuro: 0x1D3A28)
 
+    // Pines del mapa por nota. Mismo valor en claro y oscuro: van sobre el mapa con borde blanco
+    // y siempre con la nota escrita. Se distinguen también por luminosidad.
+    /// Nota media de 4,5 o más.
+    static let ricoPinTop = Color(claro: 0xB02A17, oscuro: 0xB02A17)
+    /// Nota media de 3,5 a 4,4.
+    static let ricoPinBien = Color(claro: 0xEE8A3C, oscuro: 0xEE8A3C)
+    /// Nota media por debajo de 3,5.
+    static let ricoPinNormal = Color(claro: 0x8E8379, oscuro: 0x8E8379)
+    /// Borde e icono del pin «Quiero probar» (relleno blanco).
+    static let ricoPinQuieroProbar = Color(claro: 0x2F6FA8, oscuro: 0x2F6FA8)
+    /// Texto sobre `ricoPinBien` y `ricoPinNormal` (el blanco no llega a AA). Sobre `ricoPinTop`, blanco.
+    static let ricoSobrePin = Color(claro: 0x1F1A16, oscuro: 0x1F1A16)
+
     /// Colores de relleno cuando una visita aún no tiene foto.
     static let ricoPlaceholders: [Color] = [
         Color(claro: 0xC9573A, oscuro: 0x8E3A26),

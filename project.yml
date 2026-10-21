@@ -55,6 +55,7 @@ targets:
         # Solo HTTPS del sistema: no hay que declarar cifrado en cada subida.
         ITSAppUsesNonExemptEncryption: false
         NSPhotoLibraryUsageDescription: "Para sugerirte las fotos que hiciste en cada restaurante y guardarlas en tu diario."
+        NSLocationWhenInUseUsageDescription: "Para centrar el mapa donde estás y enseñarte sitios para comer cerca. Tu ubicación no sale del iPhone."
         RicoAppGroup: group.$(PRODUCT_BUNDLE_IDENTIFIER)
         RicoSupabaseHost: $(RICO_SUPABASE_HOST)
         RicoSupabaseClave: $(RICO_SUPABASE_CLAVE)
