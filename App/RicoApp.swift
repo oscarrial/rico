@@ -84,7 +84,7 @@ struct RicoApp: App {
     private var raiz: some View {
         switch cuenta.fase {
         case .conSesion, .soloLocal:
-            DiarioView(alAbrirCuenta: { mostrandoCuenta = true })
+            RaizView(alAbrirCuenta: { mostrandoCuenta = true })
                 .sheet(isPresented: $mostrandoCuenta) {
                     CuentaView()
                 }

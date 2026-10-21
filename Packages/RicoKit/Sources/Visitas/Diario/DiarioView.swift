@@ -5,7 +5,7 @@ import Modelos
 import RicoCore
 
 /// Línea de tiempo: todas las visitas valoradas, de la más reciente a la más antigua.
-public struct DiarioView: View {
+public struct DiarioView<Cabecera: View>: View {
     @Query(
         filter: #Predicate<Visita> { $0.estadoRaw == "valorada" },
         sort: \Visita.fecha,
@@ -17,10 +17,14 @@ public struct DiarioView: View {
     @State private var mostrandoAlta = false
 
     private let alAbrirCuenta: (() -> Void)?
+    private let cabecera: Cabecera
 
-    /// - Parameter alAbrirCuenta: si se pasa, aparece el botón de cuenta arriba a la derecha.
-    public init(alAbrirCuenta: (() -> Void)? = nil) {
+    /// - Parameters:
+    ///   - alAbrirCuenta: si se pasa, aparece el botón de cuenta arriba a la derecha.
+    ///   - cabecera: lo que va encima de las visitas (el aviso de pendientes).
+    public init(alAbrirCuenta: (() -> Void)? = nil, @ViewBuilder cabecera: () -> Cabecera) {
         self.alAbrirCuenta = alAbrirCuenta
+        self.cabecera = cabecera()
     }
 
     public var body: some View {
@@ -28,6 +32,9 @@ public struct DiarioView: View {
         return NavigationStack {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 14) {
+                    if busqueda.isEmpty {
+                        cabecera
+                    }
                     if busqueda.isEmpty, !visitas.isEmpty {
                         resumenMes
                     }
@@ -105,6 +112,12 @@ public struct DiarioView: View {
         }
         .padding(.trailing, Medidas.margen)
         .padding(.bottom, 16)
+    }
+}
+
+public extension DiarioView where Cabecera == EmptyView {
+    init(alAbrirCuenta: (() -> Void)? = nil) {
+        self.init(alAbrirCuenta: alAbrirCuenta) { EmptyView() }
     }
 }
 
