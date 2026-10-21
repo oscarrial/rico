@@ -1,0 +1,128 @@
+name: TestFlight
+
+# Archiva, firma y sube Rico a TestFlight. Se lanza a mano:
+#   gh workflow run testflight.yml --ref main
+# Firma automática con la clave de la API de App Store Connect (rol Admin):
+# Xcode crea o reutiliza solo el certificado y el perfil de distribución.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testflight
+  cancel-in-progress: false
+
+jobs:
+  subir:
+    name: Subir a TestFlight
+    runs-on: macos-15
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Comprobar secretos
+        run: |
+          for v in ASC_KEY_ID ASC_ISSUER_ID APPLE_TEAM_ID; do
+            if [ -z "${!v}" ]; then echo "::error::Falta el secreto $v"; exit 1; fi
+          done
+
+      - name: Elegir Xcode 26.3
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+        with:
+          xcode-version: "26.3"
+
+      - name: Instalar XcodeGen 2.46.0
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/xcodegen.zip" https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/xcodegen/bin" >> "$GITHUB_PATH"
+
+      - name: Clave de la API de App Store Connect
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/claves"
+          printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/claves/AuthKey_$ASC_KEY_ID.p8"
+          echo "ASC_KEY_PATH=$RUNNER_TEMP/claves/AuthKey_$ASC_KEY_ID.p8" >> "$GITHUB_ENV"
+
+      - name: Claves de Supabase (si están configuradas)
+        env:
+          RICO_SUPABASE_HOST: ${{ secrets.RICO_SUPABASE_HOST }}
+          RICO_SUPABASE_CLAVE: ${{ secrets.RICO_SUPABASE_CLAVE }}
+        run: |
+          if [ -n "$RICO_SUPABASE_HOST" ] && [ -n "$RICO_SUPABASE_CLAVE" ]; then
+            printf 'RICO_SUPABASE_HOST = %s\nRICO_SUPABASE_CLAVE = %s\n' "$RICO_SUPABASE_HOST" "$RICO_SUPABASE_CLAVE" > Config/Secretos.xcconfig
+            echo "Supabase configurado"
+          else
+            echo "::warning::Sin claves de Supabase: esta compilación funcionará solo en local, sin cuentas"
+          fi
+
+      - name: Generar Rico.xcodeproj y fijar dependencias
+        run: |
+          xcodegen generate
+          mkdir -p Rico.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
+          cp Config/Package.resolved Rico.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+
+      - name: Archivar
+        run: |
+          set -o pipefail
+          mkdir -p build
+          xcodebuild archive \
+            -project Rico.xcodeproj \
+            -scheme Rico \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/Rico.xcarchive \
+            -clonedSourcePackagesDirPath build/SourcePackages \
+            -onlyUsePackageVersionsFromResolvedFile \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            2>&1 | tee build/archivar.log | xcbeautify --renderer github-actions
+
+      - name: Firmar y subir a App Store Connect
+        run: |
+          set -o pipefail
+          cat > build/ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>$APPLE_TEAM_ID</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive \
+            -archivePath build/Rico.xcarchive \
+            -exportOptionsPlist build/ExportOptions.plist \
+            -exportPath build/exportado \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            2>&1 | tee build/subir.log | xcbeautify --renderer github-actions
+          echo "Subida la compilación ${{ github.run_number }}. Aparecerá en TestFlight cuando Apple termine de procesarla (10-30 min)."
+
+      - name: Registros si falla
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: registros-testflight
+          path: |
+            build/archivar.log
+            build/subir.log

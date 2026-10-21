@@ -3,7 +3,7 @@
 name: Rico
 
 options:
-  bundleIdPrefix: es.siweb
+  bundleIdPrefix: es.rico
   deploymentTarget:
     iOS: "17.0"
   developmentLanguage: es
@@ -50,8 +50,10 @@ targets:
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         # Enlaces de los correos de cuenta: rico://auth/confirmar y rico://auth/recuperar
         CFBundleURLTypes:
-          - CFBundleURLName: es.siweb.rico.auth
+          - CFBundleURLName: es.rico.app.auth
             CFBundleURLSchemes: [rico]
+        # Solo HTTPS del sistema: no hay que declarar cifrado en cada subida.
+        ITSAppUsesNonExemptEncryption: false
         NSPhotoLibraryUsageDescription: "Para sugerirte las fotos que hiciste en cada restaurante y guardarlas en tu diario."
         RicoAppGroup: group.$(PRODUCT_BUNDLE_IDENTIFIER)
         RicoSupabaseHost: $(RICO_SUPABASE_HOST)
@@ -65,7 +67,7 @@ targets:
           - group.$(PRODUCT_BUNDLE_IDENTIFIER)
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: es.siweb.rico
+        PRODUCT_BUNDLE_IDENTIFIER: es.rico.app
         TARGETED_DEVICE_FAMILY: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
@@ -81,7 +83,7 @@ targets:
         product: RicoKit
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: es.siweb.rico.tests
+        PRODUCT_BUNDLE_IDENTIFIER: es.rico.app.tests
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
