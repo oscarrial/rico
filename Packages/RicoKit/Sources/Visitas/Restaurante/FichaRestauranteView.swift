@@ -10,6 +10,7 @@ public struct FichaRestauranteView: View {
 
     @State private var visitaEditada: Visita?
     @State private var nuevaVisita = false
+    @State private var guardandoEnLista = false
 
     public init(restaurante: Restaurante) {
         self.restaurante = restaurante
@@ -82,6 +83,19 @@ public struct FichaRestauranteView: View {
             .fondoBarraInferior()
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    guardandoEnLista = true
+                } label: {
+                    Image(systemName: (restaurante.listas ?? []).isEmpty ? "bookmark" : "bookmark.fill")
+                }
+                .accessibilityLabel(Text("Guardar en una lista", bundle: .module))
+            }
+        }
+        .sheet(isPresented: $guardandoEnLista) {
+            SelectorListasView(restaurante: restaurante)
+        }
         .sheet(item: $visitaEditada) { visita in
             NavigationStack {
                 FichaRapidaView(modelo: FichaRapidaModelo(visita: visita))
