@@ -44,6 +44,7 @@ public enum ErrorFicha: Error, Equatable {
 public final class FichaRapidaModelo {
     enum Destino {
         case nueva(LugarEncontrado)
+        case manual(RestauranteManual)
         case restaurante(Restaurante)
         case existente(Visita)
     }
@@ -74,6 +75,17 @@ public final class FichaRapidaModelo {
         lugarTexto = [lugar.direccion, lugar.ciudad].compactMap { $0 }.joined(separator: ", ").nilSiVacio
         latitud = lugar.latitud
         longitud = lugar.longitud
+        divisa = "EUR"
+        self.fecha = fecha
+    }
+
+    /// Visita nueva en un restaurante escrito a mano (no aparecía en el buscador).
+    public init(manual datos: RestauranteManual, fecha: Date = .now) {
+        destino = .manual(datos)
+        nombreRestaurante = datos.nombre.recortado
+        lugarTexto = [datos.direccion, datos.ciudad].compactMap { $0?.nilSiVacio }.joined(separator: ", ").nilSiVacio
+        latitud = nil
+        longitud = nil
         divisa = "EUR"
         self.fecha = fecha
     }
@@ -162,6 +174,11 @@ public final class FichaRapidaModelo {
             switch destino {
             case let .nueva(lugar):
                 let restaurante = try contexto.restaurante(para: lugar)
+                visita = Visita(fecha: fecha, origen: .manual)
+                contexto.insert(visita)
+                visita.restaurante = restaurante
+            case let .manual(datos):
+                let restaurante = try contexto.restaurante(manual: datos)
                 visita = Visita(fecha: fecha, origen: .manual)
                 contexto.insert(visita)
                 visita.restaurante = restaurante

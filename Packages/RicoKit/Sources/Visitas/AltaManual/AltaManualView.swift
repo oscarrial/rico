@@ -3,7 +3,7 @@ import DesignSystem
 import Modelos
 import RicoCore
 
-/// Registro manual: buscar el restaurante en Apple Maps y valorar.
+/// Registro manual: buscar el restaurante en Apple Maps (o escribirlo a mano) y valorar.
 public struct AltaManualView: View {
     @Environment(\.dismiss) private var cerrar
 
@@ -11,7 +11,13 @@ public struct AltaManualView: View {
     @State private var resultados: [LugarEncontrado] = []
     @State private var buscando = false
     @State private var fallo = false
-    @State private var ruta: [LugarEncontrado] = []
+    @State private var ruta = NavigationPath()
+
+    /// Pasos del alta a mano: primero el formulario, después la ficha.
+    enum PasoManual: Hashable {
+        case formulario(String)
+        case ficha(RestauranteManual)
+    }
 
     private let buscador: any BuscadorLugares
 
@@ -21,18 +27,32 @@ public struct AltaManualView: View {
 
     public var body: some View {
         NavigationStack(path: $ruta) {
-            List(resultados) { lugar in
-                NavigationLink(value: lugar) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(lugar.nombre)
-                            .font(.rico(.body, peso: .heavy))
-                        if let detalle = [lugar.direccion, lugar.ciudad].compactMap({ $0 }).joined(separator: ", ").nilSiVacio {
-                            Text(detalle)
-                                .font(.rico(.footnote, peso: .semibold))
-                                .foregroundStyle(Color.ricoSecundario)
+            List {
+                ForEach(resultados) { lugar in
+                    NavigationLink(value: lugar) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(lugar.nombre)
+                                .font(.rico(.body, peso: .heavy))
+                            if let detalle = [lugar.direccion, lugar.ciudad].compactMap({ $0 }).joined(separator: ", ").nilSiVacio {
+                                Text(detalle)
+                                    .font(.rico(.footnote, peso: .semibold))
+                                    .foregroundStyle(Color.ricoSecundario)
+                            }
                         }
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
+                }
+                if !texto.recortado.isEmpty {
+                    NavigationLink(value: PasoManual.formulario(texto.recortado)) {
+                        Label {
+                            Text("Añadir «\(texto.recortado)» a mano", bundle: .module)
+                                .font(.rico(.body, peso: .heavy))
+                        } icon: {
+                            Image(systemName: "square.and.pencil")
+                        }
+                        .foregroundStyle(Color.ricoTomateTexto)
+                        .padding(.vertical, 4)
+                    }
                 }
             }
             .listStyle(.plain)
@@ -49,10 +69,27 @@ public struct AltaManualView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button { cerrar() } label: { Text("Cancelar", bundle: .module) }
                 }
+                ToolbarItem(placement: .primaryAction) {
+                    NavigationLink(value: PasoManual.formulario(texto.recortado)) {
+                        Text("A mano", bundle: .module)
+                    }
+                }
             }
             .navigationDestination(for: LugarEncontrado.self) { lugar in
                 FichaRapidaView(modelo: FichaRapidaModelo(lugar: lugar)) { _ in
                     cerrar()
+                }
+            }
+            .navigationDestination(for: PasoManual.self) { paso in
+                switch paso {
+                case let .formulario(nombre):
+                    FormularioRestauranteView(nombreInicial: nombre) { datos in
+                        ruta.append(PasoManual.ficha(datos))
+                    }
+                case let .ficha(datos):
+                    FichaRapidaView(modelo: FichaRapidaModelo(manual: datos)) { _ in
+                        cerrar()
+                    }
                 }
             }
         }
@@ -68,12 +105,22 @@ public struct AltaManualView: View {
                 Text("Comprueba la conexión y vuelve a intentarlo.", bundle: .module)
             }
         } else if resultados.isEmpty, !buscando, texto.recortado.count >= 2 {
-            ContentUnavailableView.search(text: texto)
+            ContentUnavailableView {
+                Label { Text("No aparece en el mapa", bundle: .module) } icon: { Image(systemName: "mappin.slash") }
+            } description: {
+                Text("Puedes añadirlo escribiendo su nombre.", bundle: .module)
+            } actions: {
+                NavigationLink(value: PasoManual.formulario(texto.recortado)) {
+                    Text("Añadir «\(texto.recortado)» a mano", bundle: .module)
+                }
+                .buttonStyle(.ricoPrincipal)
+                .padding(.horizontal, 40)
+            }
         } else if texto.recortado.isEmpty {
             ContentUnavailableView {
                 Label { Text("Busca el restaurante", bundle: .module) } icon: { Image(systemName: "magnifyingglass") }
             } description: {
-                Text("Escribe el nombre del sitio. Podrás cambiar la fecha si fue otro día.", bundle: .module)
+                Text("Escribe el nombre del sitio. Si no aparece, pulsa «A mano». Podrás cambiar la fecha si fue otro día.", bundle: .module)
             }
         }
     }

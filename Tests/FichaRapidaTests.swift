@@ -76,6 +76,35 @@ struct FichaRapidaTests {
         #expect(try contexto.fetchCount(FetchDescriptor<Plato>()) == 2)
     }
 
+    @Test func altaAManoCreaRestauranteSinCoordenadas() throws {
+        let modelo = FichaRapidaModelo(manual: RestauranteManual(nombre: "  Casa Manolo ", ciudad: "Ourense"))
+        #expect(modelo.nombreRestaurante == "Casa Manolo")
+        #expect(modelo.lugarTexto == "Ourense")
+        modelo.estrellas = 4
+        let visita = try modelo.guardar(en: contexto)
+
+        let restaurante = try #require(visita.restaurante)
+        #expect(restaurante.nombre == "Casa Manolo")
+        #expect(restaurante.ciudad == "Ourense")
+        #expect(restaurante.latitud == nil)
+        #expect(restaurante.mapItemID == nil)
+    }
+
+    @Test func altaAManoReutilizaElMismoRestaurante() throws {
+        for (nombre, ciudad) in [("Casa Manolo", "Ourense"), ("casa manolo", "OURENSE")] {
+            let modelo = FichaRapidaModelo(manual: RestauranteManual(nombre: nombre, ciudad: ciudad))
+            modelo.estrellas = 4
+            try modelo.guardar(en: contexto)
+        }
+        let otro = FichaRapidaModelo(manual: RestauranteManual(nombre: "Casa Manolo", ciudad: "Lugo"))
+        otro.estrellas = 3
+        try otro.guardar(en: contexto)
+
+        let restaurantes = try contexto.fetch(FetchDescriptor<Restaurante>())
+        #expect(restaurantes.count == 2)
+        #expect(restaurantes.first { $0.ciudad == "Ourense" }?.visitas?.count == 2)
+    }
+
     @Test func editarConservaLaMoneda() throws {
         let modelo = FichaRapidaModelo(lugar: grelo)
         modelo.estrellas = 4

@@ -55,6 +55,19 @@ public enum LimitesGratis {
     public static let listasPropias = 3
 }
 
+/// Restaurante escrito a mano, sin pasar por el buscador de mapas (no tiene coordenadas).
+public struct RestauranteManual: Sendable, Hashable {
+    public var nombre: String
+    public var ciudad: String?
+    public var direccion: String?
+
+    public init(nombre: String, ciudad: String? = nil, direccion: String? = nil) {
+        self.nombre = nombre
+        self.ciudad = ciudad
+        self.direccion = direccion
+    }
+}
+
 /// Un lugar devuelto por el buscador de mapas, independiente de MapKit.
 public struct LugarEncontrado: Sendable, Hashable, Identifiable {
     public var mapItemID: String?

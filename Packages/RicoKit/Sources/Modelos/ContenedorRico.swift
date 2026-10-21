@@ -97,4 +97,31 @@ public extension ModelContext {
         insert(nuevo)
         return nuevo
     }
+
+    /// Devuelve el restaurante escrito a mano o lo crea. Reutiliza uno con el mismo nombre
+    /// y la misma ciudad (sin distinguir mayúsculas ni tildes).
+    func restaurante(manual datos: RestauranteManual) throws -> Restaurante {
+        let nombre = datos.nombre.trimmingCharacters(in: .whitespacesAndNewlines)
+        let ciudad = datos.ciudad?.trimmingCharacters(in: .whitespacesAndNewlines).nilSiVacia
+        let direccion = datos.direccion?.trimmingCharacters(in: .whitespacesAndNewlines).nilSiVacia
+
+        let todos = try fetch(FetchDescriptor<Restaurante>())
+        if let existente = todos.first(where: { r in
+            r.nombre.compare(nombre, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+                && (r.ciudad ?? "").compare(ciudad ?? "", options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+        }) {
+            if existente.direccion == nil { existente.direccion = direccion }
+            return existente
+        }
+
+        let nuevo = Restaurante(nombre: nombre)
+        nuevo.ciudad = ciudad
+        nuevo.direccion = direccion
+        insert(nuevo)
+        return nuevo
+    }
+}
+
+private extension String {
+    var nilSiVacia: String? { isEmpty ? nil : self }
 }
