@@ -14,10 +14,7 @@ public struct ListasView: View {
     @Query(filter: #Predicate<Lista> { $0.tipoRaw == "quieroProbar" }, sort: \Lista.fechaCreacion)
     private var quieroProbar: [Lista]
 
-    @Query(
-        filter: #Predicate<Lista> { $0.tipoRaw == "propia" },
-        sort: [SortDescriptor(\Lista.orden), SortDescriptor(\Lista.fechaCreacion)]
-    )
+    @Query(filter: #Predicate<Lista> { $0.tipoRaw == "propia" }, sort: \Lista.orden)
     private var propias: [Lista]
 
     @State private var creando = false

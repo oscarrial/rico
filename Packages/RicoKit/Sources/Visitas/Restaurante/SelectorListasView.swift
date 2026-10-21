@@ -13,7 +13,7 @@ struct SelectorListasView: View {
     @Environment(\.esPremium) private var esPremium
     @Environment(\.pedirPremium) private var pedirPremium
 
-    @Query(sort: [SortDescriptor(\Lista.orden), SortDescriptor(\Lista.fechaCreacion)])
+    @Query(sort: \Lista.orden)
     private var listas: [Lista]
 
     @State private var creando = false
