@@ -96,6 +96,11 @@ schemes:
       targets:
         Rico: all
         RicoTests: [test]
+    # Compras de prueba en el simulador con Config/Rico.storekit (solo al ejecutar en Debug;
+    # TestFlight y la App Store usan los productos de App Store Connect).
+    run:
+      config: Debug
+      storeKitConfiguration: Config/Rico.storekit
     test:
       gatherCoverageData: true
       targets:

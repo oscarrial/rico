@@ -135,7 +135,15 @@ public final class FichaRapidaModelo {
     public var importePorPersona: Importe? { importe?.porPersona(comensales: comensales, pagueTodo: pagueTodo) }
     public var textoPorPersona: String? { importePorPersona?.textoMoneda }
 
-    public var fotosRestantes: Int { max(0, LimitesGratis.fotosPorVisita - fotos.count) }
+    /// Máximo de fotos de la visita: el del plan gratis, o `nil` (sin límite) con Rico Premium.
+    /// Lo rellena la vista desde `@Environment(\.esPremium)`.
+    public var limiteFotos: Int? = LimitesGratis.fotosPorVisita
+
+    /// Huecos que quedan para fotos; `nil` si no hay límite.
+    public var fotosRestantes: Int? { limiteFotos.map { max(0, $0 - fotos.count) } }
+
+    /// Se pueden añadir más fotos.
+    public var admiteFotos: Bool { fotosRestantes.map { $0 > 0 } ?? true }
 
     public func anadirPlato() {
         platos.append(BorradorPlato())
@@ -148,7 +156,7 @@ public final class FichaRapidaModelo {
     /// Añade una foto si quedan huecos y no estaba ya.
     @discardableResult
     public func anadirFoto(_ foto: BorradorFoto) -> Bool {
-        guard fotosRestantes > 0 else { return false }
+        guard admiteFotos else { return false }
         if let carrete = foto.identificadorCarrete, fotos.contains(where: { $0.identificadorCarrete == carrete }) {
             return false
         }
