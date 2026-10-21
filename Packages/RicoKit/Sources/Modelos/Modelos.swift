@@ -147,6 +147,10 @@ public final class Foto {
     /// Identificador local de la foto en el carrete, para no sugerirla dos veces.
     public var identificadorCarrete: String?
     public var orden: Int = 0
+    /// Ruta de la imagen en el bucket `fotos` del servidor (`<usuario>/<id>.jpg`); `nil` si aún no se ha subido.
+    public var rutaRemota: String?
+    /// Ruta de la miniatura en el bucket `fotos` (`<usuario>/<id>-mini.jpg`).
+    public var rutaMiniaturaRemota: String?
 
     public var visita: Visita?
     public var plato: Plato?

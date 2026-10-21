@@ -9,7 +9,7 @@ let package = Package(
     products: [
         .library(name: "RicoKit", targets: [
             "Modelos", "DesignSystem", "Visitas", "Cuenta",
-            "Mapa", "Listas", "Estadisticas", "Captura", "Premium"
+            "Mapa", "Listas", "Estadisticas", "Captura", "Premium", "Sincronizacion"
         ])
     ],
     dependencies: [
@@ -26,9 +26,18 @@ let package = Package(
                 "RicoCore",
                 "Modelos",
                 "DesignSystem",
+                "Sincronizacion",
                 .product(name: "Supabase", package: "supabase-swift")
             ],
             resources: [.process("Resources")]
+        ),
+        .target(
+            name: "Sincronizacion",
+            dependencies: [
+                "RicoCore",
+                "Modelos",
+                .product(name: "Supabase", package: "supabase-swift")
+            ]
         ),
         .target(name: "Mapa", dependencies: ["RicoCore", "Modelos", "DesignSystem", "Visitas"], resources: [.process("Resources")]),
         .target(name: "Listas", dependencies: ["RicoCore", "Modelos", "DesignSystem", "Visitas"], resources: [.process("Resources")]),

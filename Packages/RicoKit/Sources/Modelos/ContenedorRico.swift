@@ -10,7 +10,9 @@ public enum ContenedorRico {
         Foto.self,
         Lista.self,
         PagoCapturado.self,
-        AliasComercio.self
+        AliasComercio.self,
+        RegistroSincronizado.self,
+        MarcaBajada.self
     ])
 
     /// App Group compartido con las extensiones (atajos, notificaciones), leído del Info.plist.
@@ -60,6 +62,8 @@ public enum ContenedorRico {
         try contexto.delete(model: PagoCapturado.self)
         try contexto.delete(model: Lista.self)
         try contexto.delete(model: Restaurante.self)
+        try contexto.delete(model: RegistroSincronizado.self)
+        try contexto.delete(model: MarcaBajada.self)
         try contexto.save()
     }
 }
