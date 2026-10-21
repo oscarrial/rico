@@ -184,6 +184,17 @@ struct FichaRapidaTests {
         #expect(modelo.fotosRestantes == 0)
     }
 
+    @Test func sinLimiteDeFotosEnPremium() {
+        let modelo = FichaRapidaModelo(lugar: grelo)
+        modelo.limiteFotos = nil
+        for _ in 0..<(LimitesGratis.fotosPorVisita + 3) {
+            #expect(modelo.anadirFoto(BorradorFoto(miniatura: Data([0]), datos: Data([0]), fecha: .now)))
+        }
+        #expect(modelo.fotos.count == LimitesGratis.fotosPorVisita + 3)
+        #expect(modelo.fotosRestantes == nil)
+        #expect(modelo.admiteFotos)
+    }
+
     @Test func noRepiteLaMismaFotoDelCarrete() {
         let modelo = FichaRapidaModelo(lugar: grelo)
         let foto = BorradorFoto(miniatura: Data([0]), datos: Data([0]), fecha: .now, identificadorCarrete: "ABC")

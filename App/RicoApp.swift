@@ -12,7 +12,6 @@ struct RicoApp: App {
     @State private var usuarioDelContenedor: UUID?
     @State private var cuenta: EstadoCuenta
     @State private var mostrarInicio = true
-    @State private var mostrandoCuenta = false
 
     init() {
         // Contenedor provisional (sin cuenta): no se muestra hasta conocer la fase.
@@ -90,16 +89,7 @@ struct RicoApp: App {
     private var raiz: some View {
         switch cuenta.fase {
         case .conSesion, .soloLocal:
-            RaizView(alAbrirCuenta: { mostrandoCuenta = true })
-                .sheet(isPresented: $mostrandoCuenta) {
-                    CuentaView {
-                        NavigationLink {
-                            GuiaAtajoView()
-                        } label: {
-                            Label { Text("Pagos con Apple Pay") } icon: { Image(systemName: "creditcard") }
-                        }
-                    }
-                }
+            RaizView()
                 .sheet(isPresented: $cuenta.pidiendoNuevaContrasena) {
                     NuevaContrasenaView()
                 }

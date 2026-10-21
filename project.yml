@@ -56,8 +56,8 @@ targets:
         # Solo HTTPS del sistema: no hay que declarar cifrado en cada subida.
         ITSAppUsesNonExemptEncryption: false
         NSPhotoLibraryUsageDescription: "Para sugerirte las fotos que hiciste en cada restaurante y guardarlas en tu diario."
-        # Captura de pagos: al pagar con Apple Pay, la ubicación ayuda a reconocer el restaurante.
-        NSLocationWhenInUseUsageDescription: "Para reconocer en qué restaurante has pagado y apuntarlo en tu diario."
+        # Mapa y captura de pagos (al pagar con Apple Pay ayuda a reconocer el restaurante).
+        NSLocationWhenInUseUsageDescription: "Para centrar el mapa donde estás y reconocer en qué restaurante has pagado. Tu ubicación no sale del iPhone."
         RicoAppGroup: group.$(PRODUCT_BUNDLE_IDENTIFIER)
         RicoSupabaseHost: $(RICO_SUPABASE_HOST)
         RicoSupabaseClave: $(RICO_SUPABASE_CLAVE)
@@ -99,6 +99,11 @@ schemes:
       targets:
         Rico: all
         RicoTests: [test]
+    # Compras de prueba en el simulador con Config/Rico.storekit (solo al ejecutar en Debug;
+    # TestFlight y la App Store usan los productos de App Store Connect).
+    run:
+      config: Debug
+      storeKitConfiguration: Config/Rico.storekit
     test:
       gatherCoverageData: true
       targets:

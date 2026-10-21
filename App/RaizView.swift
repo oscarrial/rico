@@ -1,5 +1,6 @@
 import SwiftUI
 import Captura
+import Cuenta
 import DesignSystem
 import Estadisticas
 import Listas
@@ -9,18 +10,16 @@ import Visitas
 
 /// Las cuatro pestañas de la app: Diario, Mapa, Listas y Resumen.
 struct RaizView: View {
-    let alAbrirCuenta: () -> Void
-
     @State private var pestana: Pestana = .diario
     @State private var premium = EstadoPremium()
-    @State private var mostrandoPremium = false
+    @State private var mostrandoCuenta = false
     @AppStorage("bienvenidaVista") private var bienvenidaVista = false
 
     enum Pestana: Hashable { case diario, mapa, listas, resumen }
 
     var body: some View {
         TabView(selection: $pestana) {
-            DiarioView(alAbrirCuenta: alAbrirCuenta) {
+            DiarioView(alAbrirCuenta: { mostrandoCuenta = true }) {
                 AvisoPendientesView()
             }
             .tabItem { Label { Text("Diario") } icon: { Image(systemName: "book") } }
@@ -38,13 +37,25 @@ struct RaizView: View {
                 .tabItem { Label { Text("Resumen") } icon: { Image(systemName: "chart.bar") } }
                 .tag(Pestana.resumen)
         }
+        // La cuenta se abre desde aquí (no desde RicoApp) para que herede el estado de Premium.
+        .sheet(isPresented: $mostrandoCuenta) {
+            CuentaView {
+                NavigationLink {
+                    GuiaAtajoView()
+                } label: {
+                    Label { Text("Pagos con Apple Pay") } icon: { Image(systemName: "creditcard") }
+                }
+            }
+        }
+        .permitePedirPremium()
         .environment(premium)
         .environment(\.esPremium, premium.esPremium)
-        .environment(\.pedirPremium, AccionPremium { mostrandoPremium = true })
-        .sheet(isPresented: $mostrandoPremium) {
+        .environment(\.hojaPremium, HojaPremium { [premium] in
             PaywallView()
                 .environment(premium)
-        }
+        })
+        // Comprueba las compras al arrancar y escucha renovaciones y reembolsos.
+        .task { await premium.arrancar() }
         .fullScreenCover(isPresented: Binding(get: { !bienvenidaVista }, set: { bienvenidaVista = !$0 })) {
             BienvenidaView { bienvenidaVista = true }
         }

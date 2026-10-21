@@ -9,6 +9,8 @@ import RicoCore
 public struct FichaRapidaView: View {
     @Environment(\.modelContext) private var contexto
     @Environment(\.dismiss) private var cerrar
+    @Environment(\.esPremium) private var esPremium
+    @Environment(\.pedirPremium) private var pedirPremium
 
     @State private var modelo: FichaRapidaModelo
     @State private var seleccionFotos: [PhotosPickerItem] = []
@@ -64,12 +66,16 @@ public struct FichaRapidaView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .task { await cargarSugeridas() }
+        .onChange(of: esPremium, initial: true) { _, premium in
+            modelo.limiteFotos = premium ? nil : LimitesGratis.fotosPorVisita
+        }
         .onChange(of: seleccionFotos) { _, nuevas in
             Task { await anadirDelSelector(nuevas) }
         }
         .alert(Text("No se pudo guardar la visita", bundle: .module), isPresented: $mostrarErrorGuardar) {
             Button { } label: { Text("Vale", bundle: .module) }
         }
+        .permitePedirPremium()
     }
 
     // MARK: Secciones
@@ -228,9 +234,11 @@ public struct FichaRapidaView: View {
                 Text("Fotos", bundle: .module)
                     .font(.rico(.headline, peso: .heavy))
                 Spacer()
-                Text("\(modelo.fotos.count) de \(LimitesGratis.fotosPorVisita)", bundle: .module)
-                    .font(.rico(.footnote, peso: .bold))
-                    .foregroundStyle(Color.ricoSecundario)
+                if let limite = modelo.limiteFotos {
+                    Text("\(modelo.fotos.count) de \(limite)", bundle: .module)
+                        .font(.rico(.footnote, peso: .bold))
+                        .foregroundStyle(Color.ricoSecundario)
+                }
             }
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
@@ -249,7 +257,7 @@ public struct FichaRapidaView: View {
                             .accessibilityLabel(Text("Quitar foto", bundle: .module))
                         }
                 }
-                if modelo.fotosRestantes > 0 {
+                if modelo.admiteFotos {
                     PhotosPicker(selection: $seleccionFotos, maxSelectionCount: modelo.fotosRestantes, matching: .images, photoLibrary: .shared()) {
                         RoundedRectangle(cornerRadius: Medidas.radioControl)
                             .strokeBorder(Color.ricoLinea, style: StrokeStyle(lineWidth: 1.5, dash: [5]))
@@ -266,10 +274,14 @@ public struct FichaRapidaView: View {
 
             sugerencias
 
-            if modelo.fotosRestantes == 0 {
-                Text("Con Rico Premium, fotos sin límite en cada visita.", bundle: .module)
-                    .font(.rico(.footnote, peso: .semibold))
-                    .foregroundStyle(Color.ricoSecundario)
+            if !modelo.admiteFotos {
+                Button {
+                    pedirPremium()
+                } label: {
+                    Label { Text("Con Rico Premium, fotos sin límite en cada visita.", bundle: .module) } icon: { Image(systemName: "photo.on.rectangle") }
+                        .font(.rico(.footnote, peso: .bold))
+                        .frame(minHeight: Medidas.toqueMinimo, alignment: .leading)
+                }
             }
         }
     }
@@ -277,7 +289,7 @@ public struct FichaRapidaView: View {
     @ViewBuilder
     private var sugerencias: some View {
         let pendientes = sugeridas.filter { !modelo.contiene(fotoDelCarrete: $0.id) }
-        if !pendientes.isEmpty, modelo.fotosRestantes > 0 {
+        if !pendientes.isEmpty, modelo.admiteFotos {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Fotos que hiciste aquí", bundle: .module)
                     .font(.rico(.footnote, peso: .bold))
@@ -304,7 +316,7 @@ public struct FichaRapidaView: View {
                     }
                 }
             }
-        } else if sugeridor.permisoSinPedir, modelo.fotosRestantes > 0 {
+        } else if sugeridor.permisoSinPedir, modelo.admiteFotos {
             Button {
                 Task {
                     if await sugeridor.pedirPermiso() { await cargarSugeridas() }
