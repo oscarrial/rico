@@ -41,7 +41,7 @@ public final class BuscadorMapKit: BuscadorLugares {
         }
     }
 
-    nonisolated static func lugar(_ item: MKMapItem) -> LugarEncontrado? {
+    public nonisolated static func lugar(_ item: MKMapItem) -> LugarEncontrado? {
         guard let nombre = item.name else { return nil }
         let marca = item.placemark
         var identificador: String?

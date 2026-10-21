@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Captura
 import Cuenta
 import DesignSystem
 import Modelos
@@ -21,21 +22,16 @@ struct RicoApp: App {
             ServicioCuentaSupabase(cliente: ClienteRico.crear($0))
         }
         _cuenta = State(initialValue: EstadoCuenta(servicio: servicio))
+
+        // Avisos «¿Qué tal en…?»: el delegado tiene que estar antes de terminar el arranque
+        // para recibir el toque que abrió la app.
+        DelegadoNotificaciones.activar()
     }
 
     /// Abre la base local de esa cuenta (o la del modo sin cuenta si `usuario` es `nil`).
+    /// La comparte con la acción de Atajos «Registrar pago» (ver `AlmacenApp`).
     static func abrirContenedor(usuario: UUID?) -> ModelContainer {
-        do {
-            return try ContenedorRico.crear(usuario: usuario)
-        } catch {
-            // Sin firma (simulador de CI) no hay App Group: base local de la app.
-            Registro.datos.notice("Sin App Group (\(String(describing: error), privacy: .public)); se usa el almacenamiento de la app.")
-            do {
-                return try ContenedorRico.crear(usuario: usuario, usarGrupo: false)
-            } catch {
-                fatalError("No se pudo abrir la base de datos: \(error)")
-            }
-        }
+        AlmacenApp.contenedor(usuario: usuario)
     }
 
     /// Cuenta cuya base debe estar abierta. En `.cargando` y `.sinSesion` no cambia.
@@ -61,9 +57,19 @@ struct RicoApp: App {
                     }
                 }
                 .animation(.easeOut(duration: 0.25), value: cuenta.fase)
-                // Enlaces de los correos: confirmar la cuenta o recuperar la contraseña.
+                // rico://visita/<uuid> abre la ficha de esa visita; el resto son enlaces de los
+                // correos (confirmar la cuenta o recuperar la contraseña).
                 .onOpenURL { url in
+                    if AperturaVisita.compartida.abrir(url) { return }
                     Task { await cuenta.abrirEnlace(url) }
+                }
+                // La acción de Atajos guarda los pagos en la base de la última cuenta abierta.
+                .onChange(of: cuenta.fase, initial: true) { _, fase in
+                    switch fase {
+                    case .conSesion(let sesion): AlmacenApp.usuarioGuardado = sesion.id
+                    case .soloLocal: AlmacenApp.usuarioGuardado = nil
+                    case .cargando, .sinSesion: break
+                    }
                 }
                 .onChange(of: usuarioActivo, initial: true) { _, nuevo in
                     guard nuevo != usuarioDelContenedor else { return }

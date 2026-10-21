@@ -39,7 +39,13 @@ struct RaizView: View {
         }
         // La cuenta se abre desde aquí (no desde RicoApp) para que herede el estado de Premium.
         .sheet(isPresented: $mostrandoCuenta) {
-            CuentaView()
+            CuentaView {
+                NavigationLink {
+                    GuiaAtajoView()
+                } label: {
+                    Label { Text("Pagos con Apple Pay") } icon: { Image(systemName: "creditcard") }
+                }
+            }
         }
         .permitePedirPremium()
         .environment(premium)
@@ -53,5 +59,7 @@ struct RaizView: View {
         .fullScreenCover(isPresented: Binding(get: { !bienvenidaVista }, set: { bienvenidaVista = !$0 })) {
             BienvenidaView { bienvenidaVista = true }
         }
+        // Al tocar un aviso «¿Qué tal en…?» o un enlace rico://visita/<uuid>.
+        .abrirVisitaDesdeAviso()
     }
 }

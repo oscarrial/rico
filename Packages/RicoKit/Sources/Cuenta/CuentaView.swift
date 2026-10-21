@@ -18,7 +18,17 @@ public struct CuentaView: View {
     @State private var trabajando = false
     @State private var error: ErrorCuenta?
 
-    public init() {}
+    /// Ajustes de otros módulos (por ejemplo, los pagos con Apple Pay), sin que Cuenta dependa de ellos.
+    private let ajustes: AnyView?
+
+    public init() {
+        ajustes = nil
+    }
+
+    /// - Parameter ajustes: filas que van en su propia sección, debajo del correo.
+    public init<Ajustes: View>(@ViewBuilder ajustes: () -> Ajustes) {
+        self.ajustes = AnyView(ajustes())
+    }
 
     public var body: some View {
         NavigationStack {
@@ -47,6 +57,12 @@ public struct CuentaView: View {
                         .frame(minHeight: Medidas.toqueMinimo)
                     }
                     .foregroundStyle(Color.ricoTinta)
+                }
+
+                if let ajustes {
+                    Section {
+                        ajustes
+                    }
                 }
 
                 if cuenta.sesion != nil {
