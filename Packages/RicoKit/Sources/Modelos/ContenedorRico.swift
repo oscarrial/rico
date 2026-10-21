@@ -115,12 +115,18 @@ public extension ModelContext {
                 && (r.ciudad ?? "").compare(ciudad ?? "", options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
         }) {
             if existente.direccion == nil { existente.direccion = direccion }
+            if existente.latitud == nil, let latitud = datos.latitud, let longitud = datos.longitud {
+                existente.latitud = latitud
+                existente.longitud = longitud
+            }
             return existente
         }
 
         let nuevo = Restaurante(nombre: nombre)
         nuevo.ciudad = ciudad
         nuevo.direccion = direccion
+        nuevo.latitud = datos.latitud
+        nuevo.longitud = datos.longitud
         insert(nuevo)
         return nuevo
     }

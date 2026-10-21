@@ -55,16 +55,27 @@ public enum LimitesGratis {
     public static let listasPropias = 3
 }
 
-/// Restaurante escrito a mano, sin pasar por el buscador de mapas (no tiene coordenadas).
+/// Restaurante escrito a mano, sin pasar por el buscador de mapas. Las coordenadas son
+/// opcionales: si el usuario marca el sitio en el mapa, aparecerá también en la pestaña Mapa.
 public struct RestauranteManual: Sendable, Hashable {
     public var nombre: String
     public var ciudad: String?
     public var direccion: String?
+    public var latitud: Double?
+    public var longitud: Double?
 
-    public init(nombre: String, ciudad: String? = nil, direccion: String? = nil) {
+    public init(
+        nombre: String,
+        ciudad: String? = nil,
+        direccion: String? = nil,
+        latitud: Double? = nil,
+        longitud: Double? = nil
+    ) {
         self.nombre = nombre
         self.ciudad = ciudad
         self.direccion = direccion
+        self.latitud = latitud
+        self.longitud = longitud
     }
 }
 

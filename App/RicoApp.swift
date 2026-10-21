@@ -19,6 +19,14 @@ struct RicoApp: App {
     private let servicioSincronizacion: (any ServicioSincronizacion)?
 
     init() {
+        #if DEBUG
+        if ModoCaptura.actual != nil {
+            _contenedor = State(initialValue: ModoCaptura.contenedorDemo())
+            _cuenta = State(initialValue: EstadoCuenta(servicio: nil))
+            _mostrarInicio = State(initialValue: false)
+            return
+        }
+        #endif
         // Contenedor provisional (sin cuenta): no se muestra hasta conocer la fase.
         _contenedor = State(initialValue: Self.abrirContenedor(usuario: nil))
 
@@ -79,6 +87,9 @@ struct RicoApp: App {
                     }
                 }
                 .onChange(of: usuarioActivo, initial: true) { _, nuevo in
+                    #if DEBUG
+                    if ModoCaptura.actual != nil { return }
+                    #endif
                     guard nuevo != usuarioDelContenedor else { return }
                     let abierto = Self.abrirContenedor(usuario: nuevo)
                     contenedor = abierto
@@ -115,6 +126,19 @@ struct RicoApp: App {
 
     @ViewBuilder
     private var raiz: some View {
+        #if DEBUG
+        if ModoCaptura.actual == .acceso {
+            AccesoView()
+        } else {
+            raizNormal
+        }
+        #else
+        raizNormal
+        #endif
+    }
+
+    @ViewBuilder
+    private var raizNormal: some View {
         switch cuenta.fase {
         case .conSesion, .soloLocal:
             RaizView()

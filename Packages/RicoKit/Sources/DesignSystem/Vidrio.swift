@@ -42,14 +42,21 @@ private struct FondoBotonFlotante: ViewModifier {
 }
 
 public extension View {
-    /// Fondo de la barra de acción fija abajo: en iOS 26 el botón flota en cristal
-    /// sobre el contenido; antes, barra translúcida clásica.
-    @ViewBuilder
+    /// Fondo de la barra de acción fija abajo: un degradado hacia el color del lienzo
+    /// para que el contenido se apague bajo el botón en vez de asomar por los lados.
     func fondoBarraInferior() -> some View {
-        if #available(iOS 26.0, *) {
-            self
-        } else {
-            self.background(.bar)
+        self.background {
+            LinearGradient(
+                stops: [
+                    .init(color: Color.ricoFondo.opacity(0), location: 0),
+                    .init(color: Color.ricoFondo.opacity(0.85), location: 0.35),
+                    .init(color: Color.ricoFondo, location: 1)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .padding(.top, -28)
+            .ignoresSafeArea(edges: .bottom)
         }
     }
 }

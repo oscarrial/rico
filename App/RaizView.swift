@@ -5,7 +5,9 @@ import DesignSystem
 import Estadisticas
 import Listas
 import Mapa
+import Modelos
 import Premium
+import SwiftData
 import Visitas
 
 /// Las cuatro pestañas de la app: Diario, Mapa, Listas y Resumen.
@@ -14,6 +16,10 @@ struct RaizView: View {
     @State private var premium = EstadoPremium()
     @State private var mostrandoCuenta = false
     @AppStorage("bienvenidaVista") private var bienvenidaVista = false
+    #if DEBUG
+    @State private var pantallaCaptura = ModoCaptura.actual
+    @Query(sort: \Restaurante.nombre) private var restaurantesCaptura: [Restaurante]
+    #endif
 
     enum Pestana: Hashable { case diario, mapa, listas, resumen }
 
@@ -61,5 +67,15 @@ struct RaizView: View {
         }
         // Al tocar un aviso «¿Qué tal en…?» o un enlace rico://visita/<uuid>.
         .abrirVisitaDesdeAviso()
+        #if DEBUG
+        .modifier(PantallaCapturaModifier(
+            pantalla: pantallaCaptura,
+            restaurante: restaurantesCaptura.first { $0.nombre == "Taberna O Grelo" },
+            premium: premium,
+            pestana: $pestana,
+            bienvenidaVista: $bienvenidaVista,
+            mostrandoCuenta: $mostrandoCuenta
+        ))
+        #endif
     }
 }
