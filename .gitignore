@@ -23,3 +23,5 @@ Config/Secretos.xcconfig
 
 # Copias de trabajo de los agentes de Claude Code
 .claude/
+
+supabase/.temp/

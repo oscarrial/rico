@@ -7,6 +7,8 @@ import DesignSystem
 public struct GuiaAtajoView: View {
     @Environment(\.openURL) private var abrirURL
     @Environment(\.scenePhase) private var fase
+    @Environment(\.esPremium) private var esPremium
+    @Environment(\.pedirPremium) private var pedirPremium
 
     @State private var notificaciones = PermisoNotificaciones()
     @State private var ubicacion = PermisoUbicacion()
@@ -60,32 +62,36 @@ public struct GuiaAtajoView: View {
             VStack(alignment: .leading, spacing: 22) {
                 cabecera
 
-                VStack(alignment: .leading, spacing: 14) {
-                    TituloSeccion(Text("En la app Atajos", bundle: .module))
-                    ForEach(pasos) { paso in
-                        filaPaso(paso)
+                if !esPremium {
+                    sinPremium
+                } else {
+                    VStack(alignment: .leading, spacing: 14) {
+                        TituloSeccion(Text("En la app Atajos", bundle: .module))
+                        ForEach(pasos) { paso in
+                            filaPaso(paso)
+                        }
                     }
-                }
 
-                VStack(alignment: .leading, spacing: 14) {
-                    TituloSeccion(Text("En Rico", bundle: .module))
-                    permiso(
-                        simbolo: "bell.badge",
-                        titulo: Text("Avisos para valorar", bundle: .module),
-                        texto: Text("Un rato después de pagar te preguntamos qué tal estuvo.", bundle: .module),
-                        estado: notificaciones.estado,
-                        boton: Text("Activar avisos", bundle: .module)
-                    ) {
-                        Task { await notificaciones.pedir() }
-                    }
-                    permiso(
-                        simbolo: "location",
-                        titulo: Text("Ubicación al pagar", bundle: .module),
-                        texto: Text("Sirve para reconocer el restaurante aunque el pago tenga un nombre raro. Solo se usa en ese momento.", bundle: .module),
-                        estado: ubicacion.estado,
-                        boton: Text("Permitir ubicación", bundle: .module)
-                    ) {
-                        ubicacion.pedir()
+                    VStack(alignment: .leading, spacing: 14) {
+                        TituloSeccion(Text("En Rico", bundle: .module))
+                        permiso(
+                            simbolo: "bell.badge",
+                            titulo: Text("Avisos para valorar", bundle: .module),
+                            texto: Text("Un rato después de pagar te preguntamos qué tal estuvo.", bundle: .module),
+                            estado: notificaciones.estado,
+                            boton: Text("Activar avisos", bundle: .module)
+                        ) {
+                            Task { await notificaciones.pedir() }
+                        }
+                        permiso(
+                            simbolo: "location",
+                            titulo: Text("Ubicación al pagar", bundle: .module),
+                            texto: Text("Sirve para reconocer el restaurante aunque el pago tenga un nombre raro. Solo se usa en ese momento.", bundle: .module),
+                            estado: ubicacion.estado,
+                            boton: Text("Permitir ubicación", bundle: .module)
+                        ) {
+                            ubicacion.pedir()
+                        }
                     }
                 }
             }
@@ -95,23 +101,52 @@ public struct GuiaAtajoView: View {
         }
         .background(Color.ricoFondo)
         .safeAreaInset(edge: .bottom) {
-            Button {
-                if let url = URL(string: "shortcuts://") { abrirURL(url) }
-            } label: {
-                Text("Abrir Atajos", bundle: .module)
+            if esPremium {
+                Button {
+                    if let url = URL(string: "shortcuts://") { abrirURL(url) }
+                } label: {
+                    Text("Abrir Atajos", bundle: .module)
+                }
+                .buttonStyle(.ricoPrincipal)
+                .padding(.horizontal, Medidas.margen)
+                .padding(.vertical, 12)
+                .fondoBarraInferior()
+            } else {
+                Button {
+                    pedirPremium()
+                } label: {
+                    Text("Probar Premium", bundle: .module)
+                }
+                .buttonStyle(.ricoPrincipal)
+                .padding(.horizontal, Medidas.margen)
+                .padding(.vertical, 12)
+                .fondoBarraInferior()
             }
-            .buttonStyle(.ricoPrincipal)
-            .padding(.horizontal, Medidas.margen)
-            .padding(.vertical, 12)
-            .fondoBarraInferior()
         }
-        .navigationTitle(Text("Pagos con Apple Pay", bundle: .module))
+        .navigationTitle(Text("Captura automática", bundle: .module))
         .navigationBarTitleDisplayMode(.inline)
         .task { await notificaciones.actualizar() }
         .onChange(of: fase) { _, nueva in
             // Al volver de Ajustes o de Atajos.
             if nueva == .active {
                 Task { await notificaciones.actualizar() }
+            }
+        }
+    }
+
+    private var sinPremium: some View {
+        Tarjeta {
+            VStack(alignment: .leading, spacing: 10) {
+                Label {
+                    Text("Solo con Rico Premium", bundle: .module)
+                } icon: {
+                    Image(systemName: "star.circle.fill")
+                }
+                .font(.rico(.headline, peso: .heavy))
+                .foregroundStyle(Color.ricoTomateTexto)
+                Text("Cada vez que pagues con Apple Pay en un restaurante, Rico guarda el sitio y el importe y te lo deja listo para valorar en diez segundos. Se configura una vez y funciona solo.", bundle: .module)
+                    .font(.rico(.subheadline, peso: .semibold))
+                    .foregroundStyle(Color.ricoSecundario)
             }
         }
     }

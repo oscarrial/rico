@@ -2,6 +2,7 @@ import AppIntents
 import Foundation
 import Captura
 import Modelos
+import Premium
 
 /// Acción de Atajos «Registrar pago». Se usa en la automatización «Transacción» de Wallet:
 /// recibe comercio, importe y tarjeta, y deja la visita lista para valorar.
@@ -40,6 +41,12 @@ struct RegistrarPagoIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
+        // La captura automática es de Premium. Si la suscripción ha caducado (o la app nunca
+        // se abrió con Premium), el pago se ignora sin molestar con un error al pagar.
+        guard EstadoPremium.premiumEnCache else {
+            Registro.captura.info("Atajo «Registrar pago» ignorado: sin Premium")
+            return .result()
+        }
         // Nunca falla de cara al usuario: un error aquí saldría como alerta al pagar.
         // ProcesadorPagos no lanza; los fallos quedan en el registro.
         let contenedor = AlmacenApp.contenedor(usuario: AlmacenApp.usuarioGuardado)
