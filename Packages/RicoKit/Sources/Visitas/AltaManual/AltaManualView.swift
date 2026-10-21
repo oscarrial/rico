@@ -56,6 +56,8 @@ public struct AltaManualView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color.ricoFondo)
             .overlay { estado }
             .navigationTitle(Text("Nueva visita", bundle: .module))
             .navigationBarTitleDisplayMode(.inline)
