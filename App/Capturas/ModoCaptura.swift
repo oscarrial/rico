@@ -133,6 +133,7 @@ import Visitas
 struct PantallaCapturaModifier: ViewModifier {
     let pantalla: ModoCaptura.Pantalla?
     let restaurante: Restaurante?
+    let premium: EstadoPremium
     @Binding var pestana: RaizView.Pestana
     @Binding var bienvenidaVista: Bool
     @Binding var mostrandoCuenta: Bool
@@ -157,6 +158,7 @@ struct PantallaCapturaModifier: ViewModifier {
                 switch pantalla {
                 case .premium:
                     PaywallView()
+                        .environment(premium)
                 case .ficha:
                     if let restaurante {
                         NavigationStack { FichaRestauranteView(restaurante: restaurante) }

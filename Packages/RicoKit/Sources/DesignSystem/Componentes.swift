@@ -91,15 +91,22 @@ public struct Pastillas<Valor: Hashable>: View {
 /// Tarjeta blanca con borde suave.
 public struct Tarjeta<Contenido: View>: View {
     let contenido: Contenido
+    let llena: Bool
 
-    public init(@ViewBuilder contenido: () -> Contenido) {
+    /// - Parameter llena: si se coloca en una rejilla, ocupa todo el alto de su fila.
+    public init(llena: Bool = false, @ViewBuilder contenido: () -> Contenido) {
         self.contenido = contenido()
+        self.llena = llena
     }
 
     public var body: some View {
         contenido
             .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(
+                maxWidth: .infinity,
+                maxHeight: llena ? .infinity : nil,
+                alignment: llena ? .topLeading : .leading
+            )
             .background(Color.ricoSuperficie, in: RoundedRectangle(cornerRadius: Medidas.radioTarjeta))
             .overlay(RoundedRectangle(cornerRadius: Medidas.radioTarjeta).strokeBorder(Color.ricoLinea))
     }

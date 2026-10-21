@@ -71,6 +71,7 @@ struct RaizView: View {
         .modifier(PantallaCapturaModifier(
             pantalla: pantallaCaptura,
             restaurante: restaurantesCaptura.first { $0.nombre == "Taberna O Grelo" },
+            premium: premium,
             pestana: $pestana,
             bienvenidaVista: $bienvenidaVista,
             mostrandoCuenta: $mostrandoCuenta

@@ -20,6 +20,7 @@ public struct ListasView: View {
     @State private var creando = false
     @State private var editando: Lista?
     @State private var paraBorrar: Lista?
+    @State private var reordenando = false
 
     public init() {}
 
@@ -74,20 +75,25 @@ public struct ListasView: View {
             }
             .scrollContentBackground(.hidden)
             .background(Color.ricoFondo)
-            .navigationTitle(Text("Listas", bundle: .module))
-            .toolbar {
-                if !propias.isEmpty {
-                    ToolbarItem(placement: .topBarLeading) {
-                        EditButton()
+            .environment(\.editMode, .constant(Optional(reordenando ? EditMode.active : .inactive)))
+            .cabeceraRaiz(
+                CabeceraRaiz(Text("Listas", bundle: .module)) {
+                    if !propias.isEmpty {
+                        Button(reordenando ? Text("Listo", bundle: .module) : Text("Editar", bundle: .module)) {
+                            withAnimation(.snappy(duration: 0.2)) { reordenando.toggle() }
+                        }
+                        .font(.rico(.subheadline, peso: .heavy))
+                        .foregroundStyle(Color.ricoTomateTexto)
+                        .frame(minHeight: Medidas.toqueMinimo)
                     }
+                    BotonCabecera(
+                        simbolo: "plus",
+                        etiqueta: Text("Nueva lista", bundle: .module),
+                        destacado: true,
+                        accion: nuevaLista
+                    )
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: nuevaLista) {
-                        Image(systemName: "plus")
-                    }
-                    .accessibilityLabel(Text("Nueva lista", bundle: .module))
-                }
-            }
+            )
             .navigationDestination(for: Lista.self) { lista in
                 DetalleListaView(lista: lista)
             }

@@ -47,10 +47,21 @@ jobs:
 
       - name: Arrancar el simulador
         run: |
-          SIMULADOR=$(xcrun simctl list devices available | grep -E '^\s+iPhone 1[67] Pro \(' | head -1 | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
-          if [ -z "$SIMULADOR" ]; then
-            SIMULADOR=$(xcrun simctl list devices available | grep -m1 -E '^\s+iPhone' | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
-          fi
+          # El iPhone Pro más nuevo con el iOS más reciente instalado (iOS 26: Liquid Glass).
+          SIMULADOR=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys, re
+          datos = json.load(sys.stdin)["devices"]
+          def version(runtime):
+              m = re.search(r"iOS-(\d+)-(\d+)", runtime)
+              return (int(m.group(1)), int(m.group(2))) if m else (0, 0)
+          candidatos = []
+          for runtime, dispositivos in datos.items():
+              for d in dispositivos:
+                  if d["name"].startswith("iPhone"):
+                      candidatos.append((version(runtime), "Pro" in d["name"] and "Max" not in d["name"], d["name"], d["udid"]))
+          candidatos.sort(reverse=True)
+          print(candidatos[0][3])
+          ')
           xcrun simctl list devices available | grep "$SIMULADOR"
           echo "SIMULADOR=$SIMULADOR" >> "$GITHUB_ENV"
           xcrun simctl boot "$SIMULADOR"

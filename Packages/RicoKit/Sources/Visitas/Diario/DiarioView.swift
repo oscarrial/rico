@@ -32,9 +32,6 @@ public struct DiarioView<Cabecera: View>: View {
         return NavigationStack {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 14) {
-                    if busqueda.isEmpty {
-                        cabecera
-                    }
                     if busqueda.isEmpty, !visitas.isEmpty {
                         resumenMes
                     }
@@ -63,18 +60,27 @@ public struct DiarioView<Cabecera: View>: View {
                 }
             }
             .overlay(alignment: .bottomTrailing) { botonAnadir }
-            .navigationTitle(Text("Diario", bundle: .module))
-            .searchable(text: $busqueda, prompt: Text("Sitio, ciudad o plato", bundle: .module))
-            .toolbar {
-                if let alAbrirCuenta {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button(action: alAbrirCuenta) {
-                            Image(systemName: "person.crop.circle")
+            .cabeceraRaiz(
+                CabeceraRaiz(Text("Diario", bundle: .module)) {
+                    if let alAbrirCuenta {
+                        BotonCabecera(
+                            simbolo: "person.crop.circle",
+                            etiqueta: Text("Tu cuenta", bundle: .module),
+                            accion: alAbrirCuenta
+                        )
+                    }
+                } debajo: {
+                    VStack(alignment: .leading, spacing: 10) {
+                        CampoBusqueda(
+                            texto: $busqueda,
+                            ejemplo: Text("Sitio, ciudad o plato", bundle: .module)
+                        )
+                        if busqueda.isEmpty {
+                            cabecera
                         }
-                        .accessibilityLabel(Text("Tu cuenta", bundle: .module))
                     }
                 }
-            }
+            )
             .navigationDestination(for: Restaurante.self) { restaurante in
                 FichaRestauranteView(restaurante: restaurante)
             }

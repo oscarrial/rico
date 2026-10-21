@@ -59,7 +59,7 @@ public struct ResumenView: View {
             .overlay {
                 if visitas.isEmpty { vacioTotal }
             }
-            .navigationTitle(Text("Resumen", bundle: .module))
+            .cabeceraRaiz(CabeceraRaiz(Text("Resumen", bundle: .module)) {})
             .navigationDestination(for: Restaurante.self) { restaurante in
                 FichaRestauranteView(restaurante: restaurante)
             }
@@ -109,42 +109,57 @@ public struct ResumenView: View {
 
     // MARK: Cifras
 
+    @ViewBuilder
     private func cifras(_ resumen: ResumenMes) -> some View {
         let cifras = resumen.cifras
         let mesAnterior = formato.mes(CalculadoraResumen.mes(resumen.mes, desplazado: -1, calendario: calendario))
-        let columnas = tamanoTexto.isAccessibilitySize
-            ? [GridItem(.flexible())]
-            : [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
+        let visitas = TarjetaCifra(
+            titulo: Text("Visitas", bundle: .module),
+            valor: Text(cifras.visitas, format: .number),
+            detalle: resumen.comparacion.visitas.map { textoDiferencia($0, mesAnterior: mesAnterior) }
+        )
+        let porPersona = TarjetaCifra(
+            titulo: Text("Por persona", bundle: .module),
+            valor: cifras.gastoMedioPorPersona.map { Text($0.textoMoneda) } ?? Text(verbatim: "—"),
+            detalle: Text("De media", bundle: .module)
+        )
+        let nota = TarjetaCifra(
+            titulo: Text("Nota media", bundle: .module),
+            valor: cifras.notaMedia.map { Text("★ \(NotaTexto.texto($0))", bundle: .module) } ?? Text(verbatim: "—"),
+            detalle: nil,
+            etiquetaAccesible: cifras.notaMedia.map { Text("\(NotaTexto.texto($0)) de 5 estrellas", bundle: .module) }
+        )
+        let sitios = TarjetaCifra(
+            titulo: Text("Sitios", bundle: .module),
+            valor: Text("^[\(cifras.sitiosNuevos) nuevo](inflect: true)", bundle: .module),
+            detalle: Text("^[\(cifras.sitiosRepetidos) repetido](inflect: true)", bundle: .module)
+        )
 
-        return VStack(spacing: 12) {
+        VStack(spacing: 12) {
             TarjetaCifra(
                 titulo: Text("Gasto del mes", bundle: .module),
                 valor: cifras.gasto.map { Text($0.textoMoneda) } ?? Text("Sin importes", bundle: .module),
                 detalle: resumen.comparacion.gasto.map { textoVariacion($0, mesAnterior: mesAnterior) },
                 grande: true
             )
-            LazyVGrid(columns: columnas, spacing: 12) {
-                TarjetaCifra(
-                    titulo: Text("Visitas", bundle: .module),
-                    valor: Text(cifras.visitas, format: .number),
-                    detalle: resumen.comparacion.visitas.map { textoDiferencia($0, mesAnterior: mesAnterior) }
-                )
-                TarjetaCifra(
-                    titulo: Text("Por persona", bundle: .module),
-                    valor: cifras.gastoMedioPorPersona.map { Text($0.textoMoneda) } ?? Text(verbatim: "—"),
-                    detalle: Text("De media", bundle: .module)
-                )
-                TarjetaCifra(
-                    titulo: Text("Nota media", bundle: .module),
-                    valor: cifras.notaMedia.map { Text("★ \(NotaTexto.texto($0))", bundle: .module) } ?? Text(verbatim: "—"),
-                    detalle: nil,
-                    etiquetaAccesible: cifras.notaMedia.map { Text("\(NotaTexto.texto($0)) de 5 estrellas", bundle: .module) }
-                )
-                TarjetaCifra(
-                    titulo: Text("Sitios", bundle: .module),
-                    valor: Text("^[\(cifras.sitiosNuevos) nuevo](inflect: true)", bundle: .module),
-                    detalle: Text("^[\(cifras.sitiosRepetidos) repetido](inflect: true)", bundle: .module)
-                )
+            if tamanoTexto.isAccessibilitySize {
+                VStack(spacing: 12) {
+                    visitas
+                    porPersona
+                    nota
+                    sitios
+                }
+            } else {
+                Grid(alignment: .topLeading, horizontalSpacing: 12, verticalSpacing: 12) {
+                    GridRow {
+                        visitas.gridCellAnchor(.topLeading)
+                        porPersona.gridCellAnchor(.topLeading)
+                    }
+                    GridRow {
+                        nota.gridCellAnchor(.topLeading)
+                        sitios.gridCellAnchor(.topLeading)
+                    }
+                }
             }
         }
     }
@@ -367,7 +382,7 @@ struct TarjetaCifra: View {
     var etiquetaAccesible: Text?
 
     var body: some View {
-        Tarjeta {
+        Tarjeta(llena: true) {
             VStack(alignment: .leading, spacing: 4) {
                 titulo
                     .font(.rico(.footnote, peso: .heavy))
