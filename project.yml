@@ -63,14 +63,18 @@ targets:
       properties:
         com.apple.developer.applesignin:
           - Default
-        com.apple.security.application-groups:
-          - group.$(PRODUCT_BUNDLE_IDENTIFIER)
+        # App Group (group.$(PRODUCT_BUNDLE_IDENTIFIER)): se activará con la acción de Atajos.
+        # Sin él, la base local vive en la carpeta de la app (ContenedorRico lo resuelve solo).
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: es.rico.app
         TARGETED_DEVICE_FAMILY: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+      configs:
+        # Firma de distribución para TestFlight (perfil creado con la API de App Store Connect).
+        Release:
+          PROVISIONING_PROFILE_SPECIFIER: Rico App Store
 
   # Pruebas de los módulos de RicoKit en el simulador (sin app anfitriona).
   RicoTests:
