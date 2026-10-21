@@ -78,10 +78,10 @@ public final class NotificadorLocal: Notificador {
 
         let disparador = UNTimeIntervalNotificationTrigger(timeInterval: max(1, retraso), repeats: false)
         let peticion = UNNotificationRequest(identifier: visitaID.uuidString, content: contenido, trigger: disparador)
-        UNUserNotificationCenter.current().add(peticion) { error in
-            if let error {
-                Registro.captura.error("No se pudo programar el aviso: \(String(describing: error), privacy: .public)")
-            }
+        do {
+            try await UNUserNotificationCenter.current().add(peticion)
+        } catch {
+            Registro.captura.error("No se pudo programar el aviso: \(String(describing: error), privacy: .public)")
         }
     }
 
