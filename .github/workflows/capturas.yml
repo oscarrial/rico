@@ -5,6 +5,8 @@ name: Capturas
 # sin Xcode: gh workflow run capturas.yml --ref <rama> y descarga el artefacto «capturas».
 on:
   workflow_dispatch:
+  push:
+    branches: [capturas, diseno]
 
 permissions:
   contents: read
