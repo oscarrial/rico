@@ -75,12 +75,18 @@ public struct ListasView: View {
             }
             .scrollContentBackground(.hidden)
             .background(Color.ricoFondo)
-            .environment(\.editMode, .constant(Optional(reordenando ? EditMode.active : .inactive)))
+            .environment(\.editMode, .constant(reordenando ? EditMode.active : .inactive))
             .cabeceraRaiz(
                 CabeceraRaiz(Text("Listas", bundle: .module)) {
                     if !propias.isEmpty {
-                        Button(reordenando ? Text("Listo", bundle: .module) : Text("Editar", bundle: .module)) {
+                        Button {
                             withAnimation(.snappy(duration: 0.2)) { reordenando.toggle() }
+                        } label: {
+                            if reordenando {
+                                Text("Listo", bundle: .module)
+                            } else {
+                                Text("Editar", bundle: .module)
+                            }
                         }
                         .font(.rico(.subheadline, peso: .heavy))
                         .foregroundStyle(Color.ricoTomateTexto)
