@@ -4,6 +4,7 @@ import Captura
 import Cuenta
 import DesignSystem
 import Modelos
+import Sincronizacion
 import Visitas
 
 @main
@@ -12,6 +13,10 @@ struct RicoApp: App {
     @State private var usuarioDelContenedor: UUID?
     @State private var cuenta: EstadoCuenta
     @State private var mostrarInicio = true
+    /// Sube y baja los datos de la cuenta con sesión (no existe en modo solo local).
+    @State private var sincronizador: Sincronizador?
+    @Environment(\.scenePhase) private var fasePantalla
+    private let servicioSincronizacion: (any ServicioSincronizacion)?
 
     init() {
         // Contenedor provisional (sin cuenta): no se muestra hasta conocer la fase.
@@ -22,6 +27,7 @@ struct RicoApp: App {
             ServicioCuentaSupabase(cliente: ClienteRico.crear($0))
         }
         _cuenta = State(initialValue: EstadoCuenta(servicio: servicio))
+        servicioSincronizacion = servicio.map { ServicioSincronizacionSupabase(cliente: $0.cliente) }
 
         // Avisos «¿Qué tal en…?»: el delegado tiene que estar antes de terminar el arranque
         // para recibir el toque que abrió la app.
@@ -48,6 +54,7 @@ struct RicoApp: App {
             raiz
                 .id(usuarioDelContenedor)
                 .environment(cuenta)
+                .environment(sincronizador)
                 .tint(.ricoTomate)
                 .overlay {
                     // El arranque se mantiene hasta saber si hay sesión.
@@ -80,9 +87,30 @@ struct RicoApp: App {
                     cuenta.completarBorradoLocalPendiente(de: nuevo) {
                         try ContenedorRico.borrarTodo(en: abierto.mainContext)
                     }
+                    actualizarSincronizador(usuarioDelContenedor: nuevo, contenedor: abierto)
+                }
+                .onChange(of: cuenta.sesion?.id) {
+                    actualizarSincronizador(usuarioDelContenedor: usuarioDelContenedor, contenedor: contenedor)
+                }
+                .onChange(of: fasePantalla) { _, fase in
+                    if fase == .active { sincronizador?.programar(tras: .zero) }
                 }
         }
         .modelContainer(contenedor)
+    }
+
+    /// Sincroniza la base abierta solo si es la de la cuenta con sesión. Al cambiar de usuario
+    /// o cerrar sesión, para el anterior.
+    private func actualizarSincronizador(usuarioDelContenedor: UUID?, contenedor: ModelContainer) {
+        let usuario = cuenta.sesion?.id
+        let deseado = usuario != nil && usuario == usuarioDelContenedor ? usuario : nil
+        guard deseado != sincronizador?.usuario else { return }
+        sincronizador?.parar()
+        sincronizador = nil
+        guard let deseado, let servicioSincronizacion else { return }
+        let nuevo = Sincronizador(contexto: contenedor.mainContext, servicio: servicioSincronizacion, usuario: deseado)
+        nuevo.arrancar()
+        sincronizador = nuevo
     }
 
     @ViewBuilder

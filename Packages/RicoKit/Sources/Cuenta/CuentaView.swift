@@ -4,6 +4,7 @@ import UIKit
 import SwiftData
 import DesignSystem
 import Modelos
+import Sincronizacion
 
 /// «Tu cuenta»: correo, cerrar sesión y borrar la cuenta (obligatorio en la App Store).
 public struct CuentaView: View {
@@ -12,6 +13,7 @@ public struct CuentaView: View {
     @Environment(\.dismiss) private var cerrar
     @Environment(\.esPremium) private var esPremium
     @Environment(\.pedirPremium) private var pedirPremium
+    @Environment(Sincronizador.self) private var sincronizador: Sincronizador?
 
     @State private var confirmandoBorrado = false
     @State private var cambiandoContrasena = false
@@ -42,6 +44,9 @@ public struct CuentaView: View {
                     if cuenta.fase == .soloLocal {
                         Text("Sin cuenta: tus datos solo están en este iPhone.", bundle: .module)
                             .foregroundStyle(Color.ricoSecundario)
+                    }
+                    if cuenta.sesion != nil, let sincronizador, sincronizador.activo {
+                        LineaGuardado(sincronizador: sincronizador)
                     }
                 }
 
@@ -167,6 +172,25 @@ public struct CuentaView: View {
             cerrar()
         } catch {
             self.error = error as? ErrorCuenta ?? .otro("")
+        }
+    }
+}
+
+/// «Guardado en tu cuenta · hace 2 min» o «Pendiente de guardar» (DESIGN.md §9: sin «sincronizar»).
+private struct LineaGuardado: View {
+    let sincronizador: Sincronizador
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 30)) { _ in
+            Group {
+                if let fecha = sincronizador.ultimoGuardado, !sincronizador.hayPendientes {
+                    Text("Guardado en tu cuenta · \(Text(fecha, format: .relative(presentation: .named, unitsStyle: .abbreviated)))", bundle: .module)
+                } else {
+                    Text("Pendiente de guardar", bundle: .module)
+                }
+            }
+            .font(.rico(.footnote))
+            .foregroundStyle(Color.ricoSecundario)
         }
     }
 }
