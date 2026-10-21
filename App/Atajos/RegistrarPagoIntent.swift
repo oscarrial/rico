@@ -41,22 +41,22 @@ struct RegistrarPagoIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        // La captura automática es de Premium. Si la suscripción ha caducado (o la app nunca
-        // se abrió con Premium), el pago se ignora sin molestar con un error al pagar.
-        guard EstadoPremium.premiumEnCache else {
-            Registro.captura.info("Atajo «Registrar pago» ignorado: sin Premium")
-            return .result()
-        }
         // Nunca falla de cara al usuario: un error aquí saldría como alerta al pagar.
         // ProcesadorPagos no lanza; los fallos quedan en el registro.
         let contenedor = AlmacenApp.contenedor(usuario: AlmacenApp.usuarioGuardado)
+        let notificador = NotificadorLocal()
         let procesador = ProcesadorPagos(
             contexto: contenedor.mainContext,
             buscador: BuscadorCercanoMapKit(),
             ubicacion: UbicacionCoreLocation(),
-            notificador: NotificadorLocal()
+            notificador: notificador
         )
+        // Plan gratis: una captura al mes. La copia en caché vale porque el atajo corre sin la app.
+        procesador.limiteMensual = EstadoPremium.premiumEnCache ? nil : LimitesGratis.capturasAlMes
         let resultado = await procesador.procesar(comercio: comercio, importe: importe, tarjeta: tarjeta)
+        if resultado == .limiteGratis {
+            await notificador.avisarLimiteGratis()
+        }
         Registro.captura.info("Atajo «Registrar pago»: \(String(describing: resultado), privacy: .public)")
         return .result()
     }

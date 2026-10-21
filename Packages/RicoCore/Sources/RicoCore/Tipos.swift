@@ -53,6 +53,8 @@ public enum EstadoPago: String, Codable, Sendable, CaseIterable {
 public enum LimitesGratis {
     public static let fotosPorVisita = 3
     public static let listasPropias = 3
+    /// Visitas creadas solas por pagos con Apple Pay cada mes. Con Premium, sin límite.
+    public static let capturasAlMes = 1
 }
 
 /// Restaurante escrito a mano, sin pasar por el buscador de mapas. Las coordenadas son

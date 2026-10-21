@@ -91,7 +91,7 @@ public struct PaywallView: View {
                 ventaja("photo.on.rectangle", Text("Fotos ilimitadas en cada visita", bundle: .module))
                 ventaja("bookmark", Text("Todas las listas que quieras", bundle: .module))
                 ventaja("chart.bar", Text("Las estadísticas de tu año", bundle: .module))
-                ventaja("creditcard", Text("Captura automática con Apple Pay", bundle: .module))
+                ventaja("creditcard", Text("Captura automática ilimitada con Apple Pay", bundle: .module))
                 ventaja("square.and.arrow.up", Text("Exporta tu diario cuando quieras", bundle: .module))
             }
             .frame(maxWidth: .infinity, alignment: .leading)

@@ -41,6 +41,13 @@ struct RicoApp: App {
         // Avisos «¿Qué tal en…?»: el delegado tiene que estar antes de terminar el arranque
         // para recibir el toque que abrió la app.
         DelegadoNotificaciones.activar()
+
+        // «¿Has comido en…?» por ubicación: iOS puede abrir la app en segundo plano para
+        // entregar una visita, así que el detector tiene que estar listo desde el arranque.
+        DetectorEstancias.compartido.contexto = {
+            AlmacenApp.contenedor(usuario: AlmacenApp.usuarioGuardado).mainContext
+        }
+        DetectorEstancias.compartido.arrancarSiProcede()
     }
 
     /// Abre la base local de esa cuenta (o la del modo sin cuenta si `usuario` es `nil`).

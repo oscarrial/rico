@@ -6,7 +6,7 @@ import RicoCore
 /// Busca sitios para comer en una zona del mapa. Protocolo para poder probar con datos falsos.
 @MainActor
 public protocol BuscadorCercanos {
-    func buscar(en zona: ZonaMapa) async throws -> [LugarEncontrado]
+    func buscar(en zona: ZonaMapa, tipos: Set<TipoSitio>) async throws -> [LugarEncontrado]
 }
 
 /// Búsqueda con Apple Maps (`MKLocalPointsOfInterestRequest`): sin coste por consulta.
@@ -16,16 +16,16 @@ public final class BuscadorCercanosMapKit: BuscadorCercanos {
 
     public init() {}
 
-    public func buscar(en zona: ZonaMapa) async throws -> [LugarEncontrado] {
+    public func buscar(en zona: ZonaMapa, tipos: Set<TipoSitio>) async throws -> [LugarEncontrado] {
         let limitada = zona.limitada()
         let region = MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: limitada.latitud, longitude: limitada.longitud),
             span: MKCoordinateSpan(latitudeDelta: limitada.latitudDelta, longitudeDelta: limitada.longitudDelta)
         )
         let peticion = MKLocalPointsOfInterestRequest(coordinateRegion: region)
-        peticion.pointOfInterestFilter = MKPointOfInterestFilter(including: [
-            .restaurant, .cafe, .bakery, .brewery, .winery, .foodMarket
-        ])
+        // Sin tiendas de comida: Apple Maps llama «foodMarket» a supermercados y ultramarinos.
+        let categorias = FiltroSitios.categorias(de: tipos).map(MKPointOfInterestCategory.init(rawValue:))
+        peticion.pointOfInterestFilter = MKPointOfInterestFilter(including: categorias)
 
         busquedaActual?.cancel()
         let busqueda = MKLocalSearch(request: peticion)
@@ -59,7 +59,8 @@ public final class BuscadorCercanosMapKit: BuscadorCercanos {
             latitud: marca.coordinate.latitude,
             longitud: marca.coordinate.longitude,
             telefono: item.phoneNumber,
-            web: item.url
+            web: item.url,
+            categoria: item.pointOfInterestCategory?.rawValue
         )
     }
 }
@@ -79,6 +80,8 @@ public final class ExploradorZona {
     public private(set) var estado: Estado = .inactivo
     /// La última zona buscada, para saber si el mapa se ha movido desde entonces.
     public private(set) var zonaBuscada: ZonaMapa?
+    /// Qué se busca. Por defecto, solo sitios para comer.
+    public var tipos: Set<TipoSitio> = [.comer]
 
     @ObservationIgnored private let buscador: any BuscadorCercanos
     /// Solo cuenta la respuesta de la última búsqueda.
@@ -98,10 +101,16 @@ public final class ExploradorZona {
         estado = .buscando
         zonaBuscada = zona
         do {
-            let encontrados = try await buscador.buscar(en: zona)
+            let pedidos = tipos
+            let encontrados = try await buscador.buscar(en: zona, tipos: pedidos)
             guard esta == peticion else { return }
+            // Segundo filtro por nombre: hay tiendas que Apple Maps clasifica como restaurante.
+            let permitidas = FiltroSitios.categorias(de: pedidos)
             var vistos: Set<String> = []
-            lugares = encontrados.filter { vistos.insert($0.id).inserted }
+            lugares = encontrados.filter {
+                FiltroSitios.esValido(nombre: $0.nombre, categoria: $0.categoria, permitidas: permitidas)
+                    && vistos.insert($0.id).inserted
+            }
             estado = .listo
         } catch {
             guard esta == peticion else { return }

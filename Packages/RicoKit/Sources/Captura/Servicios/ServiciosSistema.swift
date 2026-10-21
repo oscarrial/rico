@@ -17,9 +17,9 @@ public final class BuscadorCercanoMapKit: BuscadorLugaresCercanos {
         let peticion = MKLocalSearch.Request()
         peticion.naturalLanguageQuery = consulta
         peticion.resultTypes = .pointOfInterest
-        peticion.pointOfInterestFilter = MKPointOfInterestFilter(including: [
-            .restaurant, .cafe, .bakery, .brewery, .winery, .nightlife, .foodMarket
-        ])
+        peticion.pointOfInterestFilter = MKPointOfInterestFilter(
+            including: FiltroSitios.restauracion.map(MKPointOfInterestCategory.init(rawValue:))
+        )
         peticion.region = MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: cerca.latitud, longitude: cerca.longitud),
             latitudinalMeters: radioMetros * 2,
@@ -32,7 +32,11 @@ public final class BuscadorCercanoMapKit: BuscadorLugaresCercanos {
                 if let error {
                     continuacion.resume(throwing: error)
                 } else {
-                    continuacion.resume(returning: (respuesta?.mapItems ?? []).compactMap(BuscadorMapKit.lugar))
+                    // Un pago en el súper de al lado no debe proponerse como restaurante.
+                    let lugares = (respuesta?.mapItems ?? []).compactMap(BuscadorMapKit.lugar).filter {
+                        FiltroSitios.esValido(nombre: $0.nombre, categoria: $0.categoria, permitidas: FiltroSitios.restauracion)
+                    }
+                    continuacion.resume(returning: lugares)
                 }
             }
         }

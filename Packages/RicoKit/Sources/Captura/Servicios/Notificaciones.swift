@@ -85,6 +85,50 @@ public final class NotificadorLocal: Notificador {
         }
     }
 
+    public func programarEstancia(visitaID: UUID, sitio: String) async {
+        guard await PermisoNotificaciones.estadoActual().permiteAvisos else { return }
+        let contenido = UNMutableNotificationContent()
+        contenido.title = String(localized: "¿Has comido en \(sitio)?", bundle: .module)
+        contenido.body = String(localized: "Valóralo en diez segundos. Si no, descártalo en la bandeja.", bundle: .module)
+        contenido.sound = .default
+        contenido.categoryIdentifier = Self.categoria
+        contenido.threadIdentifier = "rico.valorar"
+        contenido.userInfo = [Self.claveEnlace: EnlaceVisita.url(visitaID).absoluteString]
+        // iOS entrega la estancia al salir del sitio: se avisa casi enseguida.
+        let peticion = UNNotificationRequest(
+            identifier: visitaID.uuidString,
+            content: contenido,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 5 * 60, repeats: false)
+        )
+        do {
+            try await UNUserNotificationCenter.current().add(peticion)
+        } catch {
+            Registro.captura.error("No se pudo programar el aviso de estancia: \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    /// Un pago en un restaurante llegó cuando el plan gratis ya había usado su captura del mes.
+    /// Solo se avisa una vez al mes, para invitar a Premium sin agobiar.
+    public func avisarLimiteGratis(fecha: Date = .now, preferencias: UserDefaults = .standard) async {
+        let mes = fecha.formatted(.iso8601.year().month())
+        let clave = "captura.avisoLimite"
+        guard preferencias.string(forKey: clave) != mes else { return }
+        guard await PermisoNotificaciones.estadoActual().permiteAvisos else { return }
+        preferencias.set(mes, forKey: clave)
+
+        let contenido = UNMutableNotificationContent()
+        contenido.title = String(localized: "Ya has usado tu captura gratis del mes", bundle: .module)
+        contenido.body = String(localized: "Con Rico Premium, cada pago en un restaurante se guarda solo. Puedes apuntar esta visita a mano.", bundle: .module)
+        contenido.sound = .default
+        contenido.threadIdentifier = "rico.premium"
+        let peticion = UNNotificationRequest(
+            identifier: "rico.limite.\(mes)",
+            content: contenido,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 60, repeats: false)
+        )
+        try? await UNUserNotificationCenter.current().add(peticion)
+    }
+
     public func cancelar(visitaID: UUID) {
         let centro = UNUserNotificationCenter.current()
         centro.removePendingNotificationRequests(withIdentifiers: [visitaID.uuidString])

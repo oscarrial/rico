@@ -19,11 +19,13 @@ public enum ResultadoCaptura: Sendable, Equatable {
     case ignorado
     /// No se pudo leer el importe o guardar el pago.
     case fallido
+    /// Era un restaurante, pero el plan gratis ya usó su captura de este mes.
+    case limiteGratis
 
     public var visita: UUID? {
         switch self {
         case let .asignado(id), let .propuesto(id), let .pendiente(id): id
-        case .descartado, .duplicado, .ignorado, .fallido: nil
+        case .descartado, .duplicado, .ignorado, .fallido, .limiteGratis: nil
         }
     }
 }
@@ -48,6 +50,8 @@ public final class ProcesadorPagos {
     public var retrasoAviso: TimeInterval = 20 * 60
     /// Radio de búsqueda en Apple Maps alrededor del pago.
     public var radioBusqueda: Double = 300
+    /// Visitas por pago que se pueden crear al mes; `nil` es sin límite (Premium).
+    public var limiteMensual: Int?
 
     public init(
         contexto: ModelContext,
@@ -178,6 +182,11 @@ public final class ProcesadorPagos {
     }
 
     private func crearVisita(_ pago: PagoCapturado, restaurante: Restaurante?, estado propuesto: EstadoPago, puntuacion: Double?) async throws -> ResultadoCaptura {
+        // Plan gratis: si ya se usó la captura del mes, el pago se guarda pero no crea visita.
+        if let limiteMensual, try contexto.capturasDelMes(pago.fecha) >= limiteMensual {
+            pago.puntuacionEmparejado = puntuacion
+            return try guardar(pago, estado: .ignorado, resultado: .limiteGratis)
+        }
         // Sin restaurante no hay nada que proponer: queda pendiente.
         let estado: EstadoPago = restaurante == nil ? .pendiente : propuesto
         pago.estado = estado
@@ -260,6 +269,22 @@ public final class ProcesadorPagos {
         let recortado = cifras.trimmingCharacters(in: CharacterSet(charactersIn: ",."))
         guard !recortado.isEmpty else { return nil }
         return Importe(texto: recortado, divisa: divisa)
+    }
+}
+
+public extension ModelContext {
+    /// Visitas creadas por pagos de Apple Pay en el mes de `fecha`. Las descartadas («no era
+    /// un restaurante») no cuentan, para no gastar la captura gratis en un error.
+    func capturasDelMes(_ fecha: Date, calendario: Calendar = .current) throws -> Int {
+        guard let mes = calendario.dateInterval(of: .month, for: fecha) else { return 0 }
+        let inicio = mes.start
+        let fin = mes.end
+        let pago = OrigenVisita.pago.rawValue
+        let descartada = EstadoVisita.descartada.rawValue
+        let descriptor = FetchDescriptor<Visita>(predicate: #Predicate {
+            $0.origenRaw == pago && $0.estadoRaw != descartada && $0.fecha >= inicio && $0.fecha < fin
+        })
+        return try fetchCount(descriptor)
     }
 }
 

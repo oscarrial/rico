@@ -58,6 +58,7 @@ targets:
         NSPhotoLibraryUsageDescription: "Para sugerirte las fotos que hiciste en cada restaurante y guardarlas en tu diario."
         # Mapa y captura de pagos (al pagar con Apple Pay ayuda a reconocer el restaurante).
         NSLocationWhenInUseUsageDescription: "Para centrar el mapa donde estás y reconocer en qué restaurante has pagado. Tu ubicación no sale del iPhone."
+        NSLocationAlwaysAndWhenInUseUsageDescription: "Si lo activas, Rico te pregunta «¿Has comido en…?» cuando pasas un rato en un restaurante, aunque pagues en efectivo. Tu ubicación no sale del iPhone."
         RicoAppGroup: group.$(PRODUCT_BUNDLE_IDENTIFIER)
         RicoSupabaseHost: $(RICO_SUPABASE_HOST)
         RicoSupabaseClave: $(RICO_SUPABASE_CLAVE)
