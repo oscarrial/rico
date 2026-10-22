@@ -180,8 +180,7 @@ struct FilaPendiente: View {
             }
         }
         .padding(16)
-        .background(Color.ricoSuperficie, in: RoundedRectangle(cornerRadius: Medidas.radioTarjeta))
-        .overlay(RoundedRectangle(cornerRadius: Medidas.radioTarjeta).strokeBorder(Color.ricoLinea))
+        .superficieTarjeta()
     }
 
     private var icono: some View {
