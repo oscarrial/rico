@@ -148,6 +148,8 @@ public struct MapaView: View {
                 }
             }
             if modo == .explorar {
+                selectorTipos
+                    .transition(.opacity)
                 avisoExplorar(explorados: explorados)
                     .transition(.opacity)
             }
@@ -188,6 +190,52 @@ public struct MapaView: View {
         .padding(4)
         .fondoFlotante(Capsule())
         .sensoryFeedback(.selection, trigger: modo)
+    }
+
+    /// Comer, café o copas. Se pueden marcar varios; siempre queda al menos uno.
+    private var selectorTipos: some View {
+        HStack(spacing: 8) {
+            ForEach(TipoSitio.allCases, id: \.self) { tipo in
+                let activo = explorador.tipos.contains(tipo)
+                Button {
+                    alternar(tipo)
+                } label: {
+                    Label { tipo.titulo } icon: { Image(systemName: tipo.simbolo) }
+                        .font(.rico(.subheadline, peso: .heavy))
+                        .lineLimit(1)
+                        .foregroundStyle(activo ? Color.ricoSobreTomate : Color.ricoTinta)
+                        .padding(.horizontal, 14)
+                        .frame(minHeight: Medidas.toqueMinimo)
+                        .background {
+                            if activo {
+                                Capsule().fill(Color.ricoTomate)
+                            }
+                        }
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .fondoFlotante(Capsule())
+                .accessibilityAddTraits(activo ? .isSelected : [])
+            }
+        }
+        .sensoryFeedback(.selection, trigger: explorador.tipos)
+    }
+
+    private func alternar(_ tipo: TipoSitio) {
+        var tipos = explorador.tipos
+        if tipos.contains(tipo) {
+            guard tipos.count > 1 else { return }
+            tipos.remove(tipo)
+        } else {
+            tipos.insert(tipo)
+        }
+        explorador.tipos = tipos
+        seleccion = nil
+        Task {
+            if let zona = explorador.zonaBuscada ?? zonaVisible {
+                await explorador.explorar(zona)
+            }
+        }
     }
 
     private var botonUbicacion: some View {
@@ -416,5 +464,23 @@ extension ZonaMapa {
             center: CLLocationCoordinate2D(latitude: latitud, longitude: longitud),
             span: MKCoordinateSpan(latitudeDelta: latitudDelta, longitudeDelta: longitudDelta)
         )
+    }
+}
+
+private extension TipoSitio {
+    var titulo: Text {
+        switch self {
+        case .comer: Text("Comer", bundle: .module)
+        case .cafe: Text("Café", bundle: .module)
+        case .copas: Text("Copas", bundle: .module)
+        }
+    }
+
+    var simbolo: String {
+        switch self {
+        case .comer: "fork.knife"
+        case .cafe: "cup.and.saucer.fill"
+        case .copas: "wineglass.fill"
+        }
     }
 }

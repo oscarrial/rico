@@ -22,9 +22,10 @@ public final class BuscadorMapKit: BuscadorLugares {
         let peticion = MKLocalSearch.Request()
         peticion.naturalLanguageQuery = consulta
         peticion.resultTypes = .pointOfInterest
-        peticion.pointOfInterestFilter = MKPointOfInterestFilter(including: [
-            .restaurant, .cafe, .bakery, .brewery, .winery, .nightlife, .foodMarket
-        ])
+        // Todo lo que es comer o beber, sin las tiendas de comida (supermercados, ultramarinos).
+        peticion.pointOfInterestFilter = MKPointOfInterestFilter(
+            including: FiltroSitios.restauracion.map(MKPointOfInterestCategory.init(rawValue:))
+        )
 
         busquedaActual?.cancel()
         let busqueda = MKLocalSearch(request: peticion)
@@ -35,7 +36,10 @@ public final class BuscadorMapKit: BuscadorLugares {
                 if let error {
                     continuacion.resume(throwing: error)
                 } else {
-                    continuacion.resume(returning: (respuesta?.mapItems ?? []).compactMap(Self.lugar))
+                    let lugares = (respuesta?.mapItems ?? []).compactMap(Self.lugar).filter {
+                        FiltroSitios.esValido(nombre: $0.nombre, categoria: $0.categoria, permitidas: FiltroSitios.restauracion)
+                    }
+                    continuacion.resume(returning: lugares)
                 }
             }
         }
@@ -58,7 +62,8 @@ public final class BuscadorMapKit: BuscadorLugares {
             latitud: marca.coordinate.latitude,
             longitud: marca.coordinate.longitude,
             telefono: item.phoneNumber,
-            web: item.url
+            web: item.url,
+            categoria: item.pointOfInterestCategory?.rawValue
         )
     }
 }

@@ -228,4 +228,135 @@ struct CapturaTests {
         #expect(EnlaceVisita.visita(de: EnlaceVisita.url(id)) == id)
         #expect(EnlaceVisita.visita(de: try #require(URL(string: "rico://auth/confirmar"))) == nil)
     }
+
+    // MARK: Plan gratis
+
+    @Test func planGratisCapturaUnaVisitaAlMes() async throws {
+        let primero = procesador()
+        primero.limiteMensual = 1
+        let resultadoPrimero = await primero.procesar(comercio: "TPV LA TRASTIENDA", importe: "35,00 €")
+        #expect(resultadoPrimero.visita != nil)
+
+        let segundo = procesador(ahora: ahora.addingTimeInterval(3600))
+        segundo.limiteMensual = 1
+        let resultadoSegundo = await segundo.procesar(comercio: "TPV CASA PEPE", importe: "20,00 €")
+
+        #expect(resultadoSegundo == .limiteGratis)
+        #expect(try contexto.fetchCount(FetchDescriptor<Visita>()) == 1)
+        #expect(notificador.avisos.count == 1)
+    }
+
+    @Test func capturaDescartadaNoGastaElMes() async throws {
+        let primero = procesador()
+        primero.limiteMensual = 1
+        let borrador = try visita(await primero.procesar(comercio: "TPV LA TRASTIENDA", importe: "35,00 €").visita)
+        try AccionesBandeja.descartar(borrador, en: contexto)
+
+        let segundo = procesador(ahora: ahora.addingTimeInterval(3600))
+        segundo.limiteMensual = 1
+        let resultado = await segundo.procesar(comercio: "TPV CASA PEPE", importe: "20,00 €")
+
+        #expect(resultado.visita != nil)
+    }
+
+    @Test func premiumNoTieneLimite() async throws {
+        for (hora, comercio) in ["TPV LA TRASTIENDA", "TPV CASA PEPE", "TPV O GRELO"].enumerated() {
+            let resultado = await procesador(ahora: ahora.addingTimeInterval(Double(hora) * 3600))
+                .procesar(comercio: comercio, importe: "20,00 €")
+            #expect(resultado.visita != nil)
+        }
+    }
+}
+
+// MARK: Estancias
+
+@MainActor
+final class BuscadorPuntosFalso: BuscadorPuntosCercanos {
+    var lugares: [LugarEncontrado] = []
+    private(set) var busquedas = 0
+
+    func buscar(cerca: Coordenada, radioMetros: Double) async throws -> [LugarEncontrado] {
+        busquedas += 1
+        return lugares
+    }
+}
+
+@MainActor
+final class NotificadorEstanciasFalso: Notificador {
+    private(set) var preguntas: [String] = []
+
+    func programarValoracion(visitaID: UUID, sitio: String?, importe: Importe, retraso: TimeInterval) async {}
+    func cancelar(visitaID: UUID) {}
+    func programarEstancia(visitaID: UUID, sitio: String) async {
+        preguntas.append(sitio)
+    }
+}
+
+@MainActor
+@Suite("Detección por ubicación")
+struct EstanciasTests {
+    let contenedor: ModelContainer
+    let contexto: ModelContext
+    let buscador = BuscadorPuntosFalso()
+    let notificador = NotificadorEstanciasFalso()
+    let llegada = Date(timeIntervalSince1970: 1_790_000_000)
+    let vigo = Coordenada(latitud: 42.2406, longitud: -8.7207)
+
+    init() throws {
+        contenedor = try ContenedorRico.crear(enMemoria: true)
+        contexto = contenedor.mainContext
+    }
+
+    private func estancia(minutos: Double) -> Estancia {
+        Estancia(
+            latitud: vigo.latitud,
+            longitud: vigo.longitud,
+            llegada: llegada,
+            salida: llegada.addingTimeInterval(minutos * 60),
+            precisionMetros: 20
+        )
+    }
+
+    private var procesador: ProcesadorEstancias {
+        ProcesadorEstancias(contexto: contexto, buscador: buscador, notificador: notificador)
+    }
+
+    @Test func comidaLargaEnUnRestauranteCreaUnBorrador() async throws {
+        buscador.lugares = [
+            LugarEncontrado(mapItemID: "I-GRELO", nombre: "Taberna O Grelo", ciudad: "Vigo", latitud: vigo.latitud, longitud: vigo.longitud, categoria: FiltroSitios.Categoria.restaurante)
+        ]
+
+        let id = try #require(await procesador.procesar(estancia(minutos: 75)))
+
+        let visitas = try contexto.fetch(FetchDescriptor<Visita>())
+        #expect(visitas.map(\.id) == [id])
+        #expect(visitas.first?.origen == .ubicacion)
+        #expect(visitas.first?.estado == .borrador)
+        #expect(visitas.first?.restaurante?.mapItemID == "I-GRELO")
+        #expect(notificador.preguntas == ["Taberna O Grelo"])
+    }
+
+    @Test func estanciaCortaNoBuscaNada() async {
+        #expect(await procesador.procesar(estancia(minutos: 15)) == nil)
+        #expect(buscador.busquedas == 0)
+    }
+
+    @Test func supermercadoNoCuenta() async throws {
+        buscador.lugares = [
+            LugarEncontrado(mapItemID: "I-GADIS", nombre: "Gadis Supermercado", ciudad: "Vigo", latitud: vigo.latitud, longitud: vigo.longitud, categoria: FiltroSitios.Categoria.restaurante)
+        ]
+
+        #expect(await procesador.procesar(estancia(minutos: 60)) == nil)
+        #expect(try contexto.fetchCount(FetchDescriptor<Visita>()) == 0)
+        #expect(notificador.preguntas.isEmpty)
+    }
+
+    @Test func comidaYaApuntadaNoPregunta() async throws {
+        let apuntada = Visita(fecha: llegada.addingTimeInterval(20 * 60), origen: .manual)
+        contexto.insert(apuntada)
+        try contexto.save()
+
+        #expect(await procesador.procesar(estancia(minutos: 90)) == nil)
+        #expect(buscador.busquedas == 0)
+    }
 }

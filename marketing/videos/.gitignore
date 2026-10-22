@@ -1,0 +1,5 @@
+node_modules/
+# Descartes de trabajo: solo se versionan los vídeos e imágenes finales.
+salida/revision/
+salida/muestras-voz/
+salida/render.log

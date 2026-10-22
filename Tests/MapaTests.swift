@@ -148,6 +148,23 @@ struct MapaTests {
         #expect(falso.zonasPedidas == [zona])
     }
 
+    @Test func explorarQuitaLasTiendasDeComida() async throws {
+        let gadis = LugarEncontrado(nombre: "Supermercado Gadis", latitud: 42.241, longitud: -8.721, categoria: "MKPOICategoryRestaurant")
+        let bodega = LugarEncontrado(nombre: "Bodega Lusitana", latitud: 42.242, longitud: -8.722, categoria: "MKPOICategoryWinery")
+        let falso = BuscadorCercanosFalso(resultado: .success([grelo, gadis, bodega]))
+        let explorador = ExploradorZona(buscador: falso)
+        let zona = ZonaMapa(latitud: 42.24, longitud: -8.72, latitudDelta: 0.02, longitudDelta: 0.02)
+
+        await explorador.explorar(zona)
+        #expect(explorador.lugares.map(\.nombre) == ["Taberna O Grelo"])
+        #expect(falso.tiposPedidos == [[.comer]])
+
+        // Con «Copas» la bodega sí cuenta; el súper nunca.
+        explorador.tipos = [.comer, .copas]
+        await explorador.explorar(zona)
+        #expect(explorador.lugares.map(\.nombre) == ["Taberna O Grelo", "Bodega Lusitana"])
+    }
+
     @Test func exploradorAvisaSiFallaYLimpiaAlSalir() async throws {
         let explorador = ExploradorZona(buscador: BuscadorCercanosFalso(resultado: .failure(ErrorFalso.sinRed)))
         let zona = ZonaMapa(latitud: 42.24, longitud: -8.72, latitudDelta: 0.02, longitudDelta: 0.02)
@@ -215,8 +232,11 @@ private final class BuscadorCercanosFalso: BuscadorCercanos {
         self.resultado = resultado
     }
 
-    func buscar(en zona: ZonaMapa) async throws -> [LugarEncontrado] {
+    private(set) var tiposPedidos: [Set<TipoSitio>] = []
+
+    func buscar(en zona: ZonaMapa, tipos: Set<TipoSitio>) async throws -> [LugarEncontrado] {
         zonasPedidas.append(zona)
+        tiposPedidos.append(tipos)
         return try resultado.get()
     }
 }
