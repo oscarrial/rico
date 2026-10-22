@@ -1,26 +1,28 @@
-import { Aperitivo } from '@/secciones/Aperitivo'
-import { Entrante } from '@/secciones/Entrante'
-import { Primero } from '@/secciones/Primero'
-import { Segundo } from '@/secciones/Segundo'
-import { Postre } from '@/secciones/Postre'
-import { Cafe } from '@/secciones/Cafe'
-import { Cuenta } from '@/secciones/Cuenta'
-import { Chupito } from '@/secciones/Chupito'
-import { Cabecera, Pie } from '@/secciones/Marco'
+import { Hero } from '@/secciones/Hero'
+import { Cinta } from '@/secciones/Cinta'
+import { ComoFunciona } from '@/secciones/ComoFunciona'
+import { Bento } from '@/secciones/Bento'
+import { TuAno } from '@/secciones/TuAno'
+import { Video } from '@/secciones/Video'
+import { LaCuenta } from '@/secciones/LaCuenta'
+import { Preguntas } from '@/secciones/Preguntas'
+import { Final } from '@/secciones/Final'
+import { Navegacion, Pie } from '@/secciones/Marco'
 import { Privacidad, Soporte } from '@/secciones/Legal'
 
-/** La carta de la sobremesa, plato a plato. */
+/** La sobremesa, plato a plato. */
 function Inicio() {
   return (
     <main>
-      <Aperitivo />
-      <Entrante />
-      <Primero />
-      <Segundo />
-      <Postre />
-      <Cafe />
-      <Cuenta />
-      <Chupito />
+      <Hero />
+      <Cinta />
+      <ComoFunciona />
+      <Bento />
+      <TuAno />
+      <Video />
+      <LaCuenta />
+      <Preguntas />
+      <Final />
     </main>
   )
 }
@@ -30,10 +32,10 @@ export default function App() {
   const pagina = ruta === '/privacidad' ? <Privacidad /> : ruta === '/soporte' ? <Soporte /> : <Inicio />
 
   return (
-    <>
-      <Cabecera />
+    <div className="grano">
+      <Navegacion />
       {pagina}
       <Pie />
-    </>
+    </div>
   )
 }

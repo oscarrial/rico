@@ -4,6 +4,49 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Sobremesa de día: mantel crema, tomate y papel de ticket. Una sola apariencia, clara a
+   propósito, con los colores de la app (DESIGN.md §3). Los tokens de shadcn salen de estos para
+   que los componentes de beUI hereden la marca. */
+:root {
+  --mantel: #fbf6f0;
+  --mantel-hondo: #f3ece4;
+  --superficie: #ffffff;
+  --hilo: rgb(31 26 22 / 0.08);
+  --tinta: #1f1a16;
+  --tinta-suave: #6b6158;
+  --tomate: #d2381f;
+  --tomate-texto: #a8291a;
+  --tomate-suave: #fbe3dc;
+  --sobre-tomate: #ffffff;
+  --estrella: #f0a202;
+  --albahaca: #3f5a30;
+  --verde: #1f5a37;
+  --verde-suave: #ddefe3;
+  --papel: #fffefa;
+  --noche: #17130f;
+
+  --radius: 1.5rem;
+  --background: var(--mantel);
+  --foreground: var(--tinta);
+  --card: var(--superficie);
+  --card-foreground: var(--tinta);
+  --popover: var(--superficie);
+  --popover-foreground: var(--tinta);
+  --primary: var(--tomate);
+  --primary-foreground: var(--sobre-tomate);
+  --secondary: var(--mantel-hondo);
+  --secondary-foreground: var(--tinta);
+  --muted: var(--mantel-hondo);
+  --muted-foreground: var(--tinta-suave);
+  --accent: var(--mantel-hondo);
+  --accent-foreground: var(--tinta);
+  --destructive: var(--tomate);
+  --border: var(--hilo);
+  --input: var(--hilo);
+  --ring: var(--tomate);
+  color-scheme: light;
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -27,109 +70,90 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
 
-/* Rico: crema y tomate de día, carbón cálido de noche (DESIGN.md §3). Los tokens de shadcn
-   salen de los de Rico para que los componentes de beUI hereden la marca. */
-:root {
-  --rico-fondo: #FBF6F0;
-  --rico-superficie: #FFFFFF;
-  --rico-hundida: #F3ECE4;
-  --rico-linea: #EADFD3;
-  --rico-tinta: #1F1A16;
-  --rico-secundario: #6B6158;
-  --rico-tomate: #D2381F;
-  --rico-sobre-tomate: #FFFFFF;
-  --rico-tomate-suave: #FBE3DC;
-  --rico-tomate-texto: #A8291A;
-  --rico-estrella: #F0A202;
-  --rico-albahaca: #3F5A30;
-  --rico-verde: #1F5A37;
-  --rico-verde-suave: #DDEFE3;
-  --rico-papel: #FFFEFA;
+  --color-mantel: var(--mantel);
+  --color-mantel-hondo: var(--mantel-hondo);
+  --color-superficie: var(--superficie);
+  --color-hilo: var(--hilo);
+  --color-tinta: var(--tinta);
+  --color-tinta-suave: var(--tinta-suave);
+  --color-tomate: var(--tomate);
+  --color-tomate-texto: var(--tomate-texto);
+  --color-tomate-suave: var(--tomate-suave);
+  --color-sobre-tomate: var(--sobre-tomate);
+  --color-estrella: var(--estrella);
+  --color-albahaca: var(--albahaca);
+  --color-verde: var(--verde);
+  --color-verde-suave: var(--verde-suave);
+  --color-papel: var(--papel);
+  --color-noche: var(--noche);
 
-  --radius: 1.25rem;
-  --background: var(--rico-fondo);
-  --foreground: var(--rico-tinta);
-  --card: var(--rico-superficie);
-  --card-foreground: var(--rico-tinta);
-  --popover: var(--rico-superficie);
-  --popover-foreground: var(--rico-tinta);
-  --primary: var(--rico-tomate);
-  --primary-foreground: var(--rico-sobre-tomate);
-  --secondary: var(--rico-hundida);
-  --secondary-foreground: var(--rico-tinta);
-  --muted: var(--rico-hundida);
-  --muted-foreground: var(--rico-secundario);
-  --accent: var(--rico-tomate-suave);
-  --accent-foreground: var(--rico-tomate-texto);
-  --destructive: var(--rico-tomate);
-  --border: var(--rico-linea);
-  --input: var(--rico-linea);
-  --ring: var(--rico-tomate);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --rico-fondo: #17130F;
-    --rico-superficie: #241E19;
-    --rico-hundida: #2E2620;
-    --rico-linea: #3A322B;
-    --rico-tinta: #F5EEE6;
-    --rico-secundario: #B5A99D;
-    --rico-tomate: #FF6A4D;
-    --rico-sobre-tomate: #1F0A05;
-    --rico-tomate-suave: #4A2219;
-    --rico-tomate-texto: #FF8F78;
-    --rico-estrella: #F5B331;
-    --rico-albahaca: #7FA866;
-    --rico-verde: #7FD3A0;
-    --rico-verde-suave: #1D3A28;
-    --rico-papel: #F4EFE6;
-    color-scheme: dark;
-  }
-}
-
-@theme inline {
-  --color-rico-fondo: var(--rico-fondo);
-  --color-rico-superficie: var(--rico-superficie);
-  --color-rico-hundida: var(--rico-hundida);
-  --color-rico-linea: var(--rico-linea);
-  --color-rico-tinta: var(--rico-tinta);
-  --color-rico-secundario: var(--rico-secundario);
-  --color-rico-tomate: var(--rico-tomate);
-  --color-rico-sobre-tomate: var(--rico-sobre-tomate);
-  --color-rico-tomate-suave: var(--rico-tomate-suave);
-  --color-rico-tomate-texto: var(--rico-tomate-texto);
-  --color-rico-estrella: var(--rico-estrella);
-  --color-rico-albahaca: var(--rico-albahaca);
-  --color-rico-verde: var(--rico-verde);
-  --color-rico-verde-suave: var(--rico-verde-suave);
-  --color-rico-papel: var(--rico-papel);
   --font-rico: "Nunito", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
   --font-ticket: "Courier Prime", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --ease-muelle: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-salida: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @layer base {
-  html { scroll-behavior: smooth; }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
   body {
-    @apply bg-rico-fondo text-rico-tinta font-rico antialiased;
+    @apply bg-mantel text-tinta font-rico antialiased;
     font-weight: 600;
+    overflow-x: clip;
   }
   h1, h2, h3 { text-wrap: balance; }
-  :focus-visible { outline: 3px solid var(--rico-tomate); outline-offset: 3px; border-radius: 6px; }
+  :focus-visible {
+    outline: 3px solid var(--tomate);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+}
+
+/* Grano de película fijo por encima de todo: da textura sin repintar al hacer scroll. */
+.grano::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* Titanio desierto del iPhone 16 Pro: el canto, con reflejos. */
+.titanio {
+  background: linear-gradient(135deg, #f3e7d8 0%, #bfa588 14%, #8d755e 38%, #6f5b48 52%, #a88e74 72%, #e6d6c3 92%, #f6ecdf 100%);
+}
+
+/* Cinta de platos: se desliza sola y se para con «reducir movimiento». */
+@keyframes cinta {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.cinta {
+  animation: cinta var(--duracion, 40s) linear infinite;
+}
+.cinta-inversa {
+  animation-direction: reverse;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cinta { animation: none; }
+}
+
+/* Borde de papel rasgado del ticket. */
+.dientes {
+  --d: 10px;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--d) 100%;
+}
+.dientes-arriba {
+  --d: 10px;
+  mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--d) 100%;
 }
