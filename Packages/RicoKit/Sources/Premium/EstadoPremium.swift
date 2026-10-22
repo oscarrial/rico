@@ -22,6 +22,11 @@ public final class EstadoPremium {
     public private(set) var comprando = false
     public private(set) var restaurando = false
 
+    /// Suscripción vigente en la tienda (`nil` hasta que responde).
+    @ObservationIgnored private var suscrito: Bool?
+    /// Premium regalado desde el servidor (ver `SesionUsuario.premiumConcedido`).
+    @ObservationIgnored private var concedido = false
+
     @ObservationIgnored private let tienda: any TiendaPremium
     @ObservationIgnored private let cache: UserDefaults?
     @ObservationIgnored private let ahora: @Sendable () -> Date
@@ -83,7 +88,23 @@ public final class EstadoPremium {
     public func actualizarDerechos() async {
         let derechos = await tienda.derechosActuales()
         let fecha = ahora()
-        esPremium = derechos.contains { $0.vigente(en: fecha) }
+        suscrito = derechos.contains { $0.vigente(en: fecha) }
+        recalcular()
+    }
+
+    /// Premium regalado a la cuenta con sesión. Se llama al cambiar de sesión.
+    public func conceder(_ concedido: Bool) {
+        self.concedido = concedido
+        recalcular()
+    }
+
+    private func recalcular() {
+        // Sin respuesta de la tienda todavía, se mantiene la copia del arranque.
+        guard let suscrito else {
+            if concedido { esPremium = true }
+            return
+        }
+        esPremium = suscrito || concedido
         cache?.set(esPremium, forKey: Self.claveCache)
     }
 

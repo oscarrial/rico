@@ -6,11 +6,15 @@ public struct SesionUsuario: Sendable, Equatable {
     public let correo: String?
     /// Cómo entró: `"email"`, `"apple"`… (`nil` si no se sabe).
     public let proveedor: String?
+    /// Premium regalado desde el servidor (`app_metadata.premium` en Supabase), sin pasar
+    /// por la tienda. Solo lo puede poner el servidor: el usuario no puede cambiarlo.
+    public let premiumConcedido: Bool
 
-    public init(id: UUID, correo: String?, proveedor: String? = nil) {
+    public init(id: UUID, correo: String?, proveedor: String? = nil, premiumConcedido: Bool = false) {
         self.id = id
         self.correo = correo
         self.proveedor = proveedor
+        self.premiumConcedido = premiumConcedido
     }
 }
 

@@ -129,6 +129,20 @@ public final class NotificadorLocal: Notificador {
         try? await UNUserNotificationCenter.current().add(peticion)
     }
 
+    /// Aviso de muestra para comprobar que llegan, desde la guía de captura.
+    public func probar() async {
+        let contenido = UNMutableNotificationContent()
+        contenido.title = String(localized: "Así te avisará Rico", bundle: .module)
+        contenido.body = String(localized: "Un rato después de pagar o de comer fuera, te llegará un aviso como este para valorar el sitio.", bundle: .module)
+        contenido.sound = .default
+        let peticion = UNNotificationRequest(
+            identifier: "rico.prueba",
+            content: contenido,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+        )
+        try? await UNUserNotificationCenter.current().add(peticion)
+    }
+
     public func cancelar(visitaID: UUID) {
         let centro = UNUserNotificationCenter.current()
         centro.removePendingNotificationRequests(withIdentifiers: [visitaID.uuidString])

@@ -34,6 +34,11 @@ struct TarjetaSitioMapa: View {
                     BotonCerrarTarjeta(accion: alCerrar)
                 }
 
+                if let latitud = restaurante.latitud, let longitud = restaurante.longitud {
+                    BotonFichaApple(mapItemID: restaurante.mapItemID, nombre: restaurante.nombre, latitud: latitud, longitud: longitud)
+                        .padding(.vertical, -8)
+                }
+
                 if resumen.visitas.isEmpty {
                     Button(action: alGuardarVisita) {
                         Text("Guardar visita", bundle: .module)
@@ -44,6 +49,10 @@ struct TarjetaSitioMapa: View {
                         Text("Ver ficha", bundle: .module)
                     }
                     .buttonStyle(.ricoPrincipal)
+                }
+
+                if let latitud = restaurante.latitud, let longitud = restaurante.longitud {
+                    BotonComoLlegar(nombre: restaurante.nombre, latitud: latitud, longitud: longitud)
                 }
             }
         }
@@ -94,21 +103,38 @@ struct TarjetaExploradoMapa: View {
                     BotonCerrarTarjeta(accion: alCerrar)
                 }
 
+                BotonFichaApple(mapItemID: lugar.mapItemID, nombre: lugar.nombre, latitud: lugar.latitud, longitud: lugar.longitud)
+                    .padding(.vertical, -8)
+
                 Button(action: alGuardarVisita) {
                     Text("Guardar visita", bundle: .module)
                 }
                 .buttonStyle(.ricoPrincipal)
 
-                Button(action: alQuererProbar) {
-                    Label {
-                        Text("Quiero probarlo", bundle: .module)
-                    } icon: {
-                        Image(systemName: "bookmark")
-                    }
+                // Lado a lado si caben; con letra grande, uno debajo del otro.
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 10) { botonesSecundarios }
+                    VStack(spacing: 10) { botonesSecundarios }
                 }
-                .buttonStyle(.ricoSecundario)
             }
         }
+    }
+}
+
+private extension TarjetaExploradoMapa {
+    @ViewBuilder
+    var botonesSecundarios: some View {
+        Button(action: alQuererProbar) {
+            Label {
+                Text("Quiero probarlo", bundle: .module)
+                    .lineLimit(1)
+            } icon: {
+                Image(systemName: "bookmark")
+            }
+        }
+        .buttonStyle(.ricoSecundario)
+
+        BotonComoLlegar(nombre: lugar.nombre, latitud: lugar.latitud, longitud: lugar.longitud)
     }
 }
 
