@@ -1,4 +1,5 @@
 import CoreText
+import OSLog
 import SwiftUI
 
 /// Bricolage Grotesque, siempre con estilos de texto para respetar Dynamic Type (DESIGN.md §4).
@@ -14,13 +15,19 @@ public extension Font {
 }
 
 enum FuentesRico {
+    private static let registroFuentes = Logger(subsystem: "es.rico.app", category: "diseno")
+
     /// Se registran una sola vez, la primera vez que se pide una fuente.
+    /// Xcode copia los recursos procesados a la raíz del bundle (sin la carpeta `Fuentes`), así
+    /// que se buscan en los dos sitios y se juntan.
     private static let registro: Void = {
-        let urls = Bundle.module.urls(forResourcesWithExtension: "ttf", subdirectory: "Fuentes")
-            ?? Bundle.module.urls(forResourcesWithExtension: "ttf", subdirectory: nil)
-            ?? []
-        for url in urls {
-            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+        let enCarpeta = Bundle.module.urls(forResourcesWithExtension: "ttf", subdirectory: "Fuentes") ?? []
+        let enRaiz = Bundle.module.urls(forResourcesWithExtension: "ttf", subdirectory: nil) ?? []
+        for url in Set(enCarpeta + enRaiz) {
+            var error: Unmanaged<CFError>?
+            if !CTFontManagerRegisterFontsForURL(url as CFURL, .process, &error) {
+                registroFuentes.error("No se pudo registrar \(url.lastPathComponent, privacy: .public): \(String(describing: error?.takeRetainedValue()), privacy: .public)")
+            }
         }
     }()
 
