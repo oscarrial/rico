@@ -39,12 +39,10 @@ struct BotonFichaApple: View {
     }
 
     private func abrir() async {
-        if #available(iOS 18.0, *),
-           let mapItemID,
-           let identificador = MKMapItem.Identifier(rawValue: mapItemID) {
+        if #available(iOS 18.0, *), let mapItemID {
             cargando = true
             defer { cargando = false }
-            if let encontrado = try? await MKMapItemRequest(mapItemIdentifier: identificador).mapItem {
+            if let encontrado = await Self.buscar(mapItemID).item {
                 item = encontrado
                 return
             }
@@ -52,6 +50,14 @@ struct BotonFichaApple: View {
         if let url = Self.urlMapas(nombre: nombre, latitud: latitud, longitud: longitud) {
             abrirURL(url)
         }
+    }
+
+    /// MapKit no marca `MKMapItem` como `Sendable`: se pide fuera del actor principal y se
+    /// entrega en una caja. El objeto no se toca desde dos sitios a la vez.
+    @available(iOS 18.0, *)
+    private nonisolated static func buscar(_ id: String) async -> CajaMapItem {
+        guard let identificador = MKMapItem.Identifier(rawValue: id) else { return CajaMapItem(item: nil) }
+        return CajaMapItem(item: try? await MKMapItemRequest(mapItemIdentifier: identificador).mapItem)
     }
 
     /// El sitio en la app Mapas, buscando el nombre junto a sus coordenadas.
@@ -63,6 +69,10 @@ struct BotonFichaApple: View {
         ]
         return partes?.url
     }
+}
+
+private struct CajaMapItem: @unchecked Sendable {
+    let item: MKMapItem?
 }
 
 private struct HojaFichaApple: ViewModifier {
