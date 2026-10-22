@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { motion, useInView, useReducedMotion } from 'motion/react'
 import { DynamicIsland, DynamicIslandView } from '@/components/motion/dynamic-island'
 import { Iphone } from '@/componentes/Iphone'
 import { Captura } from '@/componentes/Pantallas'
-import { InsigniaAppStore } from '@/componentes/Piezas'
+import { Estrellas, InsigniaAppStore } from '@/componentes/Piezas'
 import { ENLACE_BETA } from '@/config'
 
 const MUELLE = [0.32, 0.72, 0, 1] as const
@@ -82,6 +82,17 @@ function Isla() {
   )
 }
 
+/** Tarjeta pequeña de la app que flota al lado del iPhone. Decorativa: no se puede tocar. */
+function Flotante({ children, className, retraso }: { children: ReactNode; className: string; retraso: string }) {
+  return (
+    <div aria-hidden className={`pointer-events-none absolute z-10 ${className}`}>
+      <div className="flotar rounded-[1.35rem] bg-white/70 p-1 shadow-[0_24px_50px_-24px_rgba(90,40,15,0.5)] ring-1 ring-black/5 backdrop-blur-sm" style={{ animationDelay: retraso }}>
+        <div className="rounded-[calc(1.35rem-0.25rem)] bg-white px-3.5 py-2.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.9)]">{children}</div>
+      </div>
+    </div>
+  )
+}
+
 export function Hero() {
   const reducir = useReducedMotion()
   const entrada = (retraso: number) => ({
@@ -125,21 +136,47 @@ export function Hero() {
           </motion.div>
         </div>
 
-        {/* El iPhone, entero, apoyado sobre un plato. */}
+        {/* El iPhone sobre un mantel de cuadros, con tarjetas de la app flotando alrededor. */}
         <motion.div
           initial={reducir ? false : { opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.1, delay: 0.2, ease: MUELLE }}
-          className="relative mx-auto grid w-full max-w-[460px] place-items-center"
+          className="relative mx-auto grid w-full max-w-[480px] place-items-center"
         >
-          <div aria-hidden className="absolute aspect-square w-[118%] max-w-[520px] rounded-full bg-white shadow-[0_40px_90px_-50px_rgba(90,40,15,0.35)] ring-1 ring-hilo" />
-          <div aria-hidden className="absolute aspect-square w-[92%] max-w-[410px] rounded-full ring-1 ring-hilo" />
-          <div className="relative w-[min(64vw,300px)] py-6">
+          <div aria-hidden className="vichy absolute -inset-x-[15%] -inset-y-[8%] [mask-image:radial-gradient(closest-side,#000_35%,transparent_100%)]" />
+          <div aria-hidden className="absolute aspect-square w-[75%] rounded-full bg-[radial-gradient(circle,rgba(210,56,31,0.22),rgba(240,162,2,0.12)_50%,transparent_72%)] blur-2xl" />
+
+          <div className="relative w-[min(62vw,290px)] py-4">
             <Iphone>
               <Captura nombre="diario" alt="El diario de Rico con tus últimas visitas" prioridad />
               <Isla />
             </Iphone>
           </div>
+
+          <Flotante className="left-0 top-[22%] sm:-left-[4%]" retraso="0s">
+            <span className="flex flex-col gap-1">
+              <Estrellas />
+              <span className="text-[15px] font-black leading-tight">Pulpo á feira</span>
+              <span className="text-xs font-bold text-tinta-suave">Volvería · 32 €</span>
+            </span>
+          </Flotante>
+
+          <Flotante className="right-0 top-[48%] sm:-right-[2%]" retraso="-2.5s">
+            <span className="flex items-center gap-2.5">
+              <span className="grid size-9 place-items-center rounded-full bg-[#B02A17] text-[13px] font-black text-white">4,5</span>
+              <span className="flex flex-col leading-tight">
+                <span className="text-[14px] font-black">+1 en tu mapa</span>
+                <span className="text-xs font-bold text-tinta-suave">Taberna O Grelo</span>
+              </span>
+            </span>
+          </Flotante>
+
+          <Flotante className="bottom-[10%] left-[2%] hidden sm:block" retraso="-5s">
+            <span className="flex flex-col leading-tight">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-tinta-suave">Este mes</span>
+              <span className="text-[17px] font-black">6 sitios · 334 €</span>
+            </span>
+          </Flotante>
         </motion.div>
       </div>
     </section>

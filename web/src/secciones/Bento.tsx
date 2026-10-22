@@ -23,7 +23,7 @@ function Recorte({ nombre, alt, posicion = 'top', className }: { nombre: string;
         alt={alt}
         loading="lazy"
         decoding="async"
-        className="h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover"
         style={{ objectPosition: posicion }}
       />
       <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-superficie to-transparent" />
@@ -108,7 +108,7 @@ export function Bento() {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-6 md:gap-5">
         <Tarjeta className="md:col-span-4 md:row-span-2">
-          <Recorte nombre="mapa" alt="El mapa de Rico con tus sitios en Vigo" posicion="50% 30%" className="h-[300px] sm:h-[400px]" />
+          <Recorte nombre="mapa" alt="El mapa de Rico con tus sitios en Vigo" posicion="50% 30%" className="h-[300px] md:h-auto md:min-h-[320px] md:flex-1" />
           <div className="relative -mt-14 flex flex-col items-center gap-5 pb-8">
             <div className="flex flex-wrap justify-center gap-2" aria-hidden>
               {PINES.map((pin) => (

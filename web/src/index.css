@@ -157,3 +157,23 @@
   --d: 10px;
   mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--d) 100%;
 }
+
+/* Mantel de cuadros vichy: dos rayas que se cruzan y oscurecen donde coinciden. */
+.vichy {
+  background-image:
+    linear-gradient(90deg, rgb(210 56 31 / 0.09) 50%, transparent 50%),
+    linear-gradient(rgb(210 56 31 / 0.09) 50%, transparent 50%);
+  background-size: 34px 34px;
+}
+
+/* Flotar despacio, para las tarjetas del hero. */
+@keyframes flotar {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.flotar {
+  animation: flotar 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flotar { animation: none; }
+}
