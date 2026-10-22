@@ -27,33 +27,27 @@ public struct GuiaAtajoView: View {
         [
         PasoGuia(
             id: 1,
-            simbolo: "square.stack.3d.up",
-            titulo: String(localized: "Abre Atajos", bundle: .module),
-            texto: String(localized: "Ve a la pestaña Automatización y pulsa «Nueva automatización» o +.", bundle: .module)
+            simbolo: "plus.circle",
+            titulo: String(localized: "Crea una automatización", bundle: .module),
+            texto: String(localized: "Pulsa «Abrir Atajos» (abajo). Toca «Automatización» en la barra de abajo y luego el + de arriba a la derecha.", bundle: .module)
         ),
         PasoGuia(
             id: 2,
             simbolo: "wallet.pass",
-            titulo: String(localized: "Elige «Transacción»", bundle: .module),
-            texto: String(localized: "Está en la sección Wallet. Marca las tarjetas con las que pagas y deja todas las categorías.", bundle: .module)
+            titulo: String(localized: "Toca «Transacción»", bundle: .module),
+            texto: String(localized: "Baja hasta encontrarla. Deja marcadas tus tarjetas, elige «Ejecutar inmediatamente» y toca «Siguiente».", bundle: .module)
         ),
         PasoGuia(
             id: 3,
-            simbolo: "bolt",
-            titulo: String(localized: "Marca «Ejecutar inmediatamente»", bundle: .module),
-            texto: String(localized: "Así no tienes que confirmar nada después de pagar.", bundle: .module)
+            simbolo: "magnifyingglass",
+            titulo: String(localized: "Añade la acción de Rico", bundle: .module),
+            texto: String(localized: "Toca «Nueva automatización en blanco» y «Añadir acción». Escribe «Rico» y toca «Registrar pago».", bundle: .module)
         ),
         PasoGuia(
             id: 4,
-            simbolo: "fork.knife",
-            titulo: String(localized: "Añade «Registrar pago» de Rico", bundle: .module),
-            texto: String(localized: "Pulsa «Nueva automatización en blanco», añade una acción y busca Rico.", bundle: .module)
-        ),
-        PasoGuia(
-            id: 5,
-            simbolo: "creditcard",
-            titulo: String(localized: "Rellena los datos del pago", bundle: .module),
-            texto: String(localized: "Toca cada campo y elige «Entrada del atajo»: Comercio, Importe y Tarjeta.", bundle: .module)
+            simbolo: "hand.tap",
+            titulo: String(localized: "Conecta el comercio y el importe", bundle: .module),
+            texto: String(localized: "En la acción salen «Comercio» e «Importe» en azul. Toca cada uno, elige «Entrada del atajo» y después «Comercio» o «Importe». Toca «OK» y listo.", bundle: .module)
         )
         ]
     }
@@ -63,12 +57,17 @@ public struct GuiaAtajoView: View {
             VStack(alignment: .leading, spacing: 22) {
                 cabecera
 
-                if !esPremium {
-                    planGratis
-                }
+                // Lo de un solo botón va primero; Atajos es para quien quiera afinar más.
+                DeteccionUbicacionView()
 
                 VStack(alignment: .leading, spacing: 14) {
-                    TituloSeccion(Text("En la app Atajos", bundle: .module))
+                    TituloSeccion(Text("Con Apple Pay, más exacto", bundle: .module))
+                    Text("Apple no deja que ninguna app cree automatizaciones por ti: hay que hacerlo una vez a mano en Atajos. Son cuatro pasos y un minuto.", bundle: .module)
+                        .font(.rico(.subheadline, peso: .semibold))
+                        .foregroundStyle(Color.ricoSecundario)
+                    if !esPremium {
+                        planGratis
+                    }
                     ForEach(pasos) { paso in
                         filaPaso(paso)
                     }
@@ -113,8 +112,6 @@ public struct GuiaAtajoView: View {
                         ubicacion.pedir()
                     }
                 }
-
-                DeteccionUbicacionView()
             }
             .padding(.horizontal, Medidas.margen)
             .padding(.top, 8)
@@ -175,7 +172,7 @@ public struct GuiaAtajoView: View {
             Text("Paga y Rico se acuerda", bundle: .module)
                 .font(.rico(.title, peso: .black))
                 .foregroundStyle(Color.ricoTinta)
-            Text("Crea una automatización en Atajos una sola vez. Después, cada pago con Apple Pay en un restaurante te espera en Rico para que lo valores.", bundle: .module)
+            Text("Rico te pregunta «¿qué tal?» después de comer fuera, sin que tengas que apuntar nada.", bundle: .module)
                 .font(.rico(.body, peso: .semibold))
                 .foregroundStyle(Color.ricoSecundario)
         }
