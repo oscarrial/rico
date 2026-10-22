@@ -90,6 +90,7 @@
 
   --font-rico: "Nunito", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
   --font-ticket: "Courier Prime", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-mano: "Caveat", "Bradley Hand", "Segoe Print", cursive;
 
   --ease-muelle: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-salida: cubic-bezier(0.22, 1, 0.36, 1);
