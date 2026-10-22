@@ -20,40 +20,59 @@ public struct GuiaAtajoView: View {
         let id: Int
         let simbolo: String
         let titulo: String
-        let texto: String
+        /// Lo que hay que tocar, en orden, con los nombres que salen en pantalla.
+        let acciones: [String]
+        /// Lo que se ve al terminar el paso, para saber que va bien.
+        let resultado: String
     }
 
     private var pasos: [PasoGuia] {
         [
         PasoGuia(
             id: 1,
-            simbolo: "square.stack.3d.up",
-            titulo: String(localized: "Abre Atajos", bundle: .module),
-            texto: String(localized: "Ve a la pestaña Automatización y pulsa «Nueva automatización» o +.", bundle: .module)
+            simbolo: "plus.circle",
+            titulo: String(localized: "Empieza una automatización", bundle: .module),
+            acciones: [
+                String(localized: "Pulsa el botón «Abrir Atajos» de abajo del todo. Se abre la app Atajos (el icono de cuadrados de colores).", bundle: .module),
+                String(localized: "En la barra de abajo de Atajos hay tres pestañas: toca la del centro, «Automatización».", bundle: .module),
+                String(localized: "Si no tienes ninguna, toca el botón grande «Nueva automatización». Si ya tienes alguna, toca el + de arriba a la derecha.", bundle: .module)
+            ],
+            resultado: String(localized: "Ves una lista larga: «Hora del día», «Alarma», «Correo»…", bundle: .module)
         ),
         PasoGuia(
             id: 2,
             simbolo: "wallet.pass",
             titulo: String(localized: "Elige «Transacción»", bundle: .module),
-            texto: String(localized: "Está en la sección Wallet. Marca las tarjetas con las que pagas y deja todas las categorías.", bundle: .module)
+            acciones: [
+                String(localized: "Baja por la lista hasta «Transacción» (lleva el icono de la cartera de Wallet) y tócalo.", bundle: .module),
+                String(localized: "En «Tarjeta», comprueba que están marcadas las tarjetas con las que pagas. Lo demás, déjalo como está.", bundle: .module),
+                String(localized: "Abajo, marca «Ejecutar inmediatamente». Si no, el iPhone te pedirá permiso cada vez que pagues.", bundle: .module),
+                String(localized: "Toca «Siguiente», arriba a la derecha.", bundle: .module)
+            ],
+            resultado: String(localized: "Ves «Nueva automatización en blanco» y unas sugerencias.", bundle: .module)
         ),
         PasoGuia(
             id: 3,
-            simbolo: "bolt",
-            titulo: String(localized: "Marca «Ejecutar inmediatamente»", bundle: .module),
-            texto: String(localized: "Así no tienes que confirmar nada después de pagar.", bundle: .module)
+            simbolo: "magnifyingglass",
+            titulo: String(localized: "Añade «Registrar pago» de Rico", bundle: .module),
+            acciones: [
+                String(localized: "Toca «Nueva automatización en blanco».", bundle: .module),
+                String(localized: "Toca «Añadir acción» o el buscador de abajo («Buscar apps y acciones»).", bundle: .module),
+                String(localized: "Escribe «Rico» y toca «Registrar pago».", bundle: .module)
+            ],
+            resultado: String(localized: "Ves una caja que dice «Registrar pago en Comercio de Importe», con «Comercio» e «Importe» en azul.", bundle: .module)
         ),
         PasoGuia(
             id: 4,
-            simbolo: "fork.knife",
-            titulo: String(localized: "Añade «Registrar pago» de Rico", bundle: .module),
-            texto: String(localized: "Pulsa «Nueva automatización en blanco», añade una acción y busca Rico.", bundle: .module)
-        ),
-        PasoGuia(
-            id: 5,
-            simbolo: "creditcard",
-            titulo: String(localized: "Rellena los datos del pago", bundle: .module),
-            texto: String(localized: "Toca cada campo y elige «Entrada del atajo»: Comercio, Importe y Tarjeta.", bundle: .module)
+            simbolo: "hand.tap",
+            titulo: String(localized: "Conecta el comercio y el importe", bundle: .module),
+            acciones: [
+                String(localized: "Toca la palabra azul «Comercio». Encima del teclado sale «Entrada del atajo»: tócalo.", bundle: .module),
+                String(localized: "Ahora en su sitio pone «Entrada del atajo». Tócalo otra vez y, en la lista que sale, elige «Comercio».", bundle: .module),
+                String(localized: "Haz lo mismo con la palabra azul «Importe»: «Entrada del atajo» y luego «Importe».", bundle: .module),
+                String(localized: "Toca «OK», arriba a la derecha.", bundle: .module)
+            ],
+            resultado: String(localized: "En la caja ya no hay palabras azules sueltas, sino «Comercio» e «Importe» con el icono de Wallet. Ya está: la próxima vez que pagues, Rico lo apunta.", bundle: .module)
         )
         ]
     }
@@ -63,15 +82,21 @@ public struct GuiaAtajoView: View {
             VStack(alignment: .leading, spacing: 22) {
                 cabecera
 
-                if !esPremium {
-                    planGratis
-                }
+                // Lo de un solo botón va primero; Atajos es para quien quiera afinar más.
+                DeteccionUbicacionView()
 
                 VStack(alignment: .leading, spacing: 14) {
-                    TituloSeccion(Text("En la app Atajos", bundle: .module))
+                    TituloSeccion(Text("Con Apple Pay, más exacto", bundle: .module))
+                    Text("Apple no deja que ninguna app cree automatizaciones por ti: hay que hacerlo una vez a mano en Atajos. Son cuatro pasos y unos dos minutos. Al volver de Atajos sigues aquí, donde lo dejaste.", bundle: .module)
+                        .font(.rico(.subheadline, peso: .semibold))
+                        .foregroundStyle(Color.ricoSecundario)
+                    if !esPremium {
+                        planGratis
+                    }
                     ForEach(pasos) { paso in
                         filaPaso(paso)
                     }
+                    siNoFunciona
                 }
 
                 VStack(alignment: .leading, spacing: 14) {
@@ -113,8 +138,6 @@ public struct GuiaAtajoView: View {
                         ubicacion.pedir()
                     }
                 }
-
-                DeteccionUbicacionView()
             }
             .padding(.horizontal, Medidas.margen)
             .padding(.top, 8)
@@ -175,41 +198,103 @@ public struct GuiaAtajoView: View {
             Text("Paga y Rico se acuerda", bundle: .module)
                 .font(.rico(.title, peso: .black))
                 .foregroundStyle(Color.ricoTinta)
-            Text("Crea una automatización en Atajos una sola vez. Después, cada pago con Apple Pay en un restaurante te espera en Rico para que lo valores.", bundle: .module)
+            Text("Rico te pregunta «¿qué tal?» después de comer fuera, sin que tengas que apuntar nada.", bundle: .module)
                 .font(.rico(.body, peso: .semibold))
                 .foregroundStyle(Color.ricoSecundario)
         }
     }
 
     private func filaPaso(_ paso: PasoGuia) -> some View {
-        HStack(alignment: .top, spacing: 14) {
-            ZStack(alignment: .bottomTrailing) {
-                Image(systemName: paso.simbolo)
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(Color.ricoTomateTexto)
-                    .frame(width: 48, height: 48)
-                    .background(Color.ricoTomateSuave, in: RoundedRectangle(cornerRadius: Medidas.radioControl))
-                Text(verbatim: "\(paso.id)")
-                    .font(.rico(.caption, peso: .heavy))
-                    .foregroundStyle(Color.ricoSobreTomate)
-                    .frame(minWidth: 20, minHeight: 20)
-                    .background(Color.ricoTomate, in: Circle())
-                    .offset(x: 6, y: 6)
-            }
-            .accessibilityHidden(true)
+        Tarjeta {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .center, spacing: 12) {
+                    Text(verbatim: "\(paso.id)")
+                        .font(.rico(.headline, peso: .black))
+                        .foregroundStyle(Color.ricoSobreTomate)
+                        .frame(width: 34, height: 34)
+                        .background(Color.ricoTomate, in: Circle())
+                        .accessibilityHidden(true)
+                    Text(paso.titulo)
+                        .font(.rico(.headline, peso: .heavy))
+                        .foregroundStyle(Color.ricoTinta)
+                        .accessibilityAddTraits(.isHeader)
+                        .accessibilityLabel(Text("Paso \(paso.id): \(paso.titulo)", bundle: .module))
+                    Spacer(minLength: 0)
+                    Image(systemName: paso.simbolo)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(Color.ricoTomateTexto)
+                        .accessibilityHidden(true)
+                }
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(paso.titulo)
-                    .font(.rico(.headline, peso: .heavy))
-                    .foregroundStyle(Color.ricoTinta)
-                Text(paso.texto)
-                    .font(.rico(.subheadline, peso: .semibold))
-                    .foregroundStyle(Color.ricoSecundario)
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(Array(paso.acciones.enumerated()), id: \.offset) { indice, accion in
+                        HStack(alignment: .firstTextBaseline, spacing: 10) {
+                            Text(verbatim: Self.letra(indice))
+                                .font(.rico(.subheadline, peso: .heavy))
+                                .foregroundStyle(Color.ricoTomateTexto)
+                                .frame(width: 18, alignment: .leading)
+                                .accessibilityHidden(true)
+                            Text(accion)
+                                .font(.rico(.subheadline, peso: .semibold))
+                                .foregroundStyle(Color.ricoTinta)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Image(systemName: "eye")
+                        .foregroundStyle(Color.ricoVerde)
+                        .accessibilityHidden(true)
+                    Text(paso.resultado)
+                        .font(.rico(.footnote, peso: .semibold))
+                        .foregroundStyle(Color.ricoSecundario)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(10)
+                .background(Color.ricoSuperficieHundida, in: RoundedRectangle(cornerRadius: Medidas.radioControl))
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(Text("Lo que verás: \(paso.resultado)", bundle: .module))
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    /// «a.», «b.», «c.»… para los toques de cada paso.
+    private static func letra(_ indice: Int) -> String {
+        let letras = Array("abcdefgh")
+        return "\(letras[min(indice, letras.count - 1)])."
+    }
+
+    /// Lo que suele fallar, con su arreglo.
+    private var siNoFunciona: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            TituloSeccion(Text("Si algo no sale", bundle: .module))
+            ayuda(
+                Text("No aparece Rico al buscar", bundle: .module),
+                Text("Abre Rico una vez, ciérralo y vuelve a buscar en Atajos. Si sigue sin salir, reinicia el iPhone.", bundle: .module)
+            )
+            ayuda(
+                Text("No veo «Transacción» en la lista", bundle: .module),
+                Text("Hace falta tener una tarjeta en Wallet e iOS 17 o posterior.", bundle: .module)
+            )
+            ayuda(
+                Text("Pagué y no llegó nada", bundle: .module),
+                Text("Revisa que marcaste «Ejecutar inmediatamente» y que los avisos de Rico están activados. El aviso llega unos 20 minutos después de pagar, para no molestarte mientras comes.", bundle: .module)
+            )
+        }
+    }
+
+    private func ayuda(_ titulo: Text, _ texto: Text) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            titulo
+                .font(.rico(.subheadline, peso: .heavy))
+                .foregroundStyle(Color.ricoTinta)
+            texto
+                .font(.rico(.subheadline, peso: .semibold))
+                .foregroundStyle(Color.ricoSecundario)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(Text("Paso \(paso.id): \(paso.titulo). \(paso.texto)", bundle: .module))
     }
 
     private func permiso(

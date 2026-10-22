@@ -9,7 +9,7 @@ struct DeteccionUbicacionView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            TituloSeccion(Text("Sin Atajos", bundle: .module))
+            TituloSeccion(Text("Lo más fácil: un botón", bundle: .module))
             Tarjeta {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(alignment: .top, spacing: 12) {
