@@ -38,7 +38,7 @@ const PREGUNTAS: BouncyAccordionItem[] = [
 
 export function Preguntas() {
   return (
-    <section id="preguntas" className="mx-auto flex max-w-3xl flex-col gap-12 px-5 py-28 sm:px-8 sm:py-36">
+    <section id="preguntas" className="mx-auto flex max-w-3xl flex-col gap-12 px-5 py-20 sm:px-8 sm:py-28">
       <Titular etiqueta="Chupito" centrado>
         Lo que nos preguntáis
       </Titular>

@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useInView, useReducedMotion } from 'motion/react'
 import { DynamicIsland, DynamicIslandView } from '@/components/motion/dynamic-island'
-import { TextReveal } from '@/components/motion/text-reveal'
 import { Iphone } from '@/componentes/Iphone'
 import { Captura } from '@/componentes/Pantallas'
 import { InsigniaAppStore } from '@/componentes/Piezas'
@@ -11,12 +10,12 @@ const MUELLE = [0.32, 0.72, 0, 1] as const
 
 type Vista = 'pago' | 'pregunta' | 'guardado' | null
 
-/** Lo que pasa en el iPhone después de pagar, en bucle. */
+/** Lo que pasa en el iPhone después de pagar, en bucle y sin prisa. */
 const SECUENCIA: { vista: Vista; ms: number }[] = [
-  { vista: null, ms: 1300 },
-  { vista: 'pago', ms: 2600 },
-  { vista: 'pregunta', ms: 3400 },
-  { vista: 'guardado', ms: 2200 },
+  { vista: null, ms: 2200 },
+  { vista: 'pago', ms: 3000 },
+  { vista: 'pregunta', ms: 3800 },
+  { vista: 'guardado', ms: 2600 },
 ]
 
 /** La Dynamic Island, a tamaño real sobre la captura (que ya dibuja la isla apagada). */
@@ -61,9 +60,9 @@ function Isla() {
                 key={i}
                 viewBox="0 0 24 24"
                 className="size-6"
-                initial={reducir ? false : { scale: 0.4, opacity: 0.25 }}
+                initial={reducir ? false : { scale: 0.5, opacity: 0.25 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.5 + i * 0.2, type: 'spring', bounce: 0.6, duration: 0.5 }}
+                transition={{ delay: 0.6 + i * 0.22, type: 'spring', bounce: 0.45, duration: 0.6 }}
                 aria-hidden
               >
                 <path d="M12 2.6l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z" fill="#F5B331" />
@@ -83,114 +82,64 @@ function Isla() {
   )
 }
 
-/** Icono fino de 24 × 24. */
-function Icono({ d, className }: { d: string; className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden>
-      <path d={d} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-/** Lo que Rico junta en un solo sitio, como iconos de app que pasan por detrás del iPhone. */
-const AZULEJOS: { fondo: string; color: string; icono: ReactNode }[] = [
-  { fondo: '#1F1A16', color: '#FBF6F0', icono: <Icono d="M3.5 7.5A2.5 2.5 0 0 1 6 5h12a2.5 2.5 0 0 1 2.5 2.5v9A2.5 2.5 0 0 1 18 19H6a2.5 2.5 0 0 1-2.5-2.5zM3.5 10h17M7 15h3" className="size-[46%]" /> },
-  { fondo: '#D2381F', color: '#FFFFFF', icono: <Icono d="M6 3v7a2 2 0 0 0 2 2v9M10 3v7a2 2 0 0 1-2 2M8 3v6M16 21V3c2.2 1.2 3 4 3 7s-1.2 4-3 4" className="size-[46%]" /> },
-  { fondo: '#FFFFFF', color: '#F0A202', icono: <Icono d="M12 3.2l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.6l-5.2 2.7 1-5.8-4.3-4.1 5.9-.8z" className="size-[46%]" /> },
-  { fondo: '#3F5A30', color: '#FBF6F0', icono: <Icono d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" className="size-[46%]" /> },
-  { fondo: '#F0A202', color: '#1F1A16', icono: <Icono d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.4-2h4.6l1.4 2h1.8A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5zM12 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" className="size-[46%]" /> },
-  { fondo: '#FBE3DC', color: '#A8291A', icono: <Icono d="M7 3.5h10v17l-5-3.3-5 3.3z" className="size-[46%]" /> },
-  { fondo: '#2F6FA8', color: '#FFFFFF', icono: <Icono d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9zM10 20a2.2 2.2 0 0 0 4 0" className="size-[46%]" /> },
-  { fondo: '#FFFFFF', color: '#1F1A16', icono: <Icono d="M4 19V10M10 19V5M16 19v-7M21 19H3" className="size-[46%]" /> },
-]
-
-function FilaAzulejos() {
-  const fila = [...AZULEJOS, ...AZULEJOS]
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-x-0 top-[30%] overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
-      <div className="cinta flex w-max gap-5 sm:gap-8" style={{ ['--duracion' as string]: '45s' }}>
-        {[...fila, ...fila].map((azulejo, i) => (
-          <span
-            key={i}
-            className="grid size-[72px] place-items-center rounded-[22px] shadow-[0_18px_40px_-22px_rgba(80,40,15,0.55)] ring-1 ring-black/5 sm:size-[112px] sm:rounded-[30px]"
-            style={{ background: azulejo.fondo, color: azulejo.color }}
-          >
-            {azulejo.icono}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 export function Hero() {
   const reducir = useReducedMotion()
-  const escena = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({ target: escena, offset: ['start end', 'end start'] })
-  const subeTelefono = useTransform(scrollYProgress, [0.3, 1], [0, reducir ? 0 : -70])
+  const entrada = (retraso: number) => ({
+    initial: reducir ? false : { opacity: 0, y: 14 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.8, delay: retraso, ease: MUELLE },
+  })
 
   return (
     <section className="relative overflow-hidden">
-      {/* Luz cálida de vela sobre el mantel. */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[120%] bg-[radial-gradient(60%_45%_at_50%_70%,rgba(210,56,31,0.16),transparent_70%),radial-gradient(40%_30%_at_15%_20%,rgba(240,162,2,0.12),transparent_70%)]" />
+      <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-28 sm:px-8 sm:pt-32 lg:min-h-[min(100dvh,920px)] lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:pb-16 lg:pt-24">
+        <div className="flex flex-col items-center gap-6 text-center lg:items-start lg:text-left">
+          <motion.span
+            {...entrada(0)}
+            className="inline-flex items-center gap-2.5 rounded-full bg-white/85 py-1.5 pl-1.5 pr-4 text-[13px] font-extrabold ring-1 ring-hilo"
+          >
+            <span className="rounded-full bg-tomate px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider text-white">Muy pronto</span>
+            En el App Store
+          </motion.span>
 
-      <div className="relative mx-auto flex max-w-5xl flex-col items-center gap-7 px-5 pt-32 text-center sm:pt-40">
-        <motion.span
-          initial={reducir ? false : { opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: MUELLE }}
-          className="inline-flex items-center gap-2.5 rounded-full bg-white/85 py-1.5 pl-1.5 pr-4 text-[13px] font-extrabold shadow-[0_8px_24px_-14px_rgba(90,40,15,0.5)] ring-1 ring-hilo"
-        >
-          <span className="rounded-full bg-tomate px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider text-white">Muy pronto</span>
-          En el App Store, para iPhone
-        </motion.span>
+          <motion.h1
+            {...entrada(0.08)}
+            className="text-[clamp(2.9rem,10vw,5.5rem)] font-black leading-[0.95] tracking-[-0.04em]"
+          >
+            Paga.
+            <br />
+            <span className="text-tomate">Rico se acuerda.</span>
+          </motion.h1>
 
-        <h1 className="text-[clamp(3.4rem,13vw,8.5rem)] font-black leading-[0.88] tracking-[-0.045em]">
-          <TextReveal text="Paga." className="block" />
-          <TextReveal text="Rico se acuerda." className="block text-tomate" delay={0.2} />
-        </h1>
+          <motion.p {...entrada(0.16)} className="max-w-md text-lg leading-relaxed text-tinta-suave sm:text-xl">
+            Tu diario de restaurantes para iPhone. Pagas la cena, Rico te pregunta qué tal y lo valoras
+            en diez segundos.
+          </motion.p>
 
-        <motion.p
-          initial={reducir ? false : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.45, ease: MUELLE }}
-          className="max-w-xl text-[19px] leading-snug text-tinta-suave sm:text-[22px]"
-        >
-          Tu diario de restaurantes. Pagas la cena, Rico te pregunta qué tal y lo valoras en diez
-          segundos. Se acabó el «¿cómo se llamaba aquel sitio?».
-        </motion.p>
+          <motion.div {...entrada(0.24)} className="mt-2 flex flex-col items-center gap-4 lg:items-start">
+            <InsigniaAppStore />
+            <a href={ENLACE_BETA} className="group inline-flex min-h-11 items-center gap-2 text-[15px] font-extrabold text-tomate-texto">
+              ¿No puedes esperar? Entra en la beta
+              <span aria-hidden className="transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1">→</span>
+            </a>
+          </motion.div>
+        </div>
 
+        {/* El iPhone, entero, apoyado sobre un plato. */}
         <motion.div
-          initial={reducir ? false : { opacity: 0, y: 16 }}
+          initial={reducir ? false : { opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.6, ease: MUELLE }}
-          className="flex flex-col items-center gap-4"
+          transition={{ duration: 1.1, delay: 0.2, ease: MUELLE }}
+          className="relative mx-auto grid w-full max-w-[460px] place-items-center"
         >
-          <InsigniaAppStore grande />
-          <a href={ENLACE_BETA} className="group inline-flex min-h-11 items-center gap-2 text-[15px] font-extrabold text-tomate-texto">
-            ¿No puedes esperar? Entra en la beta
-            <span aria-hidden className="transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1">→</span>
-          </a>
-        </motion.div>
-      </div>
-
-      {/* El iPhone sale desde abajo y la línea del mantel lo corta, con los iconos pasando por detrás. */}
-      <div ref={escena} className="relative mx-auto mt-14 h-[min(118vw,600px)] max-w-7xl overflow-hidden border-b border-hilo sm:mt-16">
-        <FilaAzulejos />
-        <motion.div
-          initial={reducir ? false : { y: 160, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ type: 'spring', bounce: 0.22, duration: 1.5, delay: 0.35 }}
-          className="relative mx-auto w-[min(76vw,360px)]"
-        >
-          <motion.div style={{ y: subeTelefono }}>
-            {/* Halo del color del mantel para que los iconos «pasen por detrás». */}
-            <div aria-hidden className="absolute -inset-x-8 inset-y-0 rounded-[4rem] bg-mantel/70 blur-2xl" />
+          <div aria-hidden className="absolute aspect-square w-[118%] max-w-[520px] rounded-full bg-white shadow-[0_40px_90px_-50px_rgba(90,40,15,0.35)] ring-1 ring-hilo" />
+          <div aria-hidden className="absolute aspect-square w-[92%] max-w-[410px] rounded-full ring-1 ring-hilo" />
+          <div className="relative w-[min(64vw,300px)] py-6">
             <Iphone>
               <Captura nombre="diario" alt="El diario de Rico con tus últimas visitas" prioridad />
               <Isla />
             </Iphone>
-          </motion.div>
+          </div>
         </motion.div>
       </div>
     </section>

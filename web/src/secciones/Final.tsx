@@ -32,7 +32,7 @@ export function Final() {
   const { estado, compartir } = useCompartir()
 
   return (
-    <section className="relative overflow-hidden px-5 pb-28 pt-12 sm:pb-36">
+    <section className="relative overflow-hidden px-5 pb-20 pt-8 sm:pb-28">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_45%_at_50%_45%,rgba(210,56,31,0.16),transparent_70%)]" />
       <Aparecer className="relative mx-auto flex max-w-3xl flex-col items-center gap-8 text-center">
         <motion.img
@@ -40,11 +40,11 @@ export function Final() {
           alt="Icono de Rico"
           width={1024}
           height={1024}
-          className="size-28 rounded-[1.9rem] shadow-[0_30px_60px_-20px_rgba(210,56,31,0.55)] sm:size-36 sm:rounded-[2.4rem]"
-          animate={reducir ? undefined : { y: [0, -10, 0], rotate: [0, -2, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: [0.45, 0, 0.55, 1] }}
+          className="size-24 rounded-[1.6rem] shadow-[0_30px_60px_-24px_rgba(210,56,31,0.5)] sm:size-28 sm:rounded-[1.9rem]"
+          animate={reducir ? undefined : { y: [0, -6, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: [0.45, 0, 0.55, 1] }}
         />
-        <h2 className="text-[clamp(3rem,11vw,6.5rem)] font-black leading-[0.9] tracking-[-0.045em]">
+        <h2 className="text-[clamp(2.5rem,8vw,4.5rem)] font-black leading-[0.98] tracking-[-0.04em]">
           Muy pronto en <span className="text-tomate">tu iPhone.</span>
         </h2>
         <p className="max-w-md text-lg text-tinta-suave sm:text-xl">Tu próxima cena ya puede quedar apuntada.</p>

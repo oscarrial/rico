@@ -18,7 +18,7 @@ export function LaCuenta() {
   const impreso = useInView(impresora, { once: true, amount: 0.15 })
 
   return (
-    <section id="precios" className="mx-auto grid max-w-6xl items-center gap-14 px-5 py-28 sm:px-8 sm:py-36 lg:grid-cols-2 lg:gap-24">
+    <section id="precios" className="mx-auto grid max-w-6xl items-center gap-14 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-2 lg:gap-24">
       <Titular className="min-w-0" etiqueta="La cuenta" entradilla="Lo de cada día es gratis y sin anuncios. Premium es para quien sale mucho a comer y lo quiere todo automático.">
         Gratis para siempre. <span className="text-tomate">Premium, si te enganchas.</span>
       </Titular>

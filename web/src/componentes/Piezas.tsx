@@ -36,13 +36,13 @@ export function Titular({
   return (
     <Aparecer className={cn('flex max-w-3xl flex-col gap-5', centrado && 'mx-auto items-center text-center', className)}>
       <Etiqueta>{etiqueta}</Etiqueta>
-      <h2 className="text-[clamp(2.5rem,8.5vw,4.75rem)] font-black leading-[0.95] tracking-[-0.035em]">{children}</h2>
+      <h2 className="text-[clamp(2.2rem,6.5vw,3.75rem)] font-black leading-[1] tracking-[-0.035em]">{children}</h2>
       {entradilla ? <p className="max-w-xl text-lg text-tinta-suave sm:text-xl">{entradilla}</p> : null}
     </Aparecer>
   )
 }
 
-/** Entrada al hacer scroll: sube, se enfoca y aparece. */
+/** Entrada al hacer scroll: sube un poco y aparece. */
 export function Aparecer({
   children,
   className,
@@ -56,10 +56,10 @@ export function Aparecer({
   return (
     <motion.div
       className={className}
-      initial={reducir ? false : { opacity: 0, y: 48, filter: 'blur(8px)' }}
-      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      initial={reducir ? false : { opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.9, ease: MUELLE, delay: retraso }}
+      transition={{ duration: 0.7, ease: MUELLE, delay: retraso }}
     >
       {children}
     </motion.div>

@@ -101,14 +101,14 @@ function QuieroProbar() {
 
 export function Bento() {
   return (
-    <section className="mx-auto flex max-w-6xl flex-col gap-14 px-4 py-28 sm:px-8 sm:py-36">
+    <section className="mx-auto flex max-w-6xl flex-col gap-14 px-4 py-20 sm:px-8 sm:py-28">
       <Titular etiqueta="Segundo · Todo en un sitio" centrado entradilla="Lo que antes estaba repartido entre notas, capturas y fotos, en una app que es solo tuya.">
         Tu vida comiendo fuera, <span className="text-tomate">ordenada.</span>
       </Titular>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-6 md:gap-5">
         <Tarjeta className="md:col-span-4 md:row-span-2">
-          <Recorte nombre="mapa" alt="El mapa de Rico con tus sitios en Vigo" posicion="50% 30%" className="h-[340px] sm:h-[460px]" />
+          <Recorte nombre="mapa" alt="El mapa de Rico con tus sitios en Vigo" posicion="50% 30%" className="h-[300px] sm:h-[400px]" />
           <div className="relative -mt-14 flex flex-col items-center gap-5 pb-8">
             <div className="flex flex-wrap justify-center gap-2" aria-hidden>
               {PINES.map((pin) => (

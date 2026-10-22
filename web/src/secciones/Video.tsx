@@ -16,7 +16,7 @@ export function Video() {
   }, [visible])
 
   return (
-    <section className="bg-mantel-hondo/60 py-28 sm:py-36">
+    <section className="bg-mantel-hondo/60 py-20 sm:py-28">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-14 px-5 sm:px-8 lg:flex-row lg:justify-center lg:gap-24">
         <Titular etiqueta="Café · En 12 segundos" entradilla="Así se ve Rico de verdad. Sube el volumen.">
           Pagas. <span className="text-tomate">Valoras.</span> Te acuerdas.
