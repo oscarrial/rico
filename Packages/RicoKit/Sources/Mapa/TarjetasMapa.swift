@@ -34,6 +34,11 @@ struct TarjetaSitioMapa: View {
                     BotonCerrarTarjeta(accion: alCerrar)
                 }
 
+                if let latitud = restaurante.latitud, let longitud = restaurante.longitud {
+                    BotonFichaApple(mapItemID: restaurante.mapItemID, nombre: restaurante.nombre, latitud: latitud, longitud: longitud)
+                        .padding(.vertical, -8)
+                }
+
                 if resumen.visitas.isEmpty {
                     Button(action: alGuardarVisita) {
                         Text("Guardar visita", bundle: .module)
@@ -97,6 +102,9 @@ struct TarjetaExploradoMapa: View {
                     Spacer(minLength: 0)
                     BotonCerrarTarjeta(accion: alCerrar)
                 }
+
+                BotonFichaApple(mapItemID: lugar.mapItemID, nombre: lugar.nombre, latitud: lugar.latitud, longitud: lugar.longitud)
+                    .padding(.vertical, -8)
 
                 Button(action: alGuardarVisita) {
                     Text("Guardar visita", bundle: .module)
