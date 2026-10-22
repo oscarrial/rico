@@ -1,0 +1,135 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Rico: crema y tomate de día, carbón cálido de noche (DESIGN.md §3). Los tokens de shadcn
+   salen de los de Rico para que los componentes de beUI hereden la marca. */
+:root {
+  --rico-fondo: #FBF6F0;
+  --rico-superficie: #FFFFFF;
+  --rico-hundida: #F3ECE4;
+  --rico-linea: #EADFD3;
+  --rico-tinta: #1F1A16;
+  --rico-secundario: #6B6158;
+  --rico-tomate: #D2381F;
+  --rico-sobre-tomate: #FFFFFF;
+  --rico-tomate-suave: #FBE3DC;
+  --rico-tomate-texto: #A8291A;
+  --rico-estrella: #F0A202;
+  --rico-albahaca: #3F5A30;
+  --rico-verde: #1F5A37;
+  --rico-verde-suave: #DDEFE3;
+  --rico-papel: #FFFEFA;
+
+  --radius: 1.25rem;
+  --background: var(--rico-fondo);
+  --foreground: var(--rico-tinta);
+  --card: var(--rico-superficie);
+  --card-foreground: var(--rico-tinta);
+  --popover: var(--rico-superficie);
+  --popover-foreground: var(--rico-tinta);
+  --primary: var(--rico-tomate);
+  --primary-foreground: var(--rico-sobre-tomate);
+  --secondary: var(--rico-hundida);
+  --secondary-foreground: var(--rico-tinta);
+  --muted: var(--rico-hundida);
+  --muted-foreground: var(--rico-secundario);
+  --accent: var(--rico-tomate-suave);
+  --accent-foreground: var(--rico-tomate-texto);
+  --destructive: var(--rico-tomate);
+  --border: var(--rico-linea);
+  --input: var(--rico-linea);
+  --ring: var(--rico-tomate);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --rico-fondo: #17130F;
+    --rico-superficie: #241E19;
+    --rico-hundida: #2E2620;
+    --rico-linea: #3A322B;
+    --rico-tinta: #F5EEE6;
+    --rico-secundario: #B5A99D;
+    --rico-tomate: #FF6A4D;
+    --rico-sobre-tomate: #1F0A05;
+    --rico-tomate-suave: #4A2219;
+    --rico-tomate-texto: #FF8F78;
+    --rico-estrella: #F5B331;
+    --rico-albahaca: #7FA866;
+    --rico-verde: #7FD3A0;
+    --rico-verde-suave: #1D3A28;
+    --rico-papel: #F4EFE6;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-rico-fondo: var(--rico-fondo);
+  --color-rico-superficie: var(--rico-superficie);
+  --color-rico-hundida: var(--rico-hundida);
+  --color-rico-linea: var(--rico-linea);
+  --color-rico-tinta: var(--rico-tinta);
+  --color-rico-secundario: var(--rico-secundario);
+  --color-rico-tomate: var(--rico-tomate);
+  --color-rico-sobre-tomate: var(--rico-sobre-tomate);
+  --color-rico-tomate-suave: var(--rico-tomate-suave);
+  --color-rico-tomate-texto: var(--rico-tomate-texto);
+  --color-rico-estrella: var(--rico-estrella);
+  --color-rico-albahaca: var(--rico-albahaca);
+  --color-rico-verde: var(--rico-verde);
+  --color-rico-verde-suave: var(--rico-verde-suave);
+  --color-rico-papel: var(--rico-papel);
+  --font-rico: "Nunito", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  --font-ticket: "Courier Prime", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    @apply bg-rico-fondo text-rico-tinta font-rico antialiased;
+    font-weight: 600;
+  }
+  h1, h2, h3 { text-wrap: balance; }
+  :focus-visible { outline: 3px solid var(--rico-tomate); outline-offset: 3px; border-radius: 6px; }
+}

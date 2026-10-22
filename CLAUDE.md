@@ -9,6 +9,7 @@ Diario gastronómico para iPhone. El plan de producto completo está en `docs/pl
 - `supabase/migrations`: esquema de PostgreSQL con seguridad por fila. Decisión y pasos para aplicarlo en `docs/decisiones/0001-servidor-propio-supabase.md`.
 - `Config/`: `Rico.xcconfig` versionado; `Secretos.xcconfig` (host y clave de Supabase) no se versiona. Sin él, la app funciona solo en local.
 - `App/`: punto de entrada. `Tests/`: pruebas de los módulos en el simulador.
+- `web/`: landing «Sobremesa» (Vite, React, Tailwind, Motion y componentes de beUI en `src/components/motion`). Enlace de la beta, correo y precios en `web/src/config.ts`. `npm --prefix web run dev`.
 - `project.yml`: proyecto de XcodeGen. `Rico.xcodeproj` no se versiona: `xcodegen generate`.
 
 ## Reglas
