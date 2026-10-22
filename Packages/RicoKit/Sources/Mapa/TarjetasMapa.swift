@@ -45,6 +45,10 @@ struct TarjetaSitioMapa: View {
                     }
                     .buttonStyle(.ricoPrincipal)
                 }
+
+                if let latitud = restaurante.latitud, let longitud = restaurante.longitud {
+                    BotonComoLlegar(nombre: restaurante.nombre, latitud: latitud, longitud: longitud)
+                }
             }
         }
     }
@@ -99,16 +103,30 @@ struct TarjetaExploradoMapa: View {
                 }
                 .buttonStyle(.ricoPrincipal)
 
-                Button(action: alQuererProbar) {
-                    Label {
-                        Text("Quiero probarlo", bundle: .module)
-                    } icon: {
-                        Image(systemName: "bookmark")
-                    }
+                // Lado a lado si caben; con letra grande, uno debajo del otro.
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 10) { botonesSecundarios }
+                    VStack(spacing: 10) { botonesSecundarios }
                 }
-                .buttonStyle(.ricoSecundario)
             }
         }
+    }
+}
+
+private extension TarjetaExploradoMapa {
+    @ViewBuilder
+    var botonesSecundarios: some View {
+        Button(action: alQuererProbar) {
+            Label {
+                Text("Quiero probarlo", bundle: .module)
+                    .lineLimit(1)
+            } icon: {
+                Image(systemName: "bookmark")
+            }
+        }
+        .buttonStyle(.ricoSecundario)
+
+        BotonComoLlegar(nombre: lugar.nombre, latitud: lugar.latitud, longitud: lugar.longitud)
     }
 }
 

@@ -12,6 +12,7 @@ public struct GuiaAtajoView: View {
 
     @State private var notificaciones = PermisoNotificaciones()
     @State private var ubicacion = PermisoUbicacion()
+    @State private var pruebaEnviada = false
 
     public init() {}
 
@@ -83,6 +84,24 @@ public struct GuiaAtajoView: View {
                         boton: Text("Activar avisos", bundle: .module)
                     ) {
                         Task { await notificaciones.pedir() }
+                    }
+                    if notificaciones.estado == .concedido {
+                        Button {
+                            pruebaEnviada = true
+                            Task { await NotificadorLocal().probar() }
+                        } label: {
+                            Label {
+                                Text("Enviar un aviso de prueba", bundle: .module)
+                            } icon: {
+                                Image(systemName: "bell")
+                            }
+                        }
+                        .buttonStyle(.ricoSecundario)
+                        if pruebaEnviada {
+                            Text("Te llegará en unos segundos.", bundle: .module)
+                                .font(.rico(.footnote, peso: .semibold))
+                                .foregroundStyle(Color.ricoSecundario)
+                        }
                     }
                     permiso(
                         simbolo: "location",

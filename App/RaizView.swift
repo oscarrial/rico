@@ -14,6 +14,7 @@ import Visitas
 struct RaizView: View {
     @State private var pestana: Pestana = .diario
     @State private var premium = EstadoPremium()
+    @Environment(EstadoCuenta.self) private var cuenta
     @State private var mostrandoCuenta = false
     @AppStorage("bienvenidaVista") private var bienvenidaVista = false
     #if DEBUG
@@ -62,6 +63,9 @@ struct RaizView: View {
         })
         // Comprueba las compras al arrancar y escucha renovaciones y reembolsos.
         .task { await premium.arrancar() }
+        .onChange(of: cuenta.sesion?.premiumConcedido ?? false, initial: true) { _, concedido in
+            premium.conceder(concedido)
+        }
         .fullScreenCover(isPresented: Binding(get: { !bienvenidaVista }, set: { bienvenidaVista = !$0 })) {
             BienvenidaView { bienvenidaVista = true }
         }

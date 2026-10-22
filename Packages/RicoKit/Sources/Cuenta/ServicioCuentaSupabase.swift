@@ -149,7 +149,8 @@ public final class ServicioCuentaSupabase: ServicioCuenta {
         SesionUsuario(
             id: sesion.user.id,
             correo: sesion.user.email,
-            proveedor: sesion.user.appMetadata["provider"]?.stringValue
+            proveedor: sesion.user.appMetadata["provider"]?.stringValue,
+            premiumConcedido: sesion.user.appMetadata["premium"]?.boolValue ?? false
         )
     }
 

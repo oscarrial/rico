@@ -65,6 +65,17 @@ struct PremiumTests {
         #expect(!premium.esPremium)
     }
 
+    @Test func premiumConcedidoSinComprar() async {
+        let premium = estado(TiendaFalsa())
+        premium.conceder(true)
+        #expect(premium.esPremium)
+        await premium.actualizarDerechos()
+        #expect(premium.esPremium)
+
+        premium.conceder(false)
+        #expect(!premium.esPremium)
+    }
+
     @Test func compraVerificadaActivaPremium() async throws {
         let tienda = TiendaFalsa()
         let premium = estado(tienda)
