@@ -3,6 +3,7 @@ import Foundation
 import Captura
 import Modelos
 import Premium
+import RicoCore
 
 /// Acción de Atajos «Registrar pago». Se usa en la automatización «Transacción» de Wallet:
 /// recibe comercio, importe y tarjeta, y deja la visita lista para valorar.
