@@ -11,7 +11,7 @@ Las normas que sigue todo lo que se ve en Rico: la app, el icono, la web y lo qu
 2. **Tus datos, no los de todos.** Rico no es una red de reseñas. Nada de contadores públicos, likes ni rankings ajenos: todo habla en segunda persona («tu mapa», «lo que pediste»).
 3. **El dinero como dato, sin culpa.** Los importes se muestran claros y sin juicio: nada de rojos de alarma por gastar.
 4. **Comida primero.** Fotos y nombres de platos llevan el peso visual; los controles se apartan.
-5. **Cálido y concreto.** Colores de cocina, letra redondeada y frases cortas. Nada de degradados, brillos de IA ni emojis como iconos.
+5. **Cálido y concreto.** Colores de cocina, una grotesca con carácter (Bricolage Grotesque) y frases cortas. Nada de degradados, brillos de IA ni emojis como iconos.
 
 ## 2. Marca
 
@@ -88,19 +88,20 @@ Reglas:
 
 ## 4. Tipografía
 
-- **App:** SF Pro Rounded (`.rico(_:peso:)`), siempre con estilos de texto para respetar Dynamic Type. Nada de tamaños fijos en texto.
+- **App:** Bricolage Grotesque (`.rico(_:peso:)` en `Tipografia.swift`), siempre con estilos de texto y `relativeTo:` para respetar Dynamic Type. Nada de tamaños fijos en texto. Dos cortes generados de la fuente variable de Google Fonts (licencia OFL, en `DesignSystem/Resources/Fuentes`): **Texto** (tamaño óptico 14) para todo lo pequeño y **Titular** (tamaño óptico 32) para `.largeTitle`, `.title`, `.title2` y `.title3`.
+- **Logotipo:** sigue en Nunito Black (ver §2); el «rico» de la pantalla de acceso, en redondeada del sistema.
 - **Web, redes y piezas de marca:** Nunito (Black para titulares, Bold o SemiBold para el resto).
-- Peso alto por defecto: la marca es redondeada y gruesa.
+- **Peso:** la marca sigue siendo gruesa, pero sin gritar. `.rico` baja un escalón el peso que se pide en la vista; la tabla dice lo que se escribe y lo que se ve.
 
-| Uso | Estilo | Peso |
-| --- | --- | --- |
-| Título de pantalla | `.largeTitle` | Black |
-| Nombre del restaurante en tarjeta | `.headline` | Heavy |
-| Importe grande | `.title` | Black |
-| Texto normal | `.body` | Bold |
-| Metadatos (ciudad · fecha · €) | `.footnote` / `.subheadline` | Semibold |
-| Título de sección | `.footnote`, versalitas, +0,8 de interletraje | Heavy, color secundario |
-| Etiquetas y chips | `.caption` | Heavy |
+| Uso | Estilo | Peso en la vista | Corte que se ve |
+| --- | --- | --- | --- |
+| Título de pantalla | `.largeTitle` | Black | Titular ExtraBold |
+| Nombre del restaurante en tarjeta | `.headline` | Heavy | Texto Bold |
+| Importe grande | `.title` | Black | Titular ExtraBold |
+| Texto normal | `.body` | Bold | Texto SemiBold |
+| Metadatos (ciudad · fecha · €) | `.footnote` / `.subheadline` | Semibold | Texto Medium |
+| Título de sección | `.footnote`, versalitas, +0,8 de interletraje | Heavy, color secundario | Texto Bold |
+| Etiquetas y chips | `.caption` | Heavy | Texto Bold |
 
 ## 5. Espacio, forma y elevación
 
@@ -110,7 +111,7 @@ Constantes en `Medidas` (`Tipografia.swift`).
 - **Radios:** tarjetas 20 pt, controles 12–14 pt, botones en cápsula y pantallas 40 pt en el lienzo.
 - **Toque mínimo:** 44 × 44 pt, también en iconos sueltos (cerrar, quitar foto, estrellas).
 - **Botón principal:** cápsula de 54 pt de alto a todo el ancho, fija abajo en `safeAreaInset` con `fondoBarraInferior()`. En iOS 26 flota en cristal; antes, sobre `.bar`.
-- **Elevación:** las tarjetas usan borde de 1 px `ricoLinea`, no sombra. Lo que flota usa cristal en iOS 26 (ver Liquid Glass) y sombra suave en versiones anteriores.
+- **Elevación:** las tarjetas de contenido usan `superficieTarjeta()`: en claro, sombra cálida y difusa (sin borde); en oscuro, borde de 1 px `ricoLinea`, porque la sombra no se ve. Los campos de texto mantienen el borde de 1 px. Lo que flota usa cristal en iOS 26 (ver Liquid Glass) y sombra suave en versiones anteriores.
 
 ### Liquid Glass (iOS 26)
 
@@ -176,7 +177,7 @@ La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (n
 ## 11. Patrones de pantalla
 
 - **Raíz:** `NavigationStack` con título grande, fondo `ricoFondo` y búsqueda nativa (`.searchable`).
-- **Listas de visitas:** tarjetas con foto arriba, nombre y nota en una fila, metadatos debajo y agrupadas por mes.
+- **Listas de visitas:** tarjetas con foto arriba, nombre y nota en una fila, metadatos debajo con «Volvería» o «No volvería» en pastilla, y agrupadas por mes.
 - **Formularios rápidos:** hoja con «Cancelar» arriba a la izquierda y la acción principal fija abajo. Los cambios se guardan solo al pulsar Guardar; cancelar no deja nada a medias.
 - **Acceso** (sin sesión):
   - Logotipo centrado y la promesa «Cada restaurante que pruebas, guardado solo.».

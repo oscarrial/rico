@@ -107,8 +107,35 @@ public struct Tarjeta<Contenido: View>: View {
                 maxHeight: llena ? .infinity : nil,
                 alignment: llena ? .topLeading : .leading
             )
-            .background(Color.ricoSuperficie, in: RoundedRectangle(cornerRadius: Medidas.radioTarjeta))
-            .overlay(RoundedRectangle(cornerRadius: Medidas.radioTarjeta).strokeBorder(Color.ricoLinea))
+            .superficieTarjeta()
+    }
+}
+
+/// Fondo de tarjeta: en claro, sombra cálida y difusa en lugar de borde; en oscuro la sombra no
+/// se ve, así que se queda la línea fina (DESIGN.md §5).
+private struct SuperficieTarjeta: ViewModifier {
+    let radio: CGFloat
+    @Environment(\.colorScheme) private var esquema
+
+    func body(content: Content) -> some View {
+        let forma = RoundedRectangle(cornerRadius: radio)
+        content
+            .background(Color.ricoSuperficie, in: forma)
+            .clipShape(forma)
+            .overlay {
+                if esquema == .dark {
+                    forma.strokeBorder(Color.ricoLinea)
+                }
+            }
+            .shadow(color: Color(red: 0.35, green: 0.18, blue: 0.08).opacity(esquema == .dark ? 0 : 0.05), radius: 1, y: 1)
+            .shadow(color: Color(red: 0.35, green: 0.18, blue: 0.08).opacity(esquema == .dark ? 0 : 0.10), radius: 14, y: 8)
+    }
+}
+
+public extension View {
+    /// Fondo, recorte y elevación de una tarjeta de contenido.
+    func superficieTarjeta(radio: CGFloat = Medidas.radioTarjeta) -> some View {
+        modifier(SuperficieTarjeta(radio: radio))
     }
 }
 

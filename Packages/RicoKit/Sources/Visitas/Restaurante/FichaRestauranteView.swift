@@ -53,8 +53,7 @@ public struct FichaRestauranteView: View {
                                     if posicion < resumen.platos.count - 1 { Divider() }
                                 }
                             }
-                            .background(Color.ricoSuperficie, in: RoundedRectangle(cornerRadius: 18))
-                            .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(Color.ricoLinea))
+                            .superficieTarjeta(radio: 18)
                         }
                     }
 
@@ -139,8 +138,7 @@ public struct FichaRestauranteView: View {
                     .padding(12)
             }
             .frame(height: 170)
-            .clipShape(RoundedRectangle(cornerRadius: 18))
-            .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(Color.ricoLinea))
+            .superficieTarjeta(radio: 18)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text("Cómo llegar a \(restaurante.nombre) en Apple Maps", bundle: .module))
@@ -169,8 +167,7 @@ public struct FichaRestauranteView: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.ricoSuperficie, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Color.ricoLinea))
+        .superficieTarjeta(radio: 16)
         .accessibilityElement(children: .combine)
     }
 

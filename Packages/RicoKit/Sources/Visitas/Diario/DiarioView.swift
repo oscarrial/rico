@@ -169,30 +169,51 @@ struct TarjetaVisitaView: View {
                             .foregroundStyle(Color.ricoTinta)
                     }
                 }
-                Text(detalle)
-                    .font(.rico(.footnote, peso: .semibold))
-                    .foregroundStyle(Color.ricoSecundario)
+                HStack(spacing: 8) {
+                    if let detalle {
+                        Text(detalle)
+                            .font(.rico(.footnote, peso: .semibold))
+                            .foregroundStyle(Color.ricoSecundario)
+                    }
+                    if let volveria = visita.volveria, volveria != .quiza {
+                        PastillaVolveria(volveria: volveria)
+                    }
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
         }
-        .background(Color.ricoSuperficie)
-        .clipShape(RoundedRectangle(cornerRadius: Medidas.radioTarjeta))
-        .overlay(RoundedRectangle(cornerRadius: Medidas.radioTarjeta).strokeBorder(Color.ricoLinea))
+        .superficieTarjeta()
         .accessibilityElement(children: .combine)
     }
 
-    private var detalle: String {
+    private var detalle: String? {
         var partes: [String] = []
         if let ciudad = visita.restaurante?.ciudad { partes.append(ciudad) }
         if let porPersona = visita.importePorPersona {
             partes.append(String(localized: "\(porPersona.textoMoneda) por persona", bundle: .module))
         }
-        switch visita.volveria {
-        case .si: partes.append(String(localized: "Volvería", bundle: .module))
-        case .no: partes.append(String(localized: "No volvería", bundle: .module))
-        case .quiza, nil: break
+        return partes.isEmpty ? nil : partes.joined(separator: " · ")
+    }
+}
+
+/// «Volvería» en verde o «No volvería» en tomate suave: lo que más ayuda a decidir si repites.
+struct PastillaVolveria: View {
+    let volveria: Volveria
+
+    var body: some View {
+        texto
+            .font(.rico(.caption, peso: .heavy))
+            .foregroundStyle(volveria == .no ? Color.ricoTomateTexto : Color.ricoVerde)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(volveria == .no ? Color.ricoTomateSuave : Color.ricoVerdeSuave, in: Capsule())
+    }
+
+    private var texto: Text {
+        switch volveria {
+        case .no: Text("No volvería", bundle: .module)
+        default: Text("Volvería", bundle: .module)
         }
-        return partes.joined(separator: " · ")
     }
 }
