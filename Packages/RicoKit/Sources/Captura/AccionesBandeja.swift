@@ -50,8 +50,13 @@ public enum AccionesBandeja {
     }
 
     /// «No era un restaurante»: borra la visita en borrador y deja el pago descartado.
-    public static func descartar(_ visita: Visita, en contexto: ModelContext) throws {
+    /// - Parameter historial: si la visita salió de la ubicación, ese sitio se silencia para que
+    ///   la detección no vuelva a preguntar por él.
+    public static func descartar(_ visita: Visita, en contexto: ModelContext, historial: HistorialEstancias = HistorialEstancias()) throws {
         let restaurante = visita.restaurante
+        if visita.origen == .ubicacion, let restaurante, let id = HistorialEstancias.idLugar(de: restaurante) {
+            historial.silenciar(id)
+        }
         visita.pago?.estado = .descartado
         visita.pago = nil
         visita.restaurante = nil

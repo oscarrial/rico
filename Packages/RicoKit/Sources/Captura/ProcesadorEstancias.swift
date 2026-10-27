@@ -17,24 +17,36 @@ public final class ProcesadorEstancias {
     private let buscador: any BuscadorPuntosCercanos
     private let notificador: (any Notificador)?
     private let evaluador: EvaluadorEstancia
+    private let historial: HistorialEstancias
 
     public init(
         contexto: ModelContext,
         buscador: any BuscadorPuntosCercanos,
         notificador: (any Notificador)? = nil,
-        evaluador: EvaluadorEstancia = EvaluadorEstancia()
+        evaluador: EvaluadorEstancia = EvaluadorEstancia(),
+        historial: HistorialEstancias = HistorialEstancias()
     ) {
         self.contexto = contexto
         self.buscador = buscador
         self.notificador = notificador
         self.evaluador = evaluador
+        self.historial = historial
     }
 
     /// - Returns: el id de la visita creada, o `nil` si no parecía una comida.
     @discardableResult
     public func procesar(_ estancia: Estancia, silenciados: Set<String> = []) async -> UUID? {
-        // Lo barato primero: si dura poco, sigue en curso o ya hay una visita, no se busca nada.
-        let previa = evaluador.decidir(estancia, candidatos: [], registradas: registradas(cerca: estancia))
+        // Donde se duerme no se come: se apunta para no preguntar por los bares de al lado.
+        if evaluador.esNoche(estancia) {
+            historial.anotarNoche(LugarDormido(latitud: estancia.latitud, longitud: estancia.longitud, fecha: estancia.salida))
+            Registro.captura.info("Estancia de noche: se recuerda el sitio")
+            return nil
+        }
+        let noches = historial.noches(ahora: estancia.salida)
+        let silenciados = silenciados.union(historial.silenciados)
+
+        // Lo barato primero: si dura poco, no es hora de comer o ya hay una visita, no se busca nada.
+        let previa = evaluador.decidir(estancia, candidatos: [], registradas: registradas(cerca: estancia), noches: noches)
         switch previa {
         case .ignorar(.sinCandidatos):
             break
@@ -64,9 +76,10 @@ public final class ProcesadorEstancias {
             estancia,
             candidatos: candidatos,
             registradas: registradas(cerca: estancia),
-            silenciados: silenciados
+            silenciados: silenciados,
+            noches: noches
         ), let lugar = porID[id] else {
-            Registro.captura.info("Estancia sin restaurante cerca")
+            Registro.captura.info("Estancia sin un restaurante claro cerca")
             return nil
         }
 
@@ -78,7 +91,7 @@ public final class ProcesadorEstancias {
             visita.restaurante = restaurante
             try contexto.save()
             Registro.captura.info("Estancia guardada a \(Int(distancia), privacy: .public) m del sitio")
-            await notificador?.programarEstancia(visitaID: visita.id, sitio: restaurante.nombre)
+            await notificador?.programarEstancia(visitaID: visita.id, sitio: restaurante.nombre, desde: estancia.llegada, hasta: estancia.salida)
             return visita.id
         } catch {
             contexto.rollback()

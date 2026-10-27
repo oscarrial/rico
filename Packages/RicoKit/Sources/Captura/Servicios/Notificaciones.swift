@@ -85,11 +85,14 @@ public final class NotificadorLocal: Notificador {
         }
     }
 
-    public func programarEstancia(visitaID: UUID, sitio: String) async {
+    public func programarEstancia(visitaID: UUID, sitio: String, desde: Date, hasta: Date) async {
         guard await PermisoNotificaciones.estadoActual().permiteAvisos else { return }
         let contenido = UNMutableNotificationContent()
         contenido.title = String(localized: "¿Has comido en \(sitio)?", bundle: .module)
-        contenido.body = String(localized: "Valóralo en diez segundos. Si no, descártalo en la bandeja.", bundle: .module)
+        // iOS entrega las visitas por tandas y a veces tarde: la hora deja claro de qué rato se habla.
+        let inicio = desde.formatted(date: .omitted, time: .shortened)
+        let fin = hasta.formatted(date: .omitted, time: .shortened)
+        contenido.body = String(localized: "Estuviste de \(inicio) a \(fin) por allí. Valóralo o, si no comiste ahí, descártalo y no volveremos a preguntar por ese sitio.", bundle: .module)
         contenido.sound = .default
         contenido.categoryIdentifier = Self.categoria
         contenido.threadIdentifier = "rico.valorar"
