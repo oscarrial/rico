@@ -22,7 +22,7 @@ struct DeteccionUbicacionView: View {
                             Text("Detectar comidas por ubicación", bundle: .module)
                                 .font(.rico(.headline, peso: .heavy))
                                 .foregroundStyle(Color.ricoTinta)
-                            Text("Si pasas más de 40 minutos en un restaurante, Rico te pregunta si has comido allí. Sirve aunque pagues en efectivo o invite otro. Gasta muy poca batería.", bundle: .module)
+                            Text("Si a la hora de comer o de cenar pasas más de 40 minutos en un restaurante, Rico te pregunta si has comido allí. Sirve aunque pagues en efectivo o invite otro. Nunca pregunta por los bares de al lado de donde duermes, y gasta muy poca batería.", bundle: .module)
                                 .font(.rico(.subheadline, peso: .semibold))
                                 .foregroundStyle(Color.ricoSecundario)
                         }

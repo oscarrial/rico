@@ -287,7 +287,7 @@ final class NotificadorEstanciasFalso: Notificador {
 
     func programarValoracion(visitaID: UUID, sitio: String?, importe: Importe, retraso: TimeInterval) async {}
     func cancelar(visitaID: UUID) {}
-    func programarEstancia(visitaID: UUID, sitio: String) async {
+    func programarEstancia(visitaID: UUID, sitio: String, desde: Date, hasta: Date) async {
         preguntas.append(sitio)
     }
 }
@@ -295,36 +295,51 @@ final class NotificadorEstanciasFalso: Notificador {
 @MainActor
 @Suite("Detección por ubicación")
 struct EstanciasTests {
+    static let madrid: Calendar = {
+        var calendario = Calendar(identifier: .gregorian)
+        calendario.timeZone = TimeZone(identifier: "Europe/Madrid")!
+        return calendario
+    }()
+
     let contenedor: ModelContainer
     let contexto: ModelContext
     let buscador = BuscadorPuntosFalso()
     let notificador = NotificadorEstanciasFalso()
-    let llegada = Date(timeIntervalSince1970: 1_790_000_000)
+    /// Cada prueba con sus propias preferencias: lo que recuerda una no afecta a otra.
+    let historial = HistorialEstancias(preferencias: UserDefaults(suiteName: "rico.pruebas.\(UUID().uuidString)")!)
+    // Sábado 24 de octubre de 2026 a las 14:10, hora de comer.
+    let llegada = Self.madrid.date(from: DateComponents(year: 2026, month: 10, day: 24, hour: 14, minute: 10))!
     let vigo = Coordenada(latitud: 42.2406, longitud: -8.7207)
+    let taberna = LugarEncontrado(mapItemID: "I-GRELO", nombre: "Taberna O Grelo", ciudad: "Vigo", latitud: 42.2406, longitud: -8.7207, categoria: FiltroSitios.Categoria.restaurante)
 
     init() throws {
         contenedor = try ContenedorRico.crear(enMemoria: true)
         contexto = contenedor.mainContext
     }
 
-    private func estancia(minutos: Double) -> Estancia {
-        Estancia(
+    private func estancia(minutos: Double, desde: Date? = nil) -> Estancia {
+        let inicio = desde ?? llegada
+        return Estancia(
             latitud: vigo.latitud,
             longitud: vigo.longitud,
-            llegada: llegada,
-            salida: llegada.addingTimeInterval(minutos * 60),
+            llegada: inicio,
+            salida: inicio.addingTimeInterval(minutos * 60),
             precisionMetros: 20
         )
     }
 
     private var procesador: ProcesadorEstancias {
-        ProcesadorEstancias(contexto: contexto, buscador: buscador, notificador: notificador)
+        ProcesadorEstancias(
+            contexto: contexto,
+            buscador: buscador,
+            notificador: notificador,
+            evaluador: EvaluadorEstancia(calendario: Self.madrid),
+            historial: historial
+        )
     }
 
     @Test func comidaLargaEnUnRestauranteCreaUnBorrador() async throws {
-        buscador.lugares = [
-            LugarEncontrado(mapItemID: "I-GRELO", nombre: "Taberna O Grelo", ciudad: "Vigo", latitud: vigo.latitud, longitud: vigo.longitud, categoria: FiltroSitios.Categoria.restaurante)
-        ]
+        buscador.lugares = [taberna]
 
         let id = try #require(await procesador.procesar(estancia(minutos: 75)))
 
@@ -358,5 +373,39 @@ struct EstanciasTests {
 
         #expect(await procesador.procesar(estancia(minutos: 90)) == nil)
         #expect(buscador.busquedas == 0)
+    }
+
+    @Test func fueraDeHoraNoBuscaNada() async {
+        buscador.lugares = [taberna]
+        let tarde = Self.madrid.date(from: DateComponents(year: 2026, month: 10, day: 24, hour: 17, minute: 30))!
+        #expect(await procesador.procesar(estancia(minutos: 70, desde: tarde)) == nil)
+        #expect(buscador.busquedas == 0)
+    }
+
+    @Test func trasDormirAhiNoPreguntaPorElBarDeAbajo() async throws {
+        buscador.lugares = [taberna]
+        // Noche del viernes al sábado en ese mismo sitio (el hotel).
+        let noche = Self.madrid.date(from: DateComponents(year: 2026, month: 10, day: 23, hour: 23, minute: 40))!
+        #expect(await procesador.procesar(estancia(minutos: 9 * 60, desde: noche)) == nil)
+        #expect(historial.noches(ahora: llegada).count == 1)
+
+        // Al mediodía, un rato en el hotel: no es comer en el bar de abajo.
+        #expect(await procesador.procesar(estancia(minutos: 75)) == nil)
+        #expect(notificador.preguntas.isEmpty)
+        #expect(try contexto.fetchCount(FetchDescriptor<Visita>()) == 0)
+    }
+
+    @Test func descartarSilenciaElSitio() async throws {
+        buscador.lugares = [taberna]
+        let id = try #require(await procesador.procesar(estancia(minutos: 75)))
+        let visita = try #require(try contexto.fetch(FetchDescriptor<Visita>(predicate: #Predicate { $0.id == id })).first)
+
+        try AccionesBandeja.descartar(visita, en: contexto, historial: historial)
+        #expect(historial.silenciados == ["I-GRELO"])
+
+        // Al día siguiente, otra comida en el mismo sitio: ya no se pregunta.
+        let manana = llegada.addingTimeInterval(24 * 3600)
+        #expect(await procesador.procesar(estancia(minutos: 75, desde: manana)) == nil)
+        #expect(notificador.preguntas == ["Taberna O Grelo"])
     }
 }
