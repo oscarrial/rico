@@ -37,10 +37,10 @@ public protocol Notificador {
     /// Quita el aviso pendiente de esa visita (ya valorada o descartada).
     func cancelar(visitaID: UUID)
     /// «¿Has comido en <sitio>?» al salir de un restaurante tras una estancia larga.
-    func programarEstancia(visitaID: UUID, sitio: String) async
+    func programarEstancia(visitaID: UUID, sitio: String, desde: Date, hasta: Date) async
 }
 
 public extension Notificador {
     /// Por defecto no avisa: así los notificadores de prueba no tienen que implementarlo.
-    func programarEstancia(visitaID: UUID, sitio: String) async {}
+    func programarEstancia(visitaID: UUID, sitio: String, desde: Date, hasta: Date) async {}
 }
