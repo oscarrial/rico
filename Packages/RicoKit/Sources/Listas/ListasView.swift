@@ -76,6 +76,8 @@ public struct ListasView: View {
             .scrollContentBackground(.hidden)
             .listSectionSpacing(14)
             .contentMargins(.top, 2, for: .scrollContent)
+            // Mismo margen lateral que el título y que las tarjetas del diario.
+            .contentMargins(.horizontal, Medidas.margen, for: .scrollContent)
             .background(Color.ricoFondo)
             .environment(\.editMode, .constant(reordenando ? EditMode.active : .inactive))
             .cabeceraRaiz(

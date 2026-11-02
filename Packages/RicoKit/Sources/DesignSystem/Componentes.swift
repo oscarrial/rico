@@ -88,6 +88,50 @@ public struct Pastillas<Valor: Hashable>: View {
     }
 }
 
+/// Control segmentado de Rico («Pagué todo / Pagué mi parte»): hueco hundido y la opción activa
+/// en superficie. Siempre hay una elegida; para opciones que se pueden desmarcar, `Pastillas`.
+public struct ControlSegmentado<Valor: Hashable>: View {
+    let opciones: [(valor: Valor, titulo: Text)]
+    @Binding var seleccion: Valor
+
+    public init(opciones: [(valor: Valor, titulo: Text)], seleccion: Binding<Valor>) {
+        self.opciones = opciones
+        self._seleccion = seleccion
+    }
+
+    public var body: some View {
+        HStack(spacing: 4) {
+            ForEach(opciones.indices, id: \.self) { i in
+                let opcion = opciones[i]
+                let activa = seleccion == opcion.valor
+                Button {
+                    withAnimation(.snappy(duration: 0.25)) { seleccion = opcion.valor }
+                } label: {
+                    opcion.titulo
+                        .font(.rico(.subheadline, peso: .heavy))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                        .foregroundStyle(activa ? Color.ricoTinta : Color.ricoSecundario)
+                        .frame(maxWidth: .infinity, minHeight: Medidas.toqueMinimo)
+                        .background {
+                            if activa {
+                                Capsule()
+                                    .fill(Color.ricoSegmentoActivo)
+                                    .shadow(color: .black.opacity(0.08), radius: 3, y: 1)
+                            }
+                        }
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(activa ? .isSelected : [])
+            }
+        }
+        .padding(4)
+        .background(Color.ricoSuperficieHundida, in: Capsule())
+        .sensoryFeedback(.selection, trigger: seleccion)
+    }
+}
+
 /// Tarjeta blanca con borde suave.
 public struct Tarjeta<Contenido: View>: View {
     let contenido: Contenido

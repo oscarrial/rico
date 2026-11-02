@@ -54,10 +54,20 @@ public struct CuentaView: View {
                     Button {
                         pedirPremium()
                     } label: {
+                        // Icono y flecha como en las filas con NavigationLink de debajo.
                         LabeledContent {
-                            esPremium ? Text("Activo", bundle: .module) : Text("Ver planes", bundle: .module)
+                            HStack(spacing: 8) {
+                                esPremium ? Text("Activo", bundle: .module) : Text("Ver planes", bundle: .module)
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(.tertiary)
+                                    .accessibilityHidden(true)
+                            }
+                            .foregroundStyle(Color.ricoSecundario)
                         } label: {
-                            Label { Text("Rico Premium", bundle: .module) } icon: { Image(systemName: "star") }
+                            Label { Text("Rico Premium", bundle: .module) } icon: {
+                                Image(systemName: "star").foregroundStyle(Color.ricoTomate)
+                            }
                         }
                         .frame(minHeight: Medidas.toqueMinimo)
                     }
@@ -106,6 +116,7 @@ public struct CuentaView: View {
             }
             .font(.rico(.body, peso: .semibold))
             .scrollContentBackground(.hidden)
+            .contentMargins(.horizontal, Medidas.margen, for: .scrollContent)
             .background(Color.ricoFondo)
             .navigationTitle(Text("Tu cuenta", bundle: .module))
             .navigationBarTitleDisplayMode(.inline)

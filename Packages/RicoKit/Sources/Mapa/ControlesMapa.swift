@@ -45,6 +45,8 @@ struct PinMapaView: View {
         contenido
             .font(.rico(.caption, peso: .heavy))
             .lineLimit(1)
+            // El mapa propone poco ancho a las anotaciones: sin esto, «3,5» se corta en «3…».
+            .fixedSize()
             .padding(.horizontal, 8)
             .frame(minWidth: 32, minHeight: 28)
             .foregroundStyle(primerPlano)

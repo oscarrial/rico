@@ -56,7 +56,11 @@ public struct DiarioView<Cabecera: View>: View {
                 if visitas.isEmpty {
                     vacio
                 } else if secciones.isEmpty {
-                    ContentUnavailableView.search(text: busqueda)
+                    EstadoVacio(
+                        simbolo: "magnifyingglass",
+                        titulo: Text("Nada con «\(busqueda)»", bundle: .module),
+                        texto: Text("Prueba con otro sitio, ciudad o plato.", bundle: .module)
+                    )
                 }
             }
             .overlay(alignment: .bottomTrailing) { botonAnadir }
@@ -101,15 +105,10 @@ public struct DiarioView<Cabecera: View>: View {
     }
 
     private var vacio: some View {
-        ContentUnavailableView {
-            VStack(spacing: 12) {
-                SimboloRico()
-                    .frame(width: 72, height: 72)
-                Text("Tu diario está vacío", bundle: .module)
-            }
-        } description: {
-            Text("Pulsa + para guardar el primer sitio donde has comido.", bundle: .module)
-        }
+        EstadoVacio(
+            marca: Text("Tu diario está vacío", bundle: .module),
+            texto: Text("Pulsa + para guardar el primer sitio donde has comido.", bundle: .module)
+        )
     }
 
     private var botonAnadir: some View {

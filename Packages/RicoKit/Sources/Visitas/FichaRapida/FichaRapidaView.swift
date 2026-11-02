@@ -145,13 +145,15 @@ public struct FichaRapidaView: View {
                         .font(.rico(.body, peso: .bold))
                 }
 
-                Picker(selection: $modelo.pagueTodo) {
-                    Text("Pagué todo", bundle: .module).tag(true)
-                    Text("Pagué mi parte", bundle: .module).tag(false)
-                } label: {
-                    Text("Quién pagó", bundle: .module)
-                }
-                .pickerStyle(.segmented)
+                ControlSegmentado(
+                    opciones: [
+                        (true, Text("Pagué todo", bundle: .module)),
+                        (false, Text("Pagué mi parte", bundle: .module))
+                    ],
+                    seleccion: $modelo.pagueTodo
+                )
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel(Text("Quién pagó", bundle: .module))
 
                 if let porPersona = modelo.textoPorPersona {
                     Text("\(porPersona) por persona", bundle: .module)

@@ -125,7 +125,10 @@ public struct ResumenView: View {
         )
         let nota = TarjetaCifra(
             titulo: Text("Nota media", bundle: .module),
-            valor: cifras.notaMedia.map { Text("★ \(NotaTexto.texto($0))", bundle: .module) } ?? Text(verbatim: "—"),
+            // La estrella en miel, como en `NotaCompacta`; el número en tinta.
+            valor: cifras.notaMedia.map {
+                Text("\(Text(Image(systemName: "star.fill")).foregroundStyle(Color.ricoEstrella)) \(NotaTexto.texto($0))", bundle: .module)
+            } ?? Text(verbatim: "—"),
             detalle: nil,
             etiquetaAccesible: cifras.notaMedia.map { Text("\(NotaTexto.texto($0)) de 5 estrellas", bundle: .module) }
         )
@@ -168,8 +171,11 @@ public struct ResumenView: View {
         if abs(variacion) < 0.005 {
             return Text("Igual que \(mesAnterior)", bundle: .module)
         }
-        let porcentaje = variacion.formatted(.percent.precision(.fractionLength(0)).sign(strategy: .always()))
-        return Text("\(porcentaje) que \(mesAnterior)", bundle: .module)
+        // Como en las visitas: «80 % menos que octubre», sin signo.
+        let porcentaje = abs(variacion).formatted(.percent.precision(.fractionLength(0)))
+        return variacion > 0
+            ? Text("\(porcentaje) más que \(mesAnterior)", bundle: .module)
+            : Text("\(porcentaje) menos que \(mesAnterior)", bundle: .module)
     }
 
     private func textoDiferencia(_ diferencia: Int, mesAnterior: String) -> Text {
@@ -360,15 +366,10 @@ public struct ResumenView: View {
     }
 
     private var vacioTotal: some View {
-        ContentUnavailableView {
-            VStack(spacing: 12) {
-                SimboloRico()
-                    .frame(width: 72, height: 72)
-                Text("Tu resumen está vacío", bundle: .module)
-            }
-        } description: {
-            Text("Valora tu primera visita en el Diario y aquí verás lo que gastas y tus sitios favoritos.", bundle: .module)
-        }
+        EstadoVacio(
+            marca: Text("Tu resumen está vacío", bundle: .module),
+            texto: Text("Valora tu primera visita en el Diario y aquí verás lo que gastas y tus sitios favoritos.", bundle: .module)
+        )
     }
 }
 

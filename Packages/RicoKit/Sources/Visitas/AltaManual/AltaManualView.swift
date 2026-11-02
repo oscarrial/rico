@@ -101,17 +101,17 @@ public struct AltaManualView: View {
     @ViewBuilder
     private var estado: some View {
         if fallo {
-            ContentUnavailableView {
-                Label { Text("No se pudo buscar", bundle: .module) } icon: { Image(systemName: "wifi.exclamationmark") }
-            } description: {
-                Text("Comprueba la conexión y vuelve a intentarlo.", bundle: .module)
-            }
+            EstadoVacio(
+                simbolo: "wifi.exclamationmark",
+                titulo: Text("No se pudo buscar", bundle: .module),
+                texto: Text("Comprueba la conexión y vuelve a intentarlo.", bundle: .module)
+            )
         } else if resultados.isEmpty, !buscando, texto.recortado.count >= 2 {
-            ContentUnavailableView {
-                Label { Text("No aparece en el mapa", bundle: .module) } icon: { Image(systemName: "mappin.slash") }
-            } description: {
-                Text("Puedes añadirlo escribiendo su nombre.", bundle: .module)
-            } actions: {
+            EstadoVacio(
+                simbolo: "mappin.slash",
+                titulo: Text("No aparece en el mapa", bundle: .module),
+                texto: Text("Puedes añadirlo escribiendo su nombre.", bundle: .module)
+            ) {
                 NavigationLink(value: PasoManual.formulario(texto.recortado)) {
                     Text("Añadir «\(texto.recortado)» a mano", bundle: .module)
                 }
@@ -119,11 +119,11 @@ public struct AltaManualView: View {
                 .padding(.horizontal, 40)
             }
         } else if texto.recortado.isEmpty {
-            ContentUnavailableView {
-                Label { Text("Busca el restaurante", bundle: .module) } icon: { Image(systemName: "magnifyingglass") }
-            } description: {
-                Text("Escribe el nombre del sitio. Si no aparece, pulsa «A mano». Podrás cambiar la fecha si fue otro día.", bundle: .module)
-            }
+            EstadoVacio(
+                simbolo: "magnifyingglass",
+                titulo: Text("Busca el restaurante", bundle: .module),
+                texto: Text("Escribe el nombre del sitio. Si no aparece, pulsa «A mano». Podrás cambiar la fecha si fue otro día.", bundle: .module)
+            )
         }
     }
 
