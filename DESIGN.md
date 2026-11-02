@@ -66,6 +66,7 @@ Tokens en `Colores.swift`. Cada uno tiene su valor en oscuro y cumple contraste 
 | `ricoFondo` | `#FBF6F0` | `#17130F` | Fondo de todas las pantallas. |
 | `ricoSuperficie` | `#FFFFFF` | `#241E19` | Tarjetas, campos y barras. |
 | `ricoSuperficieHundida` | `#F3ECE4` | `#2E2620` | Controles segmentados y huecos de foto. |
+| `ricoSegmentoActivo` | `#FFFFFF` | `#453B33` | Opción activa de un control segmentado. En oscuro, más clara que el hueco para que se lea como pastilla y no como agujero. |
 | `ricoLinea` | `#EADFD3` | `#3A322B` | Bordes de 1 px y separadores. |
 | `ricoTinta` | `#1F1A16` | `#F5EEE6` | Texto principal. |
 | `ricoSecundario` | `#6B6158` | `#B5A99D` | Texto secundario, etiquetas y metadatos. |
@@ -133,7 +134,7 @@ La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (n
 | `BotonFlotante` | El + del diario | 60 pt, redondo. Cristal tomate en iOS 26; sólido con sombra antes. |
 | `BotonSecundarioStyle` | Alternativas | Cápsula blanca con borde. |
 | `Pastillas` | ¿Volverías?, nota de plato | Opciones excluyentes. Tocar la activa la deselecciona. 44 pt (36 en platos). Vibración de selección. |
-| `ControlSegmentado` | Pagué todo / mi parte, Entrar / Crear cuenta | Siempre hay una opción elegida. Hueco `ricoSuperficieHundida` en cápsula y la activa en `ricoSuperficie` con sombra leve. 44 pt. Nunca el `Picker` segmentado del sistema. |
+| `ControlSegmentado` | Pagué todo / mi parte, Entrar / Crear cuenta | Siempre hay una opción elegida. Hueco `ricoSuperficieHundida` en cápsula y la activa en `ricoSegmentoActivo` con sombra leve. 44 pt. Nunca el `Picker` segmentado del sistema. |
 | `EstadoVacio` | Vacíos, sin resultados y errores a pantalla completa | `ContentUnavailableView` con título en Titular Black, texto en `ricoSecundario` y un SF Symbol gris o el símbolo de Rico (vacíos de las pestañas). Nunca el `ContentUnavailableView` sin estilo. |
 | `SelectorEstrellas` | Ficha rápida | Tocar una estrella pone esa nota; repetir en la misma resta media. VoiceOver: ajustable en pasos de 0,5. |
 | `EstrellasView` / `NotaCompacta` | Listas y tarjetas | Medias estrellas con `star.leadinghalf.filled`. En espacios pequeños, «★ 4,5». |

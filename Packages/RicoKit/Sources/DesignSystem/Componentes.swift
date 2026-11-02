@@ -116,7 +116,7 @@ public struct ControlSegmentado<Valor: Hashable>: View {
                         .background {
                             if activa {
                                 Capsule()
-                                    .fill(Color.ricoSuperficie)
+                                    .fill(Color.ricoSegmentoActivo)
                                     .shadow(color: .black.opacity(0.08), radius: 3, y: 1)
                             }
                         }

@@ -13,6 +13,8 @@ public extension Color {
     static let ricoFondo = Color(claro: 0xFBF6F0, oscuro: 0x17130F)
     static let ricoSuperficie = Color(claro: 0xFFFFFF, oscuro: 0x241E19)
     static let ricoSuperficieHundida = Color(claro: 0xF3ECE4, oscuro: 0x2E2620)
+    /// Opción activa de `ControlSegmentado`: en oscuro, más clara que el hueco.
+    static let ricoSegmentoActivo = Color(claro: 0xFFFFFF, oscuro: 0x453B33)
     static let ricoLinea = Color(claro: 0xEADFD3, oscuro: 0x3A322B)
 
     static let ricoTinta = Color(claro: 0x1F1A16, oscuro: 0xF5EEE6)
