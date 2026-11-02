@@ -34,6 +34,7 @@ struct DetalleListaView: View {
             }
         }
         .scrollContentBackground(.hidden)
+        .contentMargins(.horizontal, Medidas.margen, for: .scrollContent)
         .background(Color.ricoFondo)
         .overlay {
             if ordenados.isEmpty { vacio }
@@ -50,15 +51,11 @@ struct DetalleListaView: View {
     }
 
     private var vacio: some View {
-        ContentUnavailableView {
-            Label {
-                Text("Aún no hay sitios", bundle: .module)
-            } icon: {
-                Image(systemName: "bookmark")
-            }
-        } description: {
-            Text("Abre un restaurante desde el diario o el mapa y pulsa el marcador para guardarlo aquí.", bundle: .module)
-        }
+        EstadoVacio(
+            simbolo: "bookmark",
+            titulo: Text("Aún no hay sitios", bundle: .module),
+            texto: Text("Abre un restaurante desde el diario o el mapa y pulsa el marcador para guardarlo aquí.", bundle: .module)
+        )
     }
 }
 

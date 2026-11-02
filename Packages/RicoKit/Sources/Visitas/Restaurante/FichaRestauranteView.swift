@@ -131,10 +131,13 @@ public struct FichaRestauranteView: View {
             .overlay(alignment: .bottomTrailing) {
                 Label { Text("Cómo llegar", bundle: .module) } icon: { Image(systemName: "arrow.triangle.turn.up.right.diamond.fill") }
                     .font(.rico(.footnote, peso: .heavy))
-                    .foregroundStyle(Color.ricoSuperficie)
+                    // Secundario: la acción tomate de la ficha es «Nueva visita».
+                    .foregroundStyle(Color.ricoTinta)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(Color.ricoTomate, in: Capsule())
+                    .background(Color.ricoSuperficie, in: Capsule())
+                    .overlay(Capsule().strokeBorder(Color.ricoLinea))
+                    .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
                     .padding(12)
             }
             .frame(height: 170)

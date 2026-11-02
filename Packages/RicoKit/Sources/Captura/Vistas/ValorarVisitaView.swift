@@ -52,11 +52,11 @@ public struct ValorarVisitaView: View {
     }
 
     private var noEsta: some View {
-        ContentUnavailableView {
-            Label { Text("Esta visita ya no está", bundle: .module) } icon: { Image(systemName: "fork.knife") }
-        } description: {
-            Text("Puede que ya la descartaras o que sea de otra cuenta.", bundle: .module)
-        }
+        EstadoVacio(
+            simbolo: "fork.knife",
+            titulo: Text("Esta visita ya no está", bundle: .module),
+            texto: Text("Puede que ya la descartaras o que sea de otra cuenta.", bundle: .module)
+        )
         .background(Color.ricoFondo)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {

@@ -32,13 +32,13 @@ struct AccesoCorreoView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    Picker(selection: $modo) {
-                        Text("Entrar", bundle: .module).tag(Modo.entrar)
-                        Text("Crear cuenta", bundle: .module).tag(Modo.crear)
-                    } label: {
-                        Text("Modo", bundle: .module)
-                    }
-                    .pickerStyle(.segmented)
+                    ControlSegmentado(
+                        opciones: [
+                            (Modo.entrar, Text("Entrar", bundle: .module)),
+                            (Modo.crear, Text("Crear cuenta", bundle: .module))
+                        ],
+                        seleccion: $modo
+                    )
                     .onChange(of: modo) { _, _ in
                         error = nil
                     }

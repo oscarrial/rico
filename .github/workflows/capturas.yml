@@ -89,6 +89,9 @@ jobs:
           xcrun simctl location "$SIMULADOR" set 42.2395,-8.7205 || true
           xcrun simctl privacy "$SIMULADOR" grant location es.rico.app || true
           mkdir -p capturas
+          # El primer arranque tras instalar es lento: se descarta para que no salga la pantalla de arranque.
+          xcrun simctl launch "$SIMULADOR" es.rico.app -captura diario -AppleLanguages "(es)" -AppleLocale es_ES
+          sleep 15
           for modo in light dark; do
             xcrun simctl ui "$SIMULADOR" appearance "$modo"
             for pantalla in bienvenida acceso diario mapa listas resumen cuenta premium ficha valorar bandeja alta; do

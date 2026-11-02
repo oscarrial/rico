@@ -92,15 +92,10 @@ public struct BandejaPendientesView: View {
     }
 
     private var vacio: some View {
-        ContentUnavailableView {
-            VStack(spacing: 12) {
-                SimboloRico()
-                    .frame(width: 64, height: 64)
-                Text("Nada por valorar", bundle: .module)
-            }
-        } description: {
-            Text("Cuando pagues con Apple Pay en un restaurante, aparecerá aquí para que lo valores en un momento.", bundle: .module)
-        } actions: {
+        EstadoVacio(
+            marca: Text("Nada por valorar", bundle: .module),
+            texto: Text("Cuando pagues con Apple Pay en un restaurante, aparecerá aquí para que lo valores en un momento.", bundle: .module)
+        ) {
             NavigationLink(value: Paso.guia) {
                 Text("Configurar el atajo", bundle: .module)
             }

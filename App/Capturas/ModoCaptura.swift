@@ -165,7 +165,7 @@ struct PantallaCapturaModifier: ViewModifier {
                     }
                 case .valorar:
                     if let restaurante {
-                        FichaRapidaView(modelo: FichaRapidaModelo(restaurante: restaurante))
+                        NavigationStack { FichaRapidaView(modelo: FichaRapidaModelo(restaurante: restaurante)) }
                     }
                 case .bandeja:
                     BandejaPendientesView()

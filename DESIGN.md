@@ -80,7 +80,7 @@ Tokens en `Colores.swift`. Cada uno tiene su valor en oscuro y cumple contraste 
 | `ricoSobrePin` | `#1F1A16` | igual | Texto sobre los pines naranja y gris (el blanco no llega a AA). |
 
 Reglas:
-- **Una acción tomate por vista.** Si hay dos botones principales, uno pasa a secundario.
+- **Una acción tomate por vista.** Si hay dos botones principales, uno pasa a secundario (por ejemplo, «Cómo llegar» en la ficha del restaurante, donde manda «Nueva visita»).
 - **El miel es de las estrellas.** No se usa para destacar otra cosa.
 - **El dinero no va en rojo.** Los importes se escriben en tinta; el tomate se reserva para actuar.
 - **Pines del mapa por nota:** 4,5 o más `ricoPinTop`, de 3,5 a 4,4 `ricoPinBien`, menos `ricoPinNormal`, «quiero probar» blanco con borde `ricoPinQuieroProbar` y un marcador. La nota media se redondea a una cifra decimal antes de elegir color, para que coincida con la que se lee. Los pines llevan siempre la nota escrita y se distinguen también por luminosidad, no solo por tono. Los sitios de «Explorar zona» van en pin neutro (`ricoSuperficie`, borde `ricoLinea`, cubiertos en `ricoSecundario`). Los colores de los pines no cambian en oscuro: van sobre el mapa con borde blanco.
@@ -133,6 +133,8 @@ La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (n
 | `BotonFlotante` | El + del diario | 60 pt, redondo. Cristal tomate en iOS 26; sólido con sombra antes. |
 | `BotonSecundarioStyle` | Alternativas | Cápsula blanca con borde. |
 | `Pastillas` | ¿Volverías?, nota de plato | Opciones excluyentes. Tocar la activa la deselecciona. 44 pt (36 en platos). Vibración de selección. |
+| `ControlSegmentado` | Pagué todo / mi parte, Entrar / Crear cuenta | Siempre hay una opción elegida. Hueco `ricoSuperficieHundida` en cápsula y la activa en `ricoSuperficie` con sombra leve. 44 pt. Nunca el `Picker` segmentado del sistema. |
+| `EstadoVacio` | Vacíos, sin resultados y errores a pantalla completa | `ContentUnavailableView` con título en Titular Black, texto en `ricoSecundario` y un SF Symbol gris o el símbolo de Rico (vacíos de las pestañas). Nunca el `ContentUnavailableView` sin estilo. |
 | `SelectorEstrellas` | Ficha rápida | Tocar una estrella pone esa nota; repetir en la misma resta media. VoiceOver: ajustable en pasos de 0,5. |
 | `EstrellasView` / `NotaCompacta` | Listas y tarjetas | Medias estrellas con `star.leadinghalf.filled`. En espacios pequeños, «★ 4,5». |
 | `Tarjeta` | Agrupar campos | Superficie, borde y radio 20. |
@@ -144,6 +146,8 @@ La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (n
 ## 7. Iconos
 
 - **SF Symbols**, con peso a juego con el texto (semibold o bold). Nada de emojis como iconos de interfaz.
+- **Excepción:** el emoji que el usuario elige para cada lista suya. Es contenido, no interfaz, y va siempre junto al nombre.
+- En las filas de «Tu cuenta», el icono va en tomate y la flecha a la derecha en todas, también en las que abren una hoja.
 - Pestañas: diario (libro), mapa, listas (marcador) y resumen (barras). La activa en tomate y las demás en secundario.
 - Los iconos solos llevan siempre `accessibilityLabel`; los decorativos van ocultos.
 
