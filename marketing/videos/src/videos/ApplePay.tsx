@@ -94,7 +94,7 @@ const HojaApplePay: React.FC = () => {
               borderTopColor: hecho > 0 ? '#34C759' : 'transparent',
             }}
           >
-            {hecho > 0 ? <span style={{opacity: hecho, transform: `scale(${hecho})`}}>✓</span> : null}
+            {hecho > 0 ? <span style={{opacity: hecho, transform: `scale(${0.6 + 0.4 * hecho})`}}>✓</span> : null}
           </div>
         </div>
         <div style={{textAlign: 'center', marginTop: 24, fontSize: 32, color: '#666', fontFamily: fuente, fontWeight: 700}}>

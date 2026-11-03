@@ -65,7 +65,7 @@ export const EnPublico: React.FC = () => (
     <Voz video={V} i={5} desde={INTRO + CARRUSEL + 4} />
     <Sequence durationInFrames={INTRO}>
       <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', padding: 80}}>
-        <TextoEntra texto="Estoy haciendo una app" desde={2} tamano={110} ancho={920} />
+        <TextoEntra texto="He hecho una app" desde={2} tamano={110} ancho={920} />
         <div style={{height: 24}} />
         <TextoEntra texto="para no olvidar dónde como" desde={14} tamano={110} color={C.tomate} ancho={920} />
       </AbsoluteFill>
@@ -74,7 +74,7 @@ export const EnPublico: React.FC = () => (
       <Carrusel />
     </Sequence>
     <Sequence from={INTRO + CARRUSEL}>
-      <Cierre desde={0} frase="¿Te apuntas a la beta?" />
+      <Cierre desde={0} frase="Hecha por una persona, para tus sitios" />
     </Sequence>
   </AbsoluteFill>
 );

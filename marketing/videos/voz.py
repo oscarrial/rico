@@ -22,7 +22,7 @@ GUION = {
         "Como siempre.",
         "Pero esta vez... alguien te pregunta qué tal.",
         "Diez segundos. Cinco estrellas. Guardado para siempre.",
-        "Rico. Pronto en iPhone.",
+        "Rico. Ya en la App Store.",
     ]),
     "02-TuAno": (EPICA, [
         "Tu año... en Rico.",
@@ -45,15 +45,23 @@ GUION = {
         "y ya no recuerdas ni el nombre...",
         "solo una app puede salvarte.",
         "Guárdalo en Quiero probar. Y aparece en tu mapa.",
-        "Rico. Pronto en iPhone.",
+        "Rico. Ya en la App Store.",
     ]),
     "05-EnPublico": (CERCANA, [
-        "Estoy haciendo una app para no olvidar dónde como.",
+        "He hecho una app para no olvidar dónde como.",
         "Tu diario.",
         "Valoras en diez segundos.",
         "Lo que gastas, sin culpa.",
         "Y lo que pediste en cada sitio.",
-        "La estoy haciendo yo solo. ¿Te apuntas a la beta?",
+        "La he hecho yo solo. Y ya está en la App Store.",
+    ]),
+    "06-Lanzamiento": (EPICA, [
+        "Se acabó olvidar dónde comiste.",
+        "Pagas... y Rico te pregunta qué tal.",
+        "Cada sitio, en tu mapa.",
+        "Lo que gastas, sin dramas.",
+        "Y tus listas, para cuando no sabes dónde ir.",
+        "Rico. Ya en la App Store.",
     ]),
 }
 

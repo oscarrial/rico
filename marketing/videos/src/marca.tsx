@@ -229,6 +229,9 @@ export const Telefono: React.FC<{
   );
 };
 
+/** Llamada de todas las piezas. Mientras no esté publicada, «Pronto en iPhone». */
+export const LLAMADA = 'Ya en la App Store';
+
 /** Final común: logotipo vertical y la frase de cierre. */
 export const Cierre: React.FC<{desde: number; frase?: string; oscuro?: boolean}> = ({
   desde,
@@ -281,7 +284,7 @@ export const Cierre: React.FC<{desde: number; frase?: string; oscuro?: boolean}>
           opacity: tramo(frame, desde + 22, desde + 30),
         }}
       >
-        Pronto en iPhone
+        {LLAMADA}
       </div>
     </AbsoluteFill>
   );
