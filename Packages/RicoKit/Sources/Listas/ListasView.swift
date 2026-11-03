@@ -66,7 +66,8 @@ public struct ListasView: View {
                 } header: {
                     TituloSeccion(Text("Tus listas", bundle: .module))
                 } footer: {
-                    if !esPremium {
+                    // El contador del plan gratis solo aparece cuando queda una plaza o ninguna.
+                    if !esPremium, propias.count >= LimitesGratis.listasPropias - 1 {
                         Text("\(propias.count) de \(LimitesGratis.listasPropias) listas", bundle: .module)
                             .font(.rico(.footnote, peso: .semibold))
                             .foregroundStyle(Color.ricoSecundario)
@@ -78,6 +79,7 @@ public struct ListasView: View {
             .contentMargins(.top, 2, for: .scrollContent)
             // Mismo margen lateral que el título y que las tarjetas del diario.
             .contentMargins(.horizontal, Medidas.margen, for: .scrollContent)
+            .contentMargins(.bottom, 90, for: .scrollContent)
             .background(Color.ricoFondo)
             .environment(\.editMode, .constant(reordenando ? EditMode.active : .inactive))
             .cabeceraRaiz(
@@ -93,17 +95,19 @@ public struct ListasView: View {
                             }
                         }
                         .font(.rico(.subheadline, peso: .heavy))
-                        .foregroundStyle(Color.ricoTomateTexto)
+                        .foregroundStyle(Color.ricoTinta)
                         .frame(minHeight: Medidas.toqueMinimo)
                     }
-                    BotonCabecera(
-                        simbolo: "plus",
-                        etiqueta: Text("Nueva lista", bundle: .module),
-                        destacado: true,
-                        accion: nuevaLista
-                    )
                 }
             )
+            // Añadir es el mismo botón flotante que en el diario.
+            .overlay(alignment: .bottomTrailing) {
+                if !reordenando {
+                    BotonFlotante(simbolo: "plus", etiqueta: Text("Nueva lista", bundle: .module), accion: nuevaLista)
+                        .padding(.trailing, Medidas.margen)
+                        .padding(.bottom, 16)
+                }
+            }
             .navigationDestination(for: Lista.self) { lista in
                 DetalleListaView(lista: lista)
             }

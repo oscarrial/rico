@@ -99,3 +99,24 @@ struct PinMapaView: View {
         }
     }
 }
+
+/// Varios sitios juntos: el número en tinta sobre superficie, sin color de nota, porque mezcla varias.
+struct PinGrupoView: View {
+    let cantidad: Int
+
+    var body: some View {
+        Text(verbatim: "\(cantidad)")
+            .font(.rico(.subheadline, peso: .heavy))
+            .monospacedDigit()
+            .lineLimit(1)
+            .fixedSize()
+            .frame(minWidth: 36, minHeight: 36)
+            .foregroundStyle(Color.ricoTinta)
+            .background(Color.ricoSuperficie, in: Circle())
+            .overlay(Circle().strokeBorder(Color.ricoTinta, lineWidth: 2))
+            .shadow(color: .black.opacity(0.25), radius: 3, y: 2)
+            .frame(minWidth: Medidas.toqueMinimo, minHeight: Medidas.toqueMinimo)
+            .contentShape(Rectangle())
+            .dynamicTypeSize(...DynamicTypeSize.xxLarge)
+    }
+}

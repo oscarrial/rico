@@ -42,13 +42,13 @@ public extension Color {
     /// Texto sobre `ricoPinBien` y `ricoPinNormal` (el blanco no llega a AA). Sobre `ricoPinTop`, blanco.
     static let ricoSobrePin = Color(claro: 0x1F1A16, oscuro: 0x1F1A16)
 
-    /// Colores de relleno cuando una visita aún no tiene foto.
+    /// Colores de relleno cuando una visita aún no tiene foto: tonos de cocina que no se confunden
+    /// con el tomate de las acciones. Se eligen por restaurante, para que un sitio tenga siempre el mismo.
     static let ricoPlaceholders: [Color] = [
-        Color(claro: 0xC9573A, oscuro: 0x8E3A26),
         Color(claro: 0x8C6A3F, oscuro: 0x6A4F2E),
         Color(claro: 0x5E7A52, oscuro: 0x46603C),
         Color(claro: 0xB98A4E, oscuro: 0x8A6638),
-        Color(claro: 0x7A5C8E, oscuro: 0x5C4470)
+        Color(claro: 0x7C5A48, oscuro: 0x5A4034)
     ]
 }
 

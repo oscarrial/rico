@@ -85,7 +85,7 @@ Reglas:
 - **El miel es de las estrellas.** No se usa para destacar otra cosa.
 - **El dinero no va en rojo.** Los importes se escriben en tinta; el tomate se reserva para actuar.
 - **Pines del mapa por nota:** 4,5 o más `ricoPinTop`, de 3,5 a 4,4 `ricoPinBien`, menos `ricoPinNormal`, «quiero probar» blanco con borde `ricoPinQuieroProbar` y un marcador. La nota media se redondea a una cifra decimal antes de elegir color, para que coincida con la que se lee. Los pines llevan siempre la nota escrita y se distinguen también por luminosidad, no solo por tono. Los sitios de «Explorar zona» van en pin neutro (`ricoSuperficie`, borde `ricoLinea`, cubiertos en `ricoSecundario`). Los colores de los pines no cambian en oscuro: van sobre el mapa con borde blanco.
-- **Huecos sin foto:** se rellenan con un color de `ricoPlaceholders` elegido de forma estable por el id y un `fork.knife` blanco al 55 %. Nunca se dejan en gris vacío.
+- **Huecos sin foto:** se rellenan con un color de `ricoPlaceholders` elegido de forma estable por el restaurante (el mismo sitio, el mismo color en todas las pantallas), nunca uno parecido al tomate, y un `fork.knife` blanco al 55 %. Nunca se dejan en gris vacío.
 
 ## 4. Tipografía
 
@@ -131,7 +131,7 @@ La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (n
 | Componente | Dónde | Reglas |
 | --- | --- | --- |
 | `BotonPrincipalStyle` (`.ricoPrincipal`) | Guardar, continuar | Uno por vista. Desactivado al 40 %. En iOS 26, cristal tomate interactivo; antes, cápsula sólida que reduce su escala a 0,98 al pulsar. |
-| `BotonFlotante` | El + del diario | 60 pt, redondo. Cristal tomate en iOS 26; sólido con sombra antes. |
+| `BotonFlotante` | El + del diario y de Listas: un solo botón para añadir en toda la app | 60 pt, redondo. Cristal tomate en iOS 26; sólido con sombra antes. |
 | `BotonSecundarioStyle` | Alternativas | Cápsula blanca con borde. |
 | `Pastillas` | ¿Volverías?, nota de plato | Opciones excluyentes. Tocar la activa la deselecciona. 44 pt (36 en platos). Vibración de selección. |
 | `ControlSegmentado` | Pagué todo / mi parte, Entrar / Crear cuenta | Siempre hay una opción elegida. Hueco `ricoSuperficieHundida` en cápsula y la activa en `ricoSegmentoActivo` con sombra leve. 44 pt. Nunca el `Picker` segmentado del sistema. |
@@ -164,11 +164,15 @@ La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (n
 - **Verbos en los botones:** «Guardar visita», «Añadir plato», «Abrir Atajos». Nunca «OK» ni «Enviar».
 - **Hablar de la comida, no de la app:** «¿Qué tal estuvo?», «¿Dónde fue?», «Lo que pediste».
 - **Sin vocabulario técnico:** no se dice «IA», «sincronizar» ni «emparejado». Se dice lo que pasa: «Dicta tu reseña», «Guardado en tu diario».
+- **No explicar lo que se ve:** si la pantalla ya muestra cómo se usa (un buscador, unas estrellas, un botón «A mano»), no se añade texto de instrucciones.
+- **Límites del plan gratis:** el contador («2 de 3 listas») solo aparece cuando queda una plaza o ninguna.
 - **Estados vacíos con siguiente paso:** «Tu diario está vacío. Pulsa + para guardar el primer sitio donde has comido.»
 - **Formato:**
   - Importes con dos decimales y la moneda del sistema: «48,00 €».
   - Precio por persona como «24,00 € por persona».
-  - Fechas: «Hoy», «Ayer», día de la semana dentro de los últimos 7 días y después «11 oct».
+  - Fechas: «Hoy», «Ayer», día de la semana dentro de los últimos 7 días («Viernes», con mayúscula como los otros dos) y después «11 oct».
+  - Meses como título («Noviembre»), con mayúscula y sin año si es el año en curso; dentro de una frase, en minúscula («menos que octubre»).
+  - Comparaciones honestas: el mes en curso se compara con los mismos días del anterior («a estas alturas de octubre»), nunca con el mes entero. Un cero no va como cifra grande.
   - Plurales con concordancia automática (`^[\(n) visita](inflect: true)`).
 - **Localización:** todo texto visible con `Text("…", bundle: .module)` o `String(localized:bundle:)` para que entre en el String Catalog de su módulo. El idioma base es el castellano y el segundo, el inglés.
 
@@ -197,7 +201,7 @@ La app se compila con el SDK de iOS 26 y **no** se desactiva el diseño nuevo (n
   - Los errores dicen qué hacer («Ya hay una cuenta con ese correo. Prueba a entrar.») y nunca muestran el error técnico.
   - Los avisos de «mira tu correo» van en verde suave con el sobre; no son errores.
 - **Tu cuenta:** se abre desde el icono de persona del diario. Tiene el correo, «Cambiar contraseña», «Cerrar sesión» y «Borrar mi cuenta» (destructivo, con confirmación y explicando que se borra todo).
-- **Mapa:** mapa a pantalla completa sin barra de navegación. Arriba flotan en cristal (un `GlassEffectContainer`) el selector «Mis sitios / Explorar zona» y el botón de centrar en tu posición; debajo, en «Explorar zona», «Buscar en esta zona» cuando mueves el mapa. Al tocar un pin sale abajo una `Tarjeta` sólida con nombre, nota, ciudad, visitas y gasto medio y una sola acción principal («Ver ficha» o «Guardar visita»; «Quiero probarlo» va como secundario). El permiso de ubicación solo se pide al pulsar el botón de centrar; sin permiso, el mapa encuadra tus sitios. Sin sitios, aviso ligero sobre el mapa: «Aún no hay sitios en tu mapa. Guarda una visita y aparecerá aquí.».
+- **Mapa:** mapa a pantalla completa sin barra de navegación. Arriba flotan en cristal (un `GlassEffectContainer`) el selector «Mis sitios / Explorar zona» y el botón de centrar en tu posición; debajo, en «Explorar zona», «Buscar en esta zona» cuando mueves el mapa. Los pines que se pisarían se juntan en uno con el número de sitios (tinta sobre superficie, sin color de nota); al tocarlo, el mapa se acerca. Al tocar un pin sale abajo una `Tarjeta` sólida con nombre, nota, ciudad, visitas y gasto medio y una sola acción principal («Ver ficha» o «Guardar visita»; «Quiero probarlo» va como secundario). El permiso de ubicación solo se pide al pulsar el botón de centrar; sin permiso, el mapa encuadra tus sitios. Sin sitios, aviso ligero sobre el mapa: «Aún no hay sitios en tu mapa. Guarda una visita y aparecerá aquí.».
 - **Paywall:** nunca al abrir la app ni antes de la primera visita valorada. Siempre muestra precio, renovación automática, «Restaurar compras», términos y privacidad.
   - Hoja con el símbolo, «Rico Premium», las ventajas en una tarjeta y los planes (anual primero, con su ahorro en verde suave) como filas seleccionables.
   - Acción principal fija abajo: «Probar Premium». Si ya lo tiene: «Ya tienes Rico Premium» y «Gestionar suscripción».

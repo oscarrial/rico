@@ -165,6 +165,34 @@ struct CalculadoraResumenTests {
         #expect(resumen.comparacion.visitas == 1)
     }
 
+    @Test func mesEnCursoSeComparaConLosMismosDiasDelAnterior() {
+        let visitas = [
+            visita(fecha(9, 1), euros: 40),
+            visita(fecha(9, 20), euros: 200),
+            visita(fecha(10, 2), euros: 60)
+        ]
+
+        // Hoy es el 3 de octubre: septiembre cuenta solo hasta el 3.
+        let resumen = CalculadoraResumen.resumen(de: visitas, mes: fecha(10, 15), calendario: calendario, ahora: fecha(10, 3))
+
+        #expect(resumen.comparacion.hastaElMismoDia)
+        #expect(resumen.comparacion.gasto == 0.5)
+        #expect(resumen.comparacion.visitas == 0)
+        #expect(resumen.anterior.visitas == 2)
+    }
+
+    @Test func mesCerradoSeComparaEntero() {
+        let resumen = CalculadoraResumen.resumen(
+            de: [visita(fecha(9, 20), euros: 200), visita(fecha(10, 2), euros: 100)],
+            mes: fecha(10, 15),
+            calendario: calendario,
+            ahora: fecha(11, 2)
+        )
+
+        #expect(!resumen.comparacion.hastaElMismoDia)
+        #expect(resumen.comparacion.gasto == -0.5)
+    }
+
     @Test func sinComparacionSiElMesAnteriorEstaVacio() {
         let resumen = CalculadoraResumen.resumen(de: [visita(fecha(10, 2), euros: 30)], mes: fecha(10, 15), calendario: calendario)
 

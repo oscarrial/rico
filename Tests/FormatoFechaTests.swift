@@ -34,6 +34,16 @@ struct FormatoFechaTests {
         #expect(texto(fecha(2026, 10, 14, 12)).lowercased().contains("miércoles"))
     }
 
+    @Test func elDiaVaConMayusculaComoHoyYAyer() {
+        #expect(texto(fecha(2026, 10, 16, 21)) == "Viernes")
+    }
+
+    @Test func mesDelAnoEnCursoSinAno() {
+        let mes = { FormatoFecha.mes($0, ahora: ahora, calendario: calendario, locale: locale) }
+        #expect(mes(fecha(2026, 10, 2, 12)) == "Octubre")
+        #expect(mes(fecha(2025, 12, 2, 12)) == "Diciembre de 2025")
+    }
+
     @Test func hace7DiasNoEsDiaDeLaSemana() {
         let t = texto(fecha(2026, 10, 12, 21)).lowercased()
         #expect(t.contains("12"))

@@ -45,9 +45,10 @@ struct FormatoResumen {
         Date.FormatStyle(date: nil, time: nil, locale: .current, calendar: calendario, timeZone: calendario.timeZone)
     }
 
-    /// «octubre de 2026».
+    /// «Octubre de 2026», el título del selector de mes: con mayúscula, como las secciones del diario.
     func mesYAno(_ fecha: Date) -> String {
-        fecha.formatted(estilo.month(.wide).year())
+        let texto = fecha.formatted(estilo.month(.wide).year())
+        return texto.prefix(1).uppercased() + texto.dropFirst()
     }
 
     /// «septiembre».

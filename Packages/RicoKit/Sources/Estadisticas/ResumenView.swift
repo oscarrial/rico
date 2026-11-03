@@ -112,7 +112,10 @@ public struct ResumenView: View {
     @ViewBuilder
     private func cifras(_ resumen: ResumenMes) -> some View {
         let cifras = resumen.cifras
-        let mesAnterior = formato.mes(CalculadoraResumen.mes(resumen.mes, desplazado: -1, calendario: calendario))
+        let nombreAnterior = formato.mes(CalculadoraResumen.mes(resumen.mes, desplazado: -1, calendario: calendario))
+        let mesAnterior = resumen.comparacion.hastaElMismoDia
+            ? String(localized: "a estas alturas de \(nombreAnterior)", bundle: .module)
+            : nombreAnterior
         let visitas = TarjetaCifra(
             titulo: Text("Visitas", bundle: .module),
             valor: Text(cifras.visitas, format: .number),
@@ -121,7 +124,7 @@ public struct ResumenView: View {
         let porPersona = TarjetaCifra(
             titulo: Text("Por persona", bundle: .module),
             valor: cifras.gastoMedioPorPersona.map { Text($0.textoMoneda) } ?? Text(verbatim: "—"),
-            detalle: Text("De media", bundle: .module)
+            detalle: nil
         )
         let nota = TarjetaCifra(
             titulo: Text("Nota media", bundle: .module),
@@ -132,10 +135,16 @@ public struct ResumenView: View {
             detalle: nil,
             etiquetaAccesible: cifras.notaMedia.map { Text("\(NotaTexto.texto($0)) de 5 estrellas", bundle: .module) }
         )
+        // La cifra grande es la que no es cero: «0 nuevos» en grande no dice nada.
+        let soloRepetidos = cifras.sitiosNuevos == 0 && cifras.sitiosRepetidos > 0
         let sitios = TarjetaCifra(
             titulo: Text("Sitios", bundle: .module),
-            valor: Text("^[\(cifras.sitiosNuevos) nuevo](inflect: true)", bundle: .module),
-            detalle: Text("^[\(cifras.sitiosRepetidos) repetido](inflect: true)", bundle: .module)
+            valor: soloRepetidos
+                ? Text("^[\(cifras.sitiosRepetidos) repetido](inflect: true)", bundle: .module)
+                : Text("^[\(cifras.sitiosNuevos) nuevo](inflect: true)", bundle: .module),
+            detalle: soloRepetidos || cifras.sitiosRepetidos == 0
+                ? nil
+                : Text("^[\(cifras.sitiosRepetidos) repetido](inflect: true)", bundle: .module)
         )
 
         VStack(spacing: 12) {

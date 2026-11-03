@@ -14,7 +14,7 @@ extension Importe {
 }
 
 public enum FormatoFecha {
-    /// «Hoy», «Ayer», «jueves» o «11 oct». Compara días de calendario, no periodos de 24 horas.
+    /// «Hoy», «Ayer», «Jueves» o «11 oct». Compara días de calendario, no periodos de 24 horas.
     public static func corta(
         _ fecha: Date,
         ahora: Date = .now,
@@ -36,7 +36,8 @@ public enum FormatoFecha {
         if dias == 0 { return String(localized: "Hoy", bundle: .module) }
         if dias == 1 { return String(localized: "Ayer", bundle: .module) }
         if (2...6).contains(dias) {
-            return fecha.formatted(estilo.weekday(.wide))
+            // Con mayúscula, como «Hoy» y «Ayer», que van en la misma pastilla.
+            return fecha.formatted(estilo.weekday(.wide)).conMayuscula(locale)
         }
         if calendario.isDate(fecha, equalTo: ahora, toGranularity: .year) {
             return fecha.formatted(estilo.day().month(.abbreviated))
@@ -44,13 +45,27 @@ public enum FormatoFecha {
         return fecha.formatted(estilo.day().month(.abbreviated).year())
     }
 
-    /// «Octubre de 2026», para agrupar el diario.
-    static func mes(_ fecha: Date) -> String {
-        fecha.formatted(.dateTime.month(.wide).year())
+    /// «Octubre» dentro del año en curso y «Octubre de 2025» en los demás, para agrupar el diario.
+    public static func mes(
+        _ fecha: Date,
+        ahora: Date = .now,
+        calendario: Calendar = .current,
+        locale: Locale = .current
+    ) -> String {
+        let estilo = Date.FormatStyle(date: nil, time: nil, locale: locale, calendar: calendario, timeZone: calendario.timeZone)
+        let texto = calendario.isDate(fecha, equalTo: ahora, toGranularity: .year)
+            ? fecha.formatted(estilo.month(.wide))
+            : fecha.formatted(estilo.month(.wide).year())
+        return texto.conMayuscula(locale)
     }
 }
 
 extension String {
+    /// Primera letra en mayúscula («viernes» → «Viernes»): para títulos y pastillas sueltas.
+    func conMayuscula(_ locale: Locale = .current) -> String {
+        prefix(1).uppercased(with: locale) + dropFirst()
+    }
+
     var recortado: String { trimmingCharacters(in: .whitespacesAndNewlines) }
     var nilSiVacio: String? { recortado.isEmpty ? nil : recortado }
 }

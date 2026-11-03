@@ -104,6 +104,8 @@ public struct Comparacion: Sendable, Equatable {
     public var gasto: Double?
     /// Visitas de más (positivo) o de menos (negativo). Solo si el mes anterior tuvo visitas.
     public var visitas: Int?
+    /// En el mes en curso se compara con los mismos días del anterior, no con el mes entero.
+    public var hastaElMismoDia = false
 }
 
 /// Gasto de una semana del mes (de lunes a domingo, recortada a los días del mes).
@@ -257,7 +259,13 @@ public enum CalculadoraResumen {
 
     // MARK: Resumen del mes
 
-    public static func resumen(de visitas: [VisitaResumible], mes: Date, calendario: Calendar) -> ResumenMes {
+    /// - Parameter ahora: si cae dentro de `mes`, la comparación usa el mes anterior solo hasta el mismo día y hora.
+    public static func resumen(
+        de visitas: [VisitaResumible],
+        mes: Date,
+        calendario: Calendar,
+        ahora: Date = .now
+    ) -> ResumenMes {
         let valoradas = visitas.filter(\.valorada)
         let inicio = inicioMes(mes, calendario: calendario)
         let inicioAnterior = self.mes(inicio, desplazado: -1, calendario: calendario)
@@ -268,6 +276,17 @@ public enum CalculadoraResumen {
 
         let actual = Self.cifras(delMes, previas: valoradas.filter { $0.fecha < inicio })
         let anterior = Self.cifras(delAnterior, previas: valoradas.filter { $0.fecha < inicioAnterior })
+
+        // Un mes a medias contra uno entero siempre sale «a la baja»: se corta el anterior al mismo punto.
+        let enCurso = ahora >= inicio && ahora < fin
+        let corte = enCurso
+            ? min(calendario.date(byAdding: .month, value: -1, to: ahora) ?? inicio, inicio)
+            : inicio
+        let comparable = enCurso
+            ? Self.cifras(delAnterior.filter { $0.fecha < corte }, previas: valoradas.filter { $0.fecha < inicioAnterior })
+            : anterior
+        var comparacion = comparar(actual, con: comparable)
+        comparacion.hastaElMismoDia = enCurso
 
         let divisa = actual.gasto?.divisa ?? "EUR"
         let gastoSemanas = Self.semanas(de: inicio, calendario: calendario).map { semana in
@@ -286,7 +305,7 @@ public enum CalculadoraResumen {
             mes: inicio,
             cifras: actual,
             anterior: anterior,
-            comparacion: comparar(actual, con: anterior),
+            comparacion: comparacion,
             semanas: gastoSemanas,
             mejoresSitios: mejoresSitios(delMes),
             platosEncanto: platosEncanto(delMes)

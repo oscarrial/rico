@@ -106,18 +106,33 @@ public struct MapaView: View {
                 .annotationTitles(.hidden)
             }
 
-            ForEach(pines) { pin in
-                Annotation(pin.restaurante.nombre, coordinate: CLLocationCoordinate2D(latitude: pin.latitud, longitude: pin.longitud)) {
-                    Button {
-                        seleccionar(.mio(pin.restaurante))
-                    } label: {
-                        PinMapaView(categoria: pin.categoria, nota: pin.nota, seleccionado: seleccion == .mio(pin.restaurante))
+            // Los pines que se pisarían se juntan en uno con el número de sitios.
+            ForEach(grupos(pines), id: \.first?.id) { grupo in
+                if grupo.count == 1, let pin = grupo.first {
+                    Annotation(pin.restaurante.nombre, coordinate: CLLocationCoordinate2D(latitude: pin.latitud, longitude: pin.longitud)) {
+                        Button {
+                            seleccionar(.mio(pin.restaurante))
+                        } label: {
+                            PinMapaView(categoria: pin.categoria, nota: pin.nota, seleccionado: seleccion == .mio(pin.restaurante))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(etiquetaAccesible(pin))
+                        .accessibilityHint(Text("Muestra el sitio", bundle: .module))
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(etiquetaAccesible(pin))
-                    .accessibilityHint(Text("Muestra el sitio", bundle: .module))
+                    .annotationTitles(.hidden)
+                } else {
+                    Annotation("", coordinate: centro(de: grupo)) {
+                        Button {
+                            acercar(a: grupo)
+                        } label: {
+                            PinGrupoView(cantidad: grupo.count)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(Text("^[\(grupo.count) sitio](inflect: true)", bundle: .module))
+                        .accessibilityHint(Text("Acerca el mapa", bundle: .module))
+                    }
+                    .annotationTitles(.hidden)
                 }
-                .annotationTitles(.hidden)
             }
         }
         .mapStyle(.standard(pointsOfInterest: .excluding([.restaurant, .cafe, .bakery, .brewery, .winery, .foodMarket])))
@@ -128,6 +143,22 @@ public struct MapaView: View {
         .onMapCameraChange(frequency: .onEnd) { camara in
             zonaVisible = ZonaMapa(region: camara.region)
         }
+    }
+
+    private func centro(de grupo: [PinRestaurante]) -> CLLocationCoordinate2D {
+        CLLocationCoordinate2D(
+            latitude: grupo.map(\.latitud).reduce(0, +) / Double(grupo.count),
+            longitude: grupo.map(\.longitud).reduce(0, +) / Double(grupo.count)
+        )
+    }
+
+    private func grupos(_ pines: [PinRestaurante]) -> [[PinRestaurante]] {
+        guard let zona = zonaVisible else { return pines.map { [$0] } }
+        return AgrupadorPines.grupos(
+            pines.map { (latitud: $0.latitud, longitud: $0.longitud) },
+            latitudDelta: zona.latitudDelta,
+            longitudDelta: zona.longitudDelta
+        ).map { $0.map { pines[$0] } }
     }
 
     private func etiquetaAccesible(_ pin: PinRestaurante) -> Text {
@@ -347,6 +378,14 @@ public struct MapaView: View {
     private func encuadrar(_ pines: [PinRestaurante]) {
         guard let zona = ZonaMapa.encuadrando(pines.map { (latitud: $0.latitud, longitud: $0.longitud) }) else { return }
         encuadrado = true
+        withAnimation(.snappy(duration: 0.3)) {
+            posicion = .region(zona.region)
+        }
+    }
+
+    /// Acerca el mapa hasta que los sitios del grupo se ven por separado.
+    private func acercar(a grupo: [PinRestaurante]) {
+        guard let zona = ZonaMapa.encuadrando(grupo.map { (latitud: $0.latitud, longitud: $0.longitud) }, margen: 2, deltaMinimo: 0.004) else { return }
         withAnimation(.snappy(duration: 0.3)) {
             posicion = .region(zona.region)
         }
