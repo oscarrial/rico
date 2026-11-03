@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "visant-copy": {
+      "source": "pedrojaques99/visant-skills-public",
+      "sourceType": "github",
+      "skillPath": "visant-copy/SKILL.md",
+      "computedHash": "2b28ce84d0392f351cb759fa4832a40e5e6f9063371f170707b1028c9c0b3abd"
+    },
+    "visant-design": {
+      "source": "pedrojaques99/visant-skills-public",
+      "sourceType": "github",
+      "skillPath": "visant-design/SKILL.md",
+      "computedHash": "fec00874a816bab71a8d9b277b00aeedc6a3d527319fe96ebd83a69ff0e69850"
+    },
+    "visant-frontend": {
+      "source": "pedrojaques99/visant-skills-public",
+      "sourceType": "github",
+      "skillPath": "visant-frontend/SKILL.md",
+      "computedHash": "3b02738c64ffbba1ee772e3da9c1c7941c1bfc34eab8ecc0c49188e5008ddb53"
+    },
+    "visant-killer": {
+      "source": "pedrojaques99/visant-skills-public",
+      "sourceType": "github",
+      "skillPath": "visant-killer/SKILL.md",
+      "computedHash": "b08cd8315cf3a43e4f2a9aec69409fc570bc99fc9c9b26a5b89ad4593cdeb390"
+    },
+    "visant-motion": {
+      "source": "pedrojaques99/visant-skills-public",
+      "sourceType": "github",
+      "skillPath": "visant-motion/SKILL.md",
+      "computedHash": "b7de5483b5a136bab52ac8d02446e56a5b93d0dbd27d7b5b598a1f4cbdf62359"
+    },
+    "visant-refine": {
+      "source": "pedrojaques99/visant-skills-public",
+      "sourceType": "github",
+      "skillPath": "visant-refine/SKILL.md",
+      "computedHash": "c1b4b6cf7c762248a1161caac16373a72a8cc1198f52d84bbcd433c7e2effca9"
+    }
+  }
+}

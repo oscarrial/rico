@@ -109,7 +109,7 @@ public struct FichaRapidaView: View {
                 if modelo.estrellas > 0 {
                     Text("\(NotaTexto.texto(modelo.estrellas)) de 5", bundle: .module)
                 } else {
-                    Text("Toca para valorar", bundle: .module)
+                    Text("¿Qué tal estuvo?", bundle: .module)
                 }
             }
             .font(.rico(.subheadline, peso: .bold))
@@ -236,7 +236,8 @@ public struct FichaRapidaView: View {
                 Text("Fotos", bundle: .module)
                     .font(.rico(.headline, peso: .heavy))
                 Spacer()
-                if let limite = modelo.limiteFotos {
+                // Solo cuando queda una foto o ninguna: antes, el contador es ruido.
+                if let limite = modelo.limiteFotos, modelo.fotos.count >= limite - 1 {
                     Text("\(modelo.fotos.count) de \(limite)", bundle: .module)
                         .font(.rico(.footnote, peso: .bold))
                         .foregroundStyle(Color.ricoSecundario)

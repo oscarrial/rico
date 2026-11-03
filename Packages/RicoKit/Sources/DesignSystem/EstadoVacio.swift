@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Estado vacío o de aviso a pantalla completa: icono (o el símbolo de Rico), título, qué hacer y,
+/// Estado vacío o de aviso a pantalla completa: icono (o el símbolo de Rico), título, qué hacer (si la pantalla no lo dice ya) y,
 /// si hace falta, una acción. Es `ContentUnavailableView` con la tipografía y los colores de Rico.
 public struct EstadoVacio<Acciones: View>: View {
     private enum Icono {
@@ -10,11 +10,11 @@ public struct EstadoVacio<Acciones: View>: View {
 
     private let icono: Icono
     private let titulo: Text
-    private let texto: Text
+    private let texto: Text?
     private let acciones: Acciones
 
     /// Con un SF Symbol en gris.
-    public init(simbolo: String, titulo: Text, texto: Text, @ViewBuilder acciones: () -> Acciones) {
+    public init(simbolo: String, titulo: Text, texto: Text? = nil, @ViewBuilder acciones: () -> Acciones) {
         self.icono = .simbolo(simbolo)
         self.titulo = titulo
         self.texto = texto
@@ -22,7 +22,7 @@ public struct EstadoVacio<Acciones: View>: View {
     }
 
     /// Con el símbolo de Rico, para los vacíos de las pestañas.
-    public init(marca titulo: Text, texto: Text, @ViewBuilder acciones: () -> Acciones) {
+    public init(marca titulo: Text, texto: Text? = nil, @ViewBuilder acciones: () -> Acciones) {
         self.icono = .marca
         self.titulo = titulo
         self.texto = texto
@@ -48,9 +48,11 @@ public struct EstadoVacio<Acciones: View>: View {
                     .multilineTextAlignment(.center)
             }
         } description: {
-            texto
-                .font(.rico(.body, peso: .bold))
-                .foregroundStyle(Color.ricoSecundario)
+            if let texto {
+                texto
+                    .font(.rico(.body, peso: .bold))
+                    .foregroundStyle(Color.ricoSecundario)
+            }
         } actions: {
             acciones
         }
@@ -58,11 +60,11 @@ public struct EstadoVacio<Acciones: View>: View {
 }
 
 public extension EstadoVacio where Acciones == EmptyView {
-    init(simbolo: String, titulo: Text, texto: Text) {
+    init(simbolo: String, titulo: Text, texto: Text? = nil) {
         self.init(simbolo: simbolo, titulo: titulo, texto: texto) { EmptyView() }
     }
 
-    init(marca titulo: Text, texto: Text) {
+    init(marca titulo: Text, texto: Text? = nil) {
         self.init(marca: titulo, texto: texto) { EmptyView() }
     }
 }

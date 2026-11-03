@@ -33,9 +33,10 @@ public struct AvisoPendientesView: View {
         HStack(spacing: 12) {
             Image(systemName: "fork.knife")
                 .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(Color.ricoSobreTomate)
+                // Sin tomate sólido: la única acción tomate del diario es el botón +.
+                .foregroundStyle(Color.ricoTomateTexto)
                 .frame(width: 40, height: 40)
-                .background(Color.ricoTomate, in: Circle())
+                .background(Color.ricoSuperficie, in: Circle())
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Tienes ^[\(pendientes.count) visita](inflect: true) por valorar", bundle: .module)

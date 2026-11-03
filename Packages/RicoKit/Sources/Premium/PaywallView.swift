@@ -1,6 +1,7 @@
 import SwiftUI
 import StoreKit
 import DesignSystem
+import RicoCore
 
 /// Pantalla de Rico Premium. Se presenta en hoja desde la raíz (`pedirPremium`).
 public struct PaywallView: View {
@@ -46,6 +47,7 @@ public struct PaywallView: View {
                     Button { cerrar() } label: {
                         Image(systemName: "xmark")
                             .font(.rico(.body, peso: .bold))
+                            .foregroundStyle(Color.ricoTinta)
                             .frame(minWidth: Medidas.toqueMinimo, minHeight: Medidas.toqueMinimo)
                     }
                     .accessibilityLabel(Text("Cerrar", bundle: .module))
@@ -88,11 +90,12 @@ public struct PaywallView: View {
     private var ventajas: some View {
         Tarjeta {
             VStack(alignment: .leading, spacing: 14) {
-                ventaja("photo.on.rectangle", Text("Fotos ilimitadas en cada visita", bundle: .module))
-                ventaja("bookmark", Text("Todas las listas que quieras", bundle: .module))
+                // Cada ventaja dice qué no tiene el plan gratis, no otra forma de decir «sin límites».
+                ventaja("photo.on.rectangle", Text("Más de \(LimitesGratis.fotosPorVisita) fotos en cada visita", bundle: .module))
+                ventaja("bookmark", Text("Más de \(LimitesGratis.listasPropias) listas propias", bundle: .module))
                 ventaja("chart.bar", Text("Las estadísticas de tu año", bundle: .module))
-                ventaja("creditcard", Text("Captura automática ilimitada con Apple Pay", bundle: .module))
-                ventaja("square.and.arrow.up", Text("Exporta tu diario cuando quieras", bundle: .module))
+                ventaja("creditcard", Text("Todos tus pagos con Apple Pay, no solo uno al mes", bundle: .module))
+                ventaja("square.and.arrow.up", Text("Exportar tu diario", bundle: .module))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -106,7 +109,7 @@ public struct PaywallView: View {
         } icon: {
             Image(systemName: simbolo)
                 .font(.rico(.body, peso: .bold))
-                .foregroundStyle(Color.ricoTomate)
+                .foregroundStyle(Color.ricoSecundario)
                 .frame(width: 28)
         }
     }
@@ -125,12 +128,6 @@ public struct PaywallView: View {
                     .font(.rico(.body, peso: .semibold))
                     .foregroundStyle(Color.ricoSecundario)
                     .multilineTextAlignment(.center)
-                Button {
-                    Task { await premium.cargarProductos() }
-                } label: {
-                    Text("Volver a intentarlo", bundle: .module)
-                }
-                .buttonStyle(.ricoSecundario)
             }
         case .listo:
             VStack(spacing: 10) {
@@ -244,6 +241,7 @@ public struct PaywallView: View {
                 } label: {
                     Text("Restaurar compras", bundle: .module)
                         .font(.rico(.subheadline, peso: .heavy))
+                        .foregroundStyle(Color.ricoTinta)
                         .frame(minHeight: Medidas.toqueMinimo)
                 }
                 .disabled(premium.comprando || premium.restaurando)
@@ -282,6 +280,13 @@ public struct PaywallView: View {
                     gestionando = true
                 } label: {
                     Text("Gestionar suscripción", bundle: .module)
+                }
+            } else if premium.carga == .sinProductos {
+                // Sin precios no hay nada que comprar: la acción útil es reintentar, no un botón apagado.
+                Button {
+                    Task { await premium.cargarProductos() }
+                } label: {
+                    Text("Volver a intentarlo", bundle: .module)
                 }
             } else {
                 Button {

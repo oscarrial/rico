@@ -31,10 +31,8 @@ public struct DiarioView<Cabecera: View>: View {
         let secciones = AgrupadorDiario.secciones(AgrupadorDiario.filtrar(visitas, busqueda: busqueda))
         return NavigationStack {
             ScrollView {
+                // Sin línea de «Este mes»: el título de la sección ya lo dice y las cifras están en Resumen.
                 LazyVStack(alignment: .leading, spacing: 14) {
-                    if busqueda.isEmpty, !visitas.isEmpty {
-                        resumenMes
-                    }
                     ForEach(secciones, id: \.titulo) { seccion in
                         TituloSeccion(Text(seccion.titulo))
                             .padding(.top, 8)
@@ -96,14 +94,6 @@ public struct DiarioView<Cabecera: View>: View {
 
     // MARK: Vistas
 
-    private var resumenMes: some View {
-        let mes = AgrupadorDiario.resumenMes(visitas)
-        let gasto = mes.gasto.textoMoneda
-        return Text("Este mes: ^[\(mes.visitas) visita](inflect: true) · \(gasto)", bundle: .module)
-            .font(.rico(.subheadline, peso: .semibold))
-            .foregroundStyle(Color.ricoSecundario)
-    }
-
     private var vacio: some View {
         EstadoVacio(
             marca: Text("Tu diario está vacío", bundle: .module),
@@ -132,7 +122,7 @@ struct TarjetaVisitaView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ImagenVisita(miniatura: visita.fotosOrdenadas.first?.miniatura, semilla: visita.id.semilla)
+            ImagenVisita(miniatura: visita.fotosOrdenadas.first?.miniatura, semilla: (visita.restaurante?.id ?? visita.id).semilla)
                 .frame(height: 120)
                 .frame(maxWidth: .infinity)
                 .clipped()

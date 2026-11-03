@@ -39,8 +39,11 @@ struct BienvenidaView: View {
                         .tag(indice)
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .always))
-            .indexViewStyle(.page(backgroundDisplayMode: .always))
+            // Los puntos del sistema ponen el actual en blanco: sobre crema es el que menos se ve.
+            .tabViewStyle(.page(indexDisplayMode: .never))
+
+            PuntosPagina(total: paginas.count, actual: pagina)
+                .padding(.bottom, 20)
 
             Button {
                 if pagina < paginas.count - 1 {
@@ -93,5 +96,24 @@ struct BienvenidaView: View {
             Spacer()
         }
         .padding(.horizontal, 32)
+    }
+}
+
+/// Puntos de página: el actual en tinta y alargado; los demás, en el gris de las estrellas vacías.
+private struct PuntosPagina: View {
+    let total: Int
+    let actual: Int
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(0..<total, id: \.self) { indice in
+                Capsule()
+                    .fill(indice == actual ? Color.ricoTinta : Color.ricoEstrellaVacia)
+                    .frame(width: indice == actual ? 22 : 8, height: 8)
+            }
+        }
+        .animation(.snappy(duration: 0.25), value: actual)
+        .accessibilityElement()
+        .accessibilityLabel(Text("Página \(actual + 1) de \(total)"))
     }
 }

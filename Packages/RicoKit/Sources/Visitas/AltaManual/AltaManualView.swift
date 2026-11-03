@@ -119,11 +119,8 @@ public struct AltaManualView: View {
                 .padding(.horizontal, 40)
             }
         } else if texto.recortado.isEmpty {
-            EstadoVacio(
-                simbolo: "magnifyingglass",
-                titulo: Text("Busca el restaurante", bundle: .module),
-                texto: Text("Escribe el nombre del sitio. Si no aparece, pulsa «A mano». Podrás cambiar la fecha si fue otro día.", bundle: .module)
-            )
+            // La búsqueda y «A mano» ya están a la vista: no hace falta explicarlos.
+            EstadoVacio(simbolo: "magnifyingglass", titulo: Text("Busca el restaurante", bundle: .module))
         }
     }
 
