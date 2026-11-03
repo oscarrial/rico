@@ -6,7 +6,8 @@ import {DURACION_MAPA, Mapa} from './videos/Mapa';
 import {DURACION_POV, POV} from './videos/POV';
 import {DURACION_EN_PUBLICO, EnPublico} from './videos/EnPublico';
 import {Horizontal} from './Horizontal';
-import {Banner, Perfil} from './Estaticos';
+import {DURACION_LANZAMIENTO, Lanzamiento} from './videos/Lanzamiento';
+import {Banner, HistoriaLanzamiento, Perfil, PostLanzamiento} from './Estaticos';
 
 const vertical = {width: 1080, height: 1920, fps: 30};
 const horizontal = {width: 1920, height: 1080, fps: 30};
@@ -18,6 +19,7 @@ export const Root: React.FC = () => (
     <Composition id="03-Mapa" component={Mapa} durationInFrames={DURACION_MAPA} {...vertical} />
     <Composition id="04-POV" component={POV} durationInFrames={DURACION_POV} {...vertical} />
     <Composition id="05-EnPublico" component={EnPublico} durationInFrames={DURACION_EN_PUBLICO} {...vertical} />
+    <Composition id="06-Lanzamiento" component={Lanzamiento} durationInFrames={DURACION_LANZAMIENTO} {...vertical} />
 
     <Composition
       id="X-ApplePay"
@@ -40,7 +42,20 @@ export const Root: React.FC = () => (
       )}
     />
 
+    <Composition
+      id="X-Lanzamiento"
+      durationInFrames={DURACION_LANZAMIENTO}
+      {...horizontal}
+      component={() => (
+        <Horizontal titular="Rico ya está en la App Store." subtitulo="Tu diario de restaurantes: valoras en 10 segundos y no olvidas ningún sitio.">
+          <Lanzamiento />
+        </Horizontal>
+      )}
+    />
+
     <Still id="Perfil" component={Perfil} width={1000} height={1000} />
     <Still id="BannerX" component={Banner} width={1500} height={500} />
+    <Still id="PostLanzamiento" component={PostLanzamiento} width={1080} height={1350} />
+    <Still id="HistoriaLanzamiento" component={HistoriaLanzamiento} width={1080} height={1920} />
   </>
 );
