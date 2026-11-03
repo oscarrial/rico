@@ -20,7 +20,7 @@ const Gancho: React.FC = () => {
   const s = useMuelle(0, {damping: 10});
   return (
     <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', padding: 80, gap: 40}}>
-      <div style={{transform: `scale(${s})`}}>
+      <div style={{opacity: s, transform: `scale(${0.6 + 0.4 * s})`}}>
         <Simbolo tamano={200} />
       </div>
       <div>
